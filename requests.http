@@ -1,0 +1,12 @@
+### Get Check
+GET http://localhost:8000/api/v1/posts
+Accept: application/json
+
+### POST Check
+POST http://localhost:8000/api/v1/posts
+Content-Type: application/json
+
+{
+    "title":"t",
+    "content":"c"
+}
