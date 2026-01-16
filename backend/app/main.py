@@ -8,14 +8,16 @@ from app.api import posts, auth, tags
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    print("✅ 数据库表结构创建完成")
+    # for local, only when AUTO_CREATE_TABLES is True
+    if settings.AUTO_CREATE_TABLES: 
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        print("AUTO_CREATE_TABLES is enabled, all tables are created")
 
     yield
 
     await engine.dispose()
-    print("🧹 数据库连接已关闭")
+    print("database engine disposed")
 
 app = FastAPI(title= settings.APP_NAME, lifespan=lifespan)
 

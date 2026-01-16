@@ -1,5 +1,7 @@
 export type ApiFetchOptions = RequestInit & { cache ?: string; token ?: string | null };
 
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000").replace(/\/$/,"");
+
 export async function apiFetch<T = any>(
     path:string,
     options: ApiFetchOptions = {}
@@ -16,7 +18,7 @@ export async function apiFetch<T = any>(
         ...(token? {Authorization: `Bearer ${token}`}: {}),
     };
 
-    const res = await fetch(`http://localhost:8000${path}`, {
+    const res = await fetch(`${API_BASE}${path}`, {
         ...cleanOptions,
         headers
     })

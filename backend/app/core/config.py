@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     DATABASE_URL : str = "sqlite+aiosqlite:///./.notes.db"
     BACKEND_CORS_ORIGINS : List[str] = ["http://localhost:3000"]
 
+    # environment
+    APP_ENV: str = "dev" # dev/prod
+    AUTO_CREATE_TABLES: bool = False # only local dev
+
     #JWT
     JWT_SECRET_KEY: str = "CHANGE_ME_TO_A_RANDOM_SECRET" # chagne to environment variable
     JWT_ALGORITHM: str = "HS256"
