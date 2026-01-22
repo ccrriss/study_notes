@@ -19,9 +19,6 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
     print("database engine disposed")
 
-print("CORS ORIGINS =", settings.BACKEND_CORS_ORIGINS)
-print("CORS ORIGINS TYPE =", type(settings.BACKEND_CORS_ORIGINS))
-
 app = FastAPI(title= settings.APP_NAME, lifespan=lifespan)
 
 app.add_middleware(
