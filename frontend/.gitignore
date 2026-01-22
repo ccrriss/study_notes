@@ -12,6 +12,7 @@
 
 # testing
 /coverage
+create_admin.py
 
 # next.js
 /.next/
