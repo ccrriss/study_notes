@@ -4,7 +4,7 @@ export type ApiFetchOptions = RequestInit & { cache ?: string; token ?: string |
 // backend: BACKEND_URL
 const API_BASE = (() => {
     const isServer = typeof window === "undefined";
-    if (isServer) {
+    if (!isServer) {
         return "";
     }
     // Server component
