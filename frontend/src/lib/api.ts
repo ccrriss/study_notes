@@ -1,6 +1,6 @@
 export type ApiFetchOptions = RequestInit & { cache ?: string; token ?: string | null };
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000").replace(/\/$/,"");
+const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/,"");
 
 export async function apiFetch<T = any>(
     path:string,
@@ -21,7 +21,7 @@ export async function apiFetch<T = any>(
     const res = await fetch(`${API_BASE}${path}`, {
         ...cleanOptions,
         headers
-    })
+    });
 
     if(!res.ok) {
         const res_body = await res.json().catch(() => ({}));
