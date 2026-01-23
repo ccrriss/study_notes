@@ -8,7 +8,7 @@ const API_BASE = (() => {
         return "";
     }
     // Server component
-    const serverBase = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/,"");
+    const serverBase = (process.env.BACKEND_URL ?? "").replace(/\/$/,"");
     return serverBase;
 })();
 
