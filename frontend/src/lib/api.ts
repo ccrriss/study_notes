@@ -1,6 +1,17 @@
 export type ApiFetchOptions = RequestInit & { cache ?: string; token ?: string | null };
 
-const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/,"");
+// clientside: vercel rewrite
+// backend: BACKEND_URL
+const API_BASE = (() => {
+    const isServer = typeof window === "undefined";
+    if (isServer) {
+        return "";
+    }
+    // Server component
+    const serverBase = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/,"");
+    return serverBase;
+})();
+
 
 export async function apiFetch<T = any>(
     path:string,
