@@ -119,8 +119,10 @@ export default function PaginationPro({
             <button
                 onClick={() =>go(totalPages)}
                 disabled={current === totalPages}
-                className="px-2 py-1 broder rounded disabled:opacity-30"
-            ></button>
+                className="px-2 py-1 border rounded disabled:opacity-30"
+            >
+                {">>"}
+            </button>
         </div>
     );
 }

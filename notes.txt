@@ -1,0 +1,33 @@
+20～30 分钟：定向阅读官方文档
+20～30 分钟：追踪现有功能的数据流
+20～30 分钟：独立修改或重写一个小模块
+
+第一轮建议按这个顺序：
+
+首页文章列表
+→ 文章详情页
+→ 登录流程
+→ 新建文章
+→ 编辑和删除
+
+浏览器页面
+→ Next.js 页面或客户端组件
+→ apiFetch / fetch
+→ /api 路径与 rewrite
+→ FastAPI router
+→ Depends(get_db / require_admin_user)
+→ SQLAlchemy ORM
+→ PostgreSQL / Supabase
+→ JSON response
+→ React 页面重新渲染
+
+然后再单独画登录流程：
+
+登录表单
+→ POST /api/v1/auth/login
+→ 后端校验账号密码
+→ 创建 JWT
+→ 前端保存 token
+→ apiFetch 添加 Authorization: Bearer ...
+→ FastAPI 验证 token
+→ 允许创建、编辑或删除文章

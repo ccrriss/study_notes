@@ -28,7 +28,7 @@ async function getNotes(page: number, q: string | null, tag: string | null, sort
 }
 
 export default async function Page(props: {
-  searchParams: Promise<{page?: string, q?: string, tag ?: string, sort ?: string}>
+  searchParams: Promise<{page?: string, q?: string, tag?: string, sort?: string}>
 }) {
     const searchParams = await props.searchParams;
     const page = Number(searchParams.page || "1");
