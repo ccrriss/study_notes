@@ -1,8 +1,12 @@
 import Link from "next/link";
 import { apiFetch } from "@/lib/api"
 
+type TagItem = {
+    name: string;
+    count: number;
+}
 async function getTags() {
-    return apiFetch("/api/v1/tags");
+    return apiFetch<TagItem[]>("/api/v1/tags");
 }
 
 export default async function TagCloud({active}:{active: string | null}) {
@@ -13,10 +17,10 @@ export default async function TagCloud({active}:{active: string | null}) {
             <h2 className="text-lg font-bold">Tags</h2>
 
             <ul className="space-y-2">
-                {tags.map((t : any) => (
+                {tags && tags.map((t) => (
                     <li key={t.name}>
                         <Link href={`/posts?tag=${encodeURIComponent(t.name)}`}
-                            className={`flex justify-between px-2 py-1 rounded hover:bg-gray100 text-sm
+                            className={`flex justify-between px-2 py-1 rounded hover:bg-gray-100 text-sm
                                 ${active === t.name?"bg-black text-white":""} `}
                         >
                             <span>{t.name}</span>
@@ -27,5 +31,4 @@ export default async function TagCloud({active}:{active: string | null}) {
             </ul>
         </aside>
     )
-    
 }

@@ -17,7 +17,6 @@ from app.db.models import User
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
-# from Authorization: Bearer <token> take token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 # 登录接口

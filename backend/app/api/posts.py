@@ -103,7 +103,7 @@ async def list_notes(
     limit: int = 10,
     tag: str | None = None,
     sort: str | None = None,
-    ) -> list[PostOut]: 
+    ) -> dict: 
 
     # 计算总数
     count_stmt = select(func.count()).select_from(Post)
