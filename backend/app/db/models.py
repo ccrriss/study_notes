@@ -20,7 +20,6 @@ class Post(Base):
     content_md: Mapped[str] = mapped_column(Text())
     excerpt: Mapped[str | None] = mapped_column(String(300))
     is_published: Mapped[bool] = mapped_column(Boolean, default=True)
-    # removed Datetime
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(onupdate=func.now(), server_default=func.now())
     tags: Mapped[list["Tag"]] = relationship(secondary=post_tag, back_populates="posts")

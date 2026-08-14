@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
@@ -21,7 +21,7 @@ async def create_post(
     # slug 去重
     exists = await db.scalar(select(Post.id).where(Post.slug == slug))
     if exists:
-        raise HTTPException(400, "slug already exists")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "slug already exists")
     
     #处理标签
     tag_entities = []
@@ -32,8 +32,9 @@ async def create_post(
             db.add(t)
         tag_entities.append(t)
 
-    post = Post(title=payload.title, slug = slug, content_md=payload.content_md, excerpt = payload.excerpt, is_published = payload.is_published, 
-                tags = tag_entities)
+    # post = Post(title=payload.title, slug = slug, content_md=payload.content_md, excerpt = payload.excerpt, is_published = payload.is_published, 
+    #             tags = tag_entities)
+    post = Post(**payload.model_dump(exclude={"slug", "tags"}), slug=slug, tags=tag_entities)
     db.add(post)
     await db.commit()
     await db.refresh(post)
@@ -52,12 +53,12 @@ async def update_post(
     stmt = select(Post).where(Post.id == post_id).options(selectinload(Post.tags))
     post = await db.scalar(stmt)
     if not post:
-        raise HTTPException(404, "post not found for update")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "post not found for update")
     # slug 去重
     new_slug = payload.slug or slugify(payload.title)
     exists = await db.scalar(select(Post.id).where(new_slug == Post.slug, Post.id != post_id))
     if exists:
-        raise HTTPException(400, "slug already exists")
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "slug already exists")
     # 更新字段
     post.title = payload.title
     post.slug = new_slug
@@ -89,7 +90,7 @@ async def delete_note(
 ):
     post = await db.scalar(select(Post).where(Post.id == post_id))
     if not post:
-        raise HTTPException(404, "post not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "post not found")
     await db.delete(post)
     await db.commit()
 

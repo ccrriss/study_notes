@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
 from app.db.session import get_db
-from app.db.models import Tag, post_tag
+from app.db.models import Tag, post_tag, Post
 
 router = APIRouter(prefix="/api/v1/tags", tags=["tags"])
 

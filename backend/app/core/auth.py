@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from typing import Any
 
-from jose import jwt, JWTError
+from jose import jwt
 
 from app.core.config import settings
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta]=None) -> str:
+def create_access_token(data: dict, expires_delta: timedelta|None=None) -> str:
     # data: {"sub": username}
     to_encode = data.copy()
     if expires_delta:
@@ -23,7 +23,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta]=None) -> 
     return encoded_jwt
 
 def decode_access_token(token:str) -> dict[str, Any]:
-    # decode and verify token, JWTError if wrong
     payload = jwt.decode(
         token,
         settings.JWT_SECRET_KEY,

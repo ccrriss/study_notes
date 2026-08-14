@@ -37,7 +37,6 @@ async def login(payload: LoginIn, db:AsyncSession = Depends(get_db)) -> TokenOut
     # payload中的sub放user.id
     access_token = create_access_token(
         data={"sub": str(user.id)},
-        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
     )
     return TokenOut(access_token=access_token)
 
@@ -61,7 +60,7 @@ async def get_user_by_token(
             detail="Invalid token payload",
         )
     
-    user = await db.scalar(select(User).where(User.id == int(user_id)))
+    user = await db.get(User, int(user_id))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
