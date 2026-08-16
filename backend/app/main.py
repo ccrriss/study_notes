@@ -4,7 +4,7 @@ from app.core.config import settings
 from app.db.models import Base
 from app.db.session import engine
 from contextlib import asynccontextmanager
-from app.api import posts, auth, tags
+from app.api import posts, auth, tags, rag
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,3 +32,4 @@ app.add_middleware(
 app.include_router(posts.router)
 app.include_router(auth.router)
 app.include_router(tags.router)
+app.include_router(rag.router)

@@ -13,7 +13,16 @@ engine = create_async_engine(
     # connect_args={"ssl": True} if "supabase" in settings.DATABASE_URL else {}, #asyncpg with ssl
 )
 
+# local postgres sql for testing
+rag_engine = create_async_engine(
+    settings.DATABASE_URL,
+    echo = False,
+    connect_args = connect_args,
+)
+
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
+
+Rag_AsyncSessionLocal = async_sessionmaker(rag_engine, expire_on_commit=False)
 
 async def get_db():
     async with AsyncSessionLocal() as session:
