@@ -14,10 +14,11 @@ engine = create_async_engine(
 )
 
 # local postgres sql for testing
+
 rag_engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.RAG_DATABASE_URL,
     echo = False,
-    connect_args = connect_args,
+    connect_args = {"ssl": False},
 )
 
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)

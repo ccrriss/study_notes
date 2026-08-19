@@ -17,3 +17,4 @@ class PostChunk(RagBase):
     content_chunk: Mapped[str] = mapped_column(Text()) 
     tags: Mapped[list[str]] = mapped_column(ARRAY(String))
     embedding: Mapped[list[float]] = mapped_column(VECTOR(384))
+    combined_embedding: Mapped[list[float]] = mapped_column(VECTOR(384))
