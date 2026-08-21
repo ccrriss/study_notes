@@ -21,58 +21,16 @@ step_size = content_chunk_size - chunk_overlap
 
 model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 tokenizer: PreTrainedTokenizerBase = model.tokenizer
-
-def preprocessing_data(posts: list[Post], max_seq_length=128) -> list[PostChunk]:
-    chunks = []
-    special_tokens = tokenizer.num_special_tokens_to_add(pair=False)
-    metadata_budget = max_seq_length - content_chunk_size - special_tokens
-
-    for post in posts:
-        token_ids = tokenizer.encode(post.content_md, add_special_tokens=False, verbose=False)
-        chunk_idx = 0
-        title = f"Title: {post.title}\n"
-        tags = [tag.name for tag in post.tags]
-        tag_names = f"Tags: {', '.join(tags)}\n"
-        title_tag_token_ids = tokenizer.encode(title + tag_names, add_special_tokens=False)[:metadata_budget]
-
-        for i in range(0, len(token_ids), step_size):
-            content_chunk = token_ids[i: i+content_chunk_size]
-
-            combined_chunk = title_tag_token_ids + content_chunk
-
-            content_chunk = tokenizer.decode(content_chunk)
-            combined_chunk = tokenizer.decode(combined_chunk)
-
-            embedding = model.encode(content_chunk).tolist()
-            combined_embedding = model.encode(combined_chunk).tolist()
-
-            chunk = PostChunk(post_id=post.id, chunk_idx=chunk_idx, title=post.title, slug=post.slug, 
-                              content_chunk=content_chunk, tags=tags, embedding=embedding, combined_embedding=combined_embedding)
-            
-            chunks.append(chunk)
-            chunk_idx += 1
-
-    return chunks
+from markdown_aware_chunking_v1 import get_sections_from_posts, preprocessing_post_with_sections_md
+from initialize_db import main
+from q_a_list import get_q_a_list
 
 async def getPosts():
     async with AsyncSessionLocal() as db:
         posts = (await db.scalars(select(Post).options(selectinload(Post.tags)))).all()
         return posts
 
-async def init_rag_database():   
-    create_db_text = text("CREATE EXTENSION IF NOT EXISTS vector;")
-
-    async with rag_engine.begin() as rag_conn:
-        await rag_conn.execute(create_db_text)
-        
-        await rag_conn.run_sync(RagBase.metadata.create_all)
-
-async def get_chunks() -> list[PostChunk] :
-    posts = await getPosts()
-    chunks = preprocessing_data(posts)
-    return chunks
-
-async def vector_search(query, topk:int= 3):
+async def vector_search(query, topk:int= 3) -> tuple[list[tuple[PostChunk, float]], list[tuple[PostChunk, float]]]:
     query_embedding = model.encode(query) # ndarray
     query_embedding: list[float] = query_embedding.tolist()
 
@@ -98,8 +56,7 @@ async def add_chunk(chunk: PostChunk):
         await rag_db.refresh(chunk)
     return chunk
 
-async def add_all_chunks():
-    chunks = await get_chunks()
+async def add_all_chunks(chunks: list[PostChunk]):
     async with Rag_AsyncSessionLocal() as rag_db:
         rag_db.add_all(chunks)
         await rag_db.commit()
@@ -114,20 +71,35 @@ async def vec_search(q: str):
     rows, combined_rows = await vector_search(q)
     return rows, combined_rows
 
-async def main():
-    await init_rag_database()
+def print_result(rows:list[tuple[PostChunk, float]], combined_rows:list[tuple[PostChunk, float]]):
+    for post_chunk, similarity in rows:
+        print(f"Heading Path: {post_chunk.heading_path}\n")
+        print(f"Content: {post_chunk.content_chunk}\n")
+        print(f"Similarity: {similarity}\n")
+    print("==========================================================\n")
+    for combined_post_chunk, combined_similarity in combined_rows:
+        print(f"Heading Path: {combined_post_chunk.heading_path}\n")
+        print(f"Content: {combined_post_chunk.content_chunk}\n")
+        print(f"Similarity: {combined_similarity}\n")
 
-    await add_all_chunks()
-
-    await rag_engine.dispose()
+async def add_all_chunks_md_aware():
+    posts = await getPosts()
+    post_with_sections = get_sections_from_posts(posts)
+    chunks = preprocessing_post_with_sections_md(post_with_sections, model=model)
+    await add_all_chunks(chunks)
 
 # asyncio.run(main())
-# asyncio.run(add_all_chunks())
+# asyncio.run(add_all_chunks_md_aware())
+
+async def vec_search_ten_questions():
+    q_a_list = get_q_a_list()
+    for q_a_dict in q_a_list:
+        rows, combined_rows = await vec_search(q_a_dict["q"])
+        print(f"right answer: {q_a_dict['a']}\n")
+        print_result(rows, combined_rows)
 
 # rows, combined_rows = asyncio.run(vector_search("SQLAlchemy 中 engine 和 session 分别负责什么?"))
-rows, combined_rows = asyncio.run(vec_search("FastAPI的路由如何设置?"))
-for chunk, similarity in rows:
-    print(chunk.content_chunk, similarity)
-print("==========================================================\n")
-for combined_chunk, combined_similarity in combined_rows:
-    print(combined_chunk.content_chunk, combined_similarity)
+# rows, combined_rows = asyncio.run(vec_search("next.js有哪些hooks?"))
+# print_result(rows, combined_rows)
+
+asyncio.run(vec_search_ten_questions())

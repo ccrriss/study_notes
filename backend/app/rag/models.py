@@ -18,3 +18,5 @@ class PostChunk(RagBase):
     tags: Mapped[list[str]] = mapped_column(ARRAY(String))
     embedding: Mapped[list[float]] = mapped_column(VECTOR(384))
     combined_embedding: Mapped[list[float]] = mapped_column(VECTOR(384))
+
+    heading_path: Mapped[list[str]] = mapped_column(ARRAY(String))
