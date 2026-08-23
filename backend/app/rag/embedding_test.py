@@ -1,3 +1,7 @@
+"""
+This file is for local dev. And works for local pg database.
+"""
+
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select, text
 import asyncio
@@ -13,6 +17,7 @@ sys.path.append(str(BACKEND_DIR))
 from app.db.session import AsyncSessionLocal, Rag_AsyncSessionLocal, rag_engine
 from app.db.models import Post
 from transformers import PreTrainedTokenizerBase
+from llm import generate_answer
 
 # copied from app.api.rag
 content_chunk_size = 100
@@ -24,6 +29,9 @@ tokenizer: PreTrainedTokenizerBase = model.tokenizer
 from markdown_aware_chunking_v1 import get_sections_from_posts, preprocessing_post_with_sections_md
 from initialize_db import main
 from q_a_list import get_q_a_list
+from hold_out_q_a_list import get_hold_out_q_a_list
+from prompt_v1 import get_prompt
+from llm import generate_answer
 
 async def getPosts():
     async with AsyncSessionLocal() as db:
@@ -81,6 +89,7 @@ def print_result(rows:list[tuple[PostChunk, float]], combined_rows:list[tuple[Po
         print(f"Heading Path: {combined_post_chunk.heading_path}\n")
         print(f"Content: {combined_post_chunk.content_chunk}\n")
         print(f"Similarity: {combined_similarity}\n")
+    print("==========================================================\n")
 
 async def add_all_chunks_md_aware():
     posts = await getPosts()
@@ -95,11 +104,37 @@ async def vec_search_ten_questions():
     q_a_list = get_q_a_list()
     for q_a_dict in q_a_list:
         rows, combined_rows = await vec_search(q_a_dict["q"])
+        print(f"Question is: {q_a_dict['q']}\n")
         print(f"right answer: {q_a_dict['a']}\n")
         print_result(rows, combined_rows)
 
-# rows, combined_rows = asyncio.run(vector_search("SQLAlchemy 中 engine 和 session 分别负责什么?"))
-# rows, combined_rows = asyncio.run(vec_search("next.js有哪些hooks?"))
-# print_result(rows, combined_rows)
+# asyncio.run(vec_search_ten_questions())
 
-asyncio.run(vec_search_ten_questions())
+async def prompt_v1_test():
+    # q_a_list = get_q_a_list()
+    q_a_list = get_hold_out_q_a_list()
+
+    content_only_qa_list = []
+    combined_qa_list = []
+
+    for i, q_a_dict in enumerate(q_a_list):
+        rows, combined_rows = await vec_search(q_a_dict["q"])
+        prompt_text, combined_prompt_text = get_prompt(user_query=q_a_dict["q"], rows=rows, combined_rows=combined_rows)
+        content_only_answer = await generate_answer(prompt=prompt_text)
+        combined_answer = await generate_answer(prompt=combined_prompt_text)
+        content_only_qa_list.append((q_a_dict["q"], q_a_dict["a"], content_only_answer))
+        combined_qa_list.append((q_a_dict["q"], q_a_dict["a"], combined_answer))
+
+    for i, (q, a, llm_answer) in enumerate(content_only_qa_list):
+        print(f"Q{i+1}: \n")
+        print(f"query is :{q} \n")
+        print(f"answer is :{a} \n")
+        print(f"llm_answer is :{llm_answer} \n\n")
+
+    for i, (q, a, llm_answer)in enumerate(combined_qa_list):
+        print(f"Q{i+1}: \n")
+        print(f"query is :{q} \n")
+        print(f"answer is :{a} \n")
+        print(f"llm_answer is :{llm_answer} \n\n")
+
+asyncio.run(prompt_v1_test())

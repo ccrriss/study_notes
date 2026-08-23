@@ -1,3 +1,7 @@
+"""
+This file is for local dev. And works for local pg database.
+"""
+
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy import Text, ARRAY, String

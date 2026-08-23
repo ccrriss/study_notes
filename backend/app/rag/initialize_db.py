@@ -1,17 +1,18 @@
-from sqlalchemy import select, text
+"""
+This file is for local dev. And works for local pg database.
+"""
+
+from sqlalchemy import text
 import asyncio
 from pathlib import Path
 import sys
-from sentence_transformers import SentenceTransformer
-from models import PostChunk, RagBase
+from models import RagBase
 
 CURRENT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = CURRENT_DIR.parent.parent
 sys.path.append(str(BACKEND_DIR))
 
-from app.db.session import AsyncSessionLocal, Rag_AsyncSessionLocal, rag_engine
-from app.db.models import Post
-from transformers import PreTrainedTokenizerBase
+from app.db.session import rag_engine
 
 async def init_rag_database():   
     create_db_text = text("CREATE EXTENSION IF NOT EXISTS vector;")

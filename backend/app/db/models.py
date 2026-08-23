@@ -1,7 +1,8 @@
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy import String, Text, Table, ForeignKey, Boolean, DateTime, func,Column
+from sqlalchemy import String, Text, Table, ForeignKey, Boolean, DateTime, func,Column, ARRAY
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncAttrs
+from pgvector.sqlalchemy import VECTOR
 
 class Base(AsyncAttrs, DeclarativeBase):
     pass
@@ -24,6 +25,8 @@ class Post(Base):
     updated_at: Mapped[datetime] = mapped_column(onupdate=func.now(), server_default=func.now())
     tags: Mapped[list["Tag"]] = relationship(secondary=post_tag, back_populates="posts")
 
+    post_chunks: Mapped[list["PostChunk"]] = relationship(back_populates="post")
+
 class Tag(Base):
     __tablename__ = "tags"
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -38,3 +41,19 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(128))
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+class PostChunk(Base):
+    __tablename__ = "post_chunks"
+
+    id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True)
+
+    post_id: Mapped[int] = mapped_column(ForeignKey("posts.id"), index=True)
+    post: Mapped[Post] = relationship(back_populates="post_chunks")
+
+    chunk_idx: Mapped[int] = mapped_column()
+
+    content_chunk: Mapped[str] = mapped_column(Text()) 
+    embedding: Mapped[list[float]] = mapped_column(VECTOR(384))
+    combined_embedding: Mapped[list[float]] = mapped_column(VECTOR(384))
+
+    heading_path: Mapped[list[str]] = mapped_column(ARRAY(String))

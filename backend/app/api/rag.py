@@ -1,63 +1,40 @@
-from fastapi import APIRouter, Depends
-from app.schemas.post import PostOut
+from fastapi import APIRouter, Depends, Query, Body
 from app.db.session import get_db
-from sqlalchemy import func, select
-from app.db.models import Post, Tag
+from sqlalchemy import select
+from app.db.models import Post, Tag, PostChunk
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from typing import Annotated
+from util.vec_search import vector_search
+from util.get_prompt_v1 import get_prompt
+from util.genetate_answer_v1 import generate_answer
+from sentence_transformers import SentenceTransformer
+from app.schemas.rag import RagRequest, RagResponse, RagSection, RagSource
+from util.generate_ragsec_and_source import generate_rag_sec_and_source
+
+model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 
 router = APIRouter(prefix="/api/v1/rag", tags=['posts', 'rag'])
 
-chunk_size = 30
-chunk_overlap = 8
-step_size = chunk_size - chunk_overlap
-
-def preprocessing_data(posts: list[Post]):
-    chunks = []
-    for post in posts:
-        chunk_idx = 0
-        tags = [tag.name for tag in post.tags]
-
-        for i in range(0, len(post.content_md), step_size):
-            content_chunk = post.content_md[i: i+chunk_size]
-
-            data = {
-                "post_id": post.id,
-                "chunk_idx": chunk_idx,
-                "title": post.title,
-                "slug": post.slug,
-                "content_chunk": content_chunk,
-                "tags": tags
-            }
-            chunks.append(data)
-            chunk_idx += 1
-
-    return chunks
-
-@router.get("", response_model=dict)
-async def get_posts(
-    q: str|None = None,
-    tag: str|None = None,
-    sort: str|None = None,
-    offset: int = 0,
-    limit: int = 10,
+@router.post("", response_model=RagResponse)
+async def retrieval(
+    payload: Annotated[RagRequest, Body()],
     db: AsyncSession = Depends(get_db)
-) -> dict:
-    stmt = select(Post).offset(offset).limit(limit).options(selectinload(Post.tags))
+) -> RagResponse:
+    query = payload.query
+    if not query or not query.strip() or len(query.strip()) < 10:
+        raise ValueError("query cannot be empty or it's too short")
+    
+    rows, combined_rows = await vector_search(query=query, model=model, db=db)
 
-    if q:
-        stmt = stmt.where(Post.title.ilike(f"%{q}%"))
-    if tag:
-        stmt = stmt.join(Post.tags).where(Tag.name == tag)
-    if sort == "oldest":
-        stmt = stmt.order_by(Post.created_at.asc())
-    else:
-        stmt = stmt.order_by(Post.created_at.desc())
+    prompt_text, combined_prompt_text = get_prompt(query, rows, combined_rows)
+    
+    content_only_answer = await generate_answer(prompt=prompt_text)
+    combined_answer = await generate_answer(prompt=combined_prompt_text)
 
-    rows = (await db.scalars(stmt)).all()
+    content_only_rag_source_list: list[RagSource] = generate_rag_sec_and_source(rows)
+    combined_rag_source_list: list[RagSource] = generate_rag_sec_and_source(combined_rows)
 
-    chunks = preprocessing_data(rows)
-
-    return {
-        "chunks": chunks
-    }
+    res = RagResponse(content_only_source_list=content_only_rag_source_list, combined_source_list=combined_rag_source_list,
+                       content_only_answer=content_only_answer, combined_answer=combined_answer)
+    return res
