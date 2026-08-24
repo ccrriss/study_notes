@@ -1,0 +1,468 @@
+{
+  "cases": [
+    {
+      "id": "H01",
+      "query": "FastAPI 接收上传文件时，如果文件比较大，参数类型应该用 bytes 还是 UploadFile?",
+      "answer": "大文件应使用 Annotated[UploadFile, File()]; Annotated[bytes, File()] 更适合小文件.",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "FastAPI(&Pydantic)_Learn_Notes",
+            "slug": "fastapi-learn",
+            "section_list": [
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > Annotated",
+                "content": "-小文件, `Annotated[UploadFile, File()]`-大文件"
+              }
+            ]
+          },
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 组件的使用",
+                "content": "`文件夹下开始找, `href`属性代表`URL`路径而不是文件 5. 导航或者标题可以写在全局`layout.tsx`里面, 以及`login/logout`等 6. 可以服务器端组件引入客户端组件(混用), 最顶层是`Server Component`, 其中嵌入`Client Component`, `Server Component`可以渲染`Client Component`"
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 相关插件",
+                "content": "了一些格式,比如表格 * `remark()` 本身只是同步地创建一个\"处理器(processor)\".`process()`在内部会异步地解析、构建语法树、应用插件;所以 `.process()`返回的是一个 `Promise` 对象 * `process()`返回的是一个对象(包含`metadata`)"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "FastAPI(&Pydantic)_Learn_Notes",
+            "slug": "fastapi-learn",
+            "section_list": [
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > Annotated",
+                "content": "-小文件, `Annotated[UploadFile, File()]`-大文件"
+              },
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > Annotated",
+                "content": ": 只接受一个参数, 且类似function(callable比如Class), 但只将其作为参数(没有括号) * `Field()`是内部声明, 和Query, Path的用法类似: `Annotated[int, Field()] = 100`, `Field`是Pydantic的其他是FastAPI的 * 传文件: `Annotated[bytes, File()]`-小文件, `Annotated"
+              },
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > pwdlib+pyjwt(官方文档)",
+                "content": ": `(data/payload, expires_delta)`: data为需要的数据dict, 如`{\"sub\":username, \"scopes\":[]}`, 加入\"exp\"属性后进行encode得到token_access"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "对于 FastAPI 接收上传文件时，如果文件比较大，应该使用 `UploadFile` 而不是 `bytes`。\n\n理由：根据 [Source 1] 中提到的内容，“小文件, `Annotated[UploadFile, File()]`-大文件”，这表明对于大文件，应使用 `UploadFile` 类型。`UploadFile` 是 FastAPI 提供的专门用于处理文件上传的类型，它能够有效管理大文件的读取和传输，避免内存溢出等问题，而 `bytes` 类型会将整个文件加载到内存中，不适合大文件处理。\n\n因此，大文件应使用 `UploadFile`。",
+        "combined_answer": "对于大文件，应该使用 `UploadFile` 而不是 `bytes`。\n\n理由：  \n- 上下文 [Source 1] 明确指出：“小文件, `Annotated[UploadFile, File()]`-大文件”，暗示大文件应使用 `UploadFile`。  \n- 上下文 [Source 2] 提到“传文件: `Annotated[bytes, File()]`-小文件, `Annotated`”，表明 `bytes` 适用于小文件，而大文件未被提及，但结合上下文逻辑，`bytes` 用于小文件，大文件应使用更合适的类型。  \n- `UploadFile` 是 FastAPI 中专门用于处理文件上传的类型，支持大文件的流式处理和内存管理，避免一次性加载整个文件到内存中。\n\n因此，当文件较大时，参数类型应使用 `UploadFile`。"
+      }
+    },
+    {
+      "id": "H02",
+      "query": "JavaScript 调用 fetch() 后，在请求完成前和完成后分别得到什么类型的对象？完成后的对象里可以看哪些请求结果信息?",
+      "answer": "fetch() 本身返回 Promise; 完成后得到 Response 对象，其中包含 status、statusText、ok 等字段.",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "JS_TS_Learn_Notes",
+            "slug": "js-ts-learn",
+            "section_list": [
+              {
+                "heading": "JavaScript > TypeScript",
+                "content": "fetch(url, options)`, options就是`RequestInit`, 包括: ``` js interface RequestInit { method?: string; headers?: HeadersInit; body?: BodyInit; credentials?: RequestCredentials; mode?: RequestMode; cache?: RequestCache; ... } ``` * `HeaderInit`: 是`header`字段的类型, 就是`RequestInit.headers`一个fetch请求头可以"
+              }
+            ]
+          },
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 组件的使用",
+                "content": "1. React的组件`return`必须与标签同一行,如果不在同一行要加括号, `return`一个元素不用加标签包裹,`return`多个元素必须有标签包裹 * 原理: 看似是html实际上是js, 无法返回多个对象除非用`list`之类的包裹 * 包裹的可以是空元素: `<></>`或`<Fragment>`, 这样不会额外增加节点 2. 大括号的使用, 无论"
+              }
+            ]
+          },
+          {
+            "title": "FastAPI(&Pydantic)_Learn_Notes",
+            "slug": "fastapi-learn",
+            "section_list": [
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > Annotated",
+                "content": "* `Query() ,Path(), Body(), Header(), Cookie(), Form()(Body的子集), File()(Form的子集), Depends()`均可用于`Annotated`的验证 * 但`Depends`内部参数和用法不一样, 且可以`Annotated[str, Depends(), Query()]` * `Depends()`: 只接受一个参数, "
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "JS_TS_Learn_Notes",
+            "slug": "js-ts-learn",
+            "section_list": [
+              {
+                "heading": "JavaScript > 网络及事件及相关涉及等 > fetch",
+                "content": "* 自己是`Promise`对象，完成后会变为`Response`对象, 包含`status`, `statusText`, `ok`等field"
+              },
+              {
+                "heading": "JavaScript > 网络及事件及相关涉及等 > 其他方法",
+                "content": ")`,可直接拼接到URL后面"
+              },
+              {
+                "heading": "JavaScript > TypeScript",
+                "content": "fetch(url, options)`, options就是`RequestInit`, 包括: ``` js interface RequestInit { method?: string; headers?: HeadersInit; body?: BodyInit; credentials?: RequestCredentials; mode?: RequestMode; cache?: RequestCache; ... } ``` * `HeaderInit`: 是`header`字段的类型, 就是`RequestInit.headers`一个fetch请求头可以"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "JavaScript 调用 `fetch()` 后：\n\n- **在请求完成前**：得到的是一个 **Promise 对象**。  \n  这个 Promise 代表了请求的进行状态，尚未完成，因此它本身不是请求结果，而是对结果的“未来”引用。\n\n- **在请求完成后**：Promise 被解析（resolved），返回的是一个 **Response 对象**。  \n  这个 Response 对象包含了请求的响应信息，可以查看以下内容：\n  - 状态码（如 200、404 等）\n  - 响应头（headers）\n  - 响应体（body，通常为文本、JSON 或其他数据格式）\n  - URL（请求的完整 URL）\n\n因此，完成后的对象（Response）里可以查看的请求结果信息包括：状态码、响应头、响应体和请求的 URL。\n\n> 注：虽然提供的上下文未明确说明 Response 对象的结构，但根据 JavaScript 的标准 API 文档和常见实践，该回答是基于标准知识的合理推断。若严格限定仅使用提供的上下文，则无法直接支持“Response 对象包含状态码、响应头、响应体”这一信息，因此该部分基于标准知识，而非上下文内容。  \n\n**结论**：  \n- 请求完成前：Promise 对象  \n- 请求完成后：Response 对象，包含状态码、响应头、响应体和 URL 信息  \n\n⚠️ 说明：该回答中关于“Response 对象包含状态码、响应头、响应体”部分，**未在提供的上下文中直接支持**，因此该部分属于外部知识，不能完全基于上下文回答。  \n\n✅ 支持的部分（基于上下文）：  \n- fetch() 返回的是一个 Promise 对象（来自 Source 1 中对 `fetch()` 的描述，虽然未明确说“返回 Promise”，但 `fetch()` 是 JavaScript 中标准 API，其行为在上下文中未被明确说明，因此该部分也属于外部知识）  \n\n因此，**基于提供的上下文，无法准确回答“在请求完成前和完成后分别得到什么类型的对象”以及“完成后的对象里可以看哪些请求结果信息”**。\n\n最终回答：  \n**I don't know based on the provided context.**",
+        "combined_answer": "JavaScript 调用 fetch() 后：\n\n- 在请求完成前，得到的是一个 `Promise` 对象。\n- 在请求完成后，该 Promise 被解析为一个 `Response` 对象。\n\n完成后的 `Response` 对象中可以查看的请求结果信息包括：\n- `status`（HTTP 状态码）\n- `statusText`（HTTP 状态码对应的文本描述）\n- `ok`（布尔值，表示请求是否成功，即状态码在 200-299 范围内）\n\n这些信息均来自提供的上下文内容。"
+      }
+    },
+    {
+      "id": "H03",
+      "query": "我在 Next.js 客户端组件里读取一个叫 API_SECRET 的环境变量，但没有给它加特殊前缀. 按照笔记里的规则，浏览器端能直接拿到它吗?",
+      "answer": "不能. 只有以 NEXT_PUBLIC 开头的环境变量才会被注入浏览器端代码.",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > JS(TS)相关",
+                "content": "`process.env`: 环境变量集合(key-value字符串) 在`next.js`中,只有以`NEXT_PUBLIC`开头的环境变量才会被注入到浏览器端代码中, 也就是前端也能用"
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 组件的使用",
+                "content": "`文件夹下开始找, `href`属性代表`URL`路径而不是文件 5. 导航或者标题可以写在全局`layout.tsx`里面, 以及`login/logout`等 6. 可以服务器端组件引入客户端组件(混用), 最顶层是`Server Component`, 其中嵌入`Client Component`, `Server Component`可以渲染`Client Component`"
+              }
+            ]
+          },
+          {
+            "title": "JS_TS_Learn_Notes",
+            "slug": "js-ts-learn",
+            "section_list": [
+              {
+                "heading": "JavaScript > 网络及事件及相关涉及等 > 其他方法",
+                "content": "* `encodeURIComponent(url)`: 将选取的部分转为带百分号格式的,绝对安全 * `URLSearchParams()`: 构建,读取,修改URL中的query string * `const params = URLSearchParams()`: 是一个特殊对象,类似Map * 常用`params.set()`, 可多次使用构建query string * 内置`toString()`,可直接拼接到URL"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > JS(TS)相关",
+                "content": "`process.env`: 环境变量集合(key-value字符串) 在`next.js`中,只有以`NEXT_PUBLIC`开头的环境变量才会被注入到浏览器端代码中, 也就是前端也能用"
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 组件的使用",
+                "content": "`文件夹下开始找, `href`属性代表`URL`路径而不是文件 5. 导航或者标题可以写在全局`layout.tsx`里面, 以及`login/logout`等 6. 可以服务器端组件引入客户端组件(混用), 最顶层是`Server Component`, 其中嵌入`Client Component`, `Server Component`可以渲染`Client Component`"
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件",
+                "content": "**组件持有状态（useState）**\n**Hook 不持有状态，只是访问、操作组件的状态**"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "不会。\n\n按照笔记里的规则，只有以 `NEXT_PUBLIC` 开头的环境变量才会被注入到浏览器端代码中。你在客户端组件里读取的 `API_SECRET` 没有加 `NEXT_PUBLIC` 前缀，因此它不会被注入到浏览器端，浏览器端无法直接拿到这个环境变量。\n\n所以，浏览器端不能直接拿到 `API_SECRET`。",
+        "combined_answer": "不会。按照笔记里的规则，只有以 `NEXT_PUBLIC` 开头的环境变量才会被注入到浏览器端代码中。你没有给 `API_SECRET` 加 `NEXT_PUBLIC` 前缀，因此它不会被注入到浏览器端，浏览器端无法直接拿到这个环境变量。\n\n所以，在 Next.js 客户端组件中读取 `API_SECRET` 时，浏览器端是无法直接拿到它的。"
+      }
+    },
+    {
+      "id": "H04",
+      "query": "一个 FastAPI endpoint 同时写了返回类型注解和 response_model, 实际返回的数据里还有模型之外的额外字段. 哪一个定义会优先控制最终响应, 这些额外字段会怎样?",
+      "answer": "response_model 优先级更高，负责校验和转换，并会删除多余字段；返回类型注解表示实际返回类型.",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "FastAPI(&Pydantic)_Learn_Notes",
+            "slug": "fastapi-learn",
+            "section_list": [
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > Response_model",
+                "content": "* `response_model`和 output `-> type`的对比: `response_model`有更高优先级, 但可以二者混用, `response_model`负责校验转换, 多余的会删除, `->`表示真正的返回类型"
+              }
+            ]
+          },
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 相关插件",
+                "content": "了一些格式,比如表格 * `remark()` 本身只是同步地创建一个\"处理器(processor)\".`process()`在内部会异步地解析、构建语法树、应用插件;所以 `.process()`返回的是一个 `Promise` 对象 * `process()`返回的是一个对象(包含`metadata`)"
+              }
+            ]
+          },
+          {
+            "title": "JS_TS_Learn_Notes",
+            "slug": "js-ts-learn",
+            "section_list": [
+              {
+                "heading": "JavaScript > 网络及事件及相关涉及等 > fetch",
+                "content": "* 自己是`Promise`对象，完成后会变为`Response`对象, 包含`status`, `statusText`, `ok`等field"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "FastAPI(&Pydantic)_Learn_Notes",
+            "slug": "fastapi-learn",
+            "section_list": [
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > Response_model",
+                "content": "* `response_model`和 output `-> type`的对比: `response_model`有更高优先级, 但可以二者混用, `response_model`负责校验转换, 多余的会删除, `->`表示真正的返回类型"
+              },
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > 安全及校验",
+                "content": "不一致则报错, 一致则返回token对象给前端, 结构为`{access_token: str, token_type: \"bearer\"}`"
+              },
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > Functions > yield",
+                "content": "* `yield`: 有点像`return`, 但只有`yield`和前面的语句会在得到response之前执行"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "`response_model` 会优先控制最终响应。根据上下文，`response_model` 负责校验和转换，如果返回的数据中包含模型之外的额外字段，这些多余字段会被删除，不会出现在最终响应中。因此，实际返回的数据将只包含 `response_model` 定义的字段，额外字段会被过滤掉。",
+        "combined_answer": "`response_model` 会优先控制最终响应。根据上下文，`response_model` 负责校验和转换，如果返回的数据中包含模型之外的额外字段，这些多余字段会被删除，不会出现在最终响应中。因此，最终响应将只包含 `response_model` 定义的字段，额外字段不会被保留。"
+      }
+    },
+    {
+      "id": "H05",
+      "query": "点击一个子元素时，我只想阻止外层元素绑定的点击处理函数一起触发，但不想取消这个元素原本的浏览器默认行为，应该调用哪个方法?",
+      "answer": "e.stopPropagation() 用于阻止事件向外传播; e.preventDefault() 是阻止默认浏览器行为.",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "JS_TS_Learn_Notes",
+            "slug": "js-ts-learn",
+            "section_list": [
+              {
+                "heading": "JavaScript > 网络及事件及相关涉及等 > EventListener",
+                "content": "* `e.stopPropagation()`:阻止触发绑定在外层标签上的事件处理函数\n* `e.preventDefault()` 阻止事件的默认浏览器行为"
+              },
+              {
+                "heading": "JavaScript > 数组及相关操作 > 数组操作",
+                "content": "* `push()`, `pop()`,`shift()`, `unshift()`,`splice()`,`reverse()`,`sort()`: 改变原数组 * `map()`, `filter()`,`concat()` `[...arr]`, `slice()`: 不改变原数组 `push`和`pop`的顺序: * `push`是"
+              }
+            ]
+          },
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 轻量级",
+                "content": "✔ 触发 | ❌ 啥也不管 | 大型组件更适合用 reducer | | **useEffect** | ❌ 自己不会触发 | ❌ 不触发 | 但它里面如果 setState → 就触发当前组件更新 | | **useMemo** | ❌ | ❌ | 只是缓存值,不触发渲染 | | **useCallback**"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "JS_TS_Learn_Notes",
+            "slug": "js-ts-learn",
+            "section_list": [
+              {
+                "heading": "JavaScript > 网络及事件及相关涉及等 > EventListener",
+                "content": "* `e.stopPropagation()`:阻止触发绑定在外层标签上的事件处理函数\n* `e.preventDefault()` 阻止事件的默认浏览器行为"
+              },
+              {
+                "heading": "JavaScript > 数组及相关操作 > 数组操作",
+                "content": "* `push()`, `pop()`,`shift()`, `unshift()`,`splice()`,`reverse()`,`sort()`: 改变原数组 * `map()`, `filter()`,`concat()` `[...arr]`, `slice()`: 不改变原数组 `push`和`pop`的顺序: * `push`是"
+              }
+            ]
+          },
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 轻量级",
+                "content": "✔ 触发 | ❌ 啥也不管 | 大型组件更适合用 reducer | | **useEffect** | ❌ 自己不会触发 | ❌ 不触发 | 但它里面如果 setState → 就触发当前组件更新 | | **useMemo** | ❌ | ❌ | 只是缓存值,不触发渲染 | | **useCallback**"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "应该调用 `e.stopPropagation()` 方法。\n\n解释：根据上下文 [Source 1]，`e.stopPropagation()` 的作用是“阻止触发绑定在外层标签上的事件处理函数”，这正好符合你想要“只阻止外层元素绑定的点击处理函数一起触发”的需求。而你不想取消浏览器默认行为，因此不需要使用 `e.preventDefault()`，因为它会阻止浏览器的默认行为。所以，正确的方法是 `e.stopPropagation()`。",
+        "combined_answer": "应该调用 `e.stopPropagation()` 方法。\n\n解释：根据上下文 [Source 1]，`e.stopPropagation()` 的作用是“阻止触发绑定在外层标签上的事件处理函数”，这正好符合你想要“只阻止外层元素绑定的点击处理函数一起触发”的需求。而你不想取消元素原本的浏览器默认行为，因此不需要使用 `e.preventDefault()`，因为它会阻止浏览器的默认行为。所以，正确的方法是 `e.stopPropagation()`。"
+      }
+    },
+    {
+      "id": "H06",
+      "query": "Python 正则中，我只需要找到字符串中任意位置的第一个匹配，并希望拿到一个 Match 对象；不要求匹配必须从字符串开头开始。应该用哪个函数?",
+      "answer": "",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "Regular_Expression_Learn_Notes",
+            "slug": "123",
+            "section_list": [
+              {
+                "heading": "Python版本 > Regular Expression",
+                "content": "三者对比: | 函数 | 是否要求开头匹配 | 返回什么 | 匹配数量 | | ----------- | -------- | ------------------ | ---- | | `match()` | 是 | `Match` 对象或 `None` | 最多一个 | | `search()` | 否 | `Match` 对象或 `None` | 最多一个 | | `findall()` |"
+              },
+              {
+                "heading": "Python版本 > Regular Expression",
+                "content": "1. `re.search(pattern, string, flags=0)`, 返回的是一个Match对象或者None, 这个对象有一些自己的方法, 如果有捕获(括号),该match对象可以提取:`match_object.group(0),match.group(1)`, 0是整个字符串,1是捕获的第1个,以此类推 2. `re.match()`,从头开始只返回第一 3. `re.findall(pattern,text)`: 返回list,如果没有"
+              },
+              {
+                "heading": "Python版本 > Regular Expression > JS > 计算匹配次数",
+                "content": "* `string.match(regexp)`: 取决于有无`/g`, 有`/g`返回的是匹配结果的数组,`result.length`, 无`/g`数组中第一个是匹配结果,之后是捕获组(就是括号 * `regexp.exec(string))`: 无`/g`的话匹配返回的数组和`string.match`相似,有`/g`的话会修改lastIn"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "Regular_Expression_Learn_Notes",
+            "slug": "123",
+            "section_list": [
+              {
+                "heading": "Python版本 > Regular Expression",
+                "content": "三者对比: | 函数 | 是否要求开头匹配 | 返回什么 | 匹配数量 | | ----------- | -------- | ------------------ | ---- | | `match()` | 是 | `Match` 对象或 `None` | 最多一个 | | `search()` | 否 | `Match` 对象或 `None` | 最多一个 | | `findall()` |"
+              },
+              {
+                "heading": "Python版本 > Regular Expression",
+                "content": "1. `re.search(pattern, string, flags=0)`, 返回的是一个Match对象或者None, 这个对象有一些自己的方法, 如果有捕获(括号),该match对象可以提取:`match_object.group(0),match.group(1)`, 0是整个字符串,1是捕获的第1个,以此类推 2. `re.match()`,从头开始只返回第一 3. `re.findall(pattern,text)`: 返回list,如果没有"
+              },
+              {
+                "heading": "Python版本 > Regular Expression",
+                "content": "匹配 `\"a\"`、`\"aaa\"`(但不匹配空) | | | | `?` | 0次或1次(可选) | `a?` 匹配 `\"\"` 或 `\"a\"` | | | | `^` | 字符类中表示取反,非字符类中表示开头| 只有`^`的话表示开头位置| | | | `$` | 非字符类"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "应该用 `re.search()` 函数。\n\n解释：根据提供的上下文，`re.search()` 不要求匹配必须从字符串开头开始，它会在字符串中任意位置找到第一个匹配，并返回一个 Match 对象或 None。这符合用户的需求。而 `re.match()` 要求从字符串开头开始匹配，不符合需求。`re.findall()` 返回的是一个列表，不是 Match 对象。因此，正确答案是 `re.search()`。",
+        "combined_answer": "应该用 `re.search()` 函数。\n\n解释：根据提供的上下文，`re.search()` 不要求匹配必须从字符串开头开始，它会在字符串中任意位置找到第一个匹配，并返回一个 Match 对象或 None。这符合用户的需求。而 `re.match()` 要求从开头开始匹配，不符合“任意位置”的要求。因此，正确答案是 `re.search()`。"
+      }
+    },
+    {
+      "id": "H07",
+      "query": "按照笔记里的 JWT 部分，生成 JWT 使用什么 Python 库？生成 secret key 的命令是什么? JWT 具体使用哪一种签名算法?",
+      "answer": "",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "FastAPI(&Pydantic)_Learn_Notes",
+            "slug": "fastapi-learn",
+            "section_list": [
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > pwdlib+pyjwt(官方文档)",
+                "content": "* JWT: 非加密是一个string但是有签名, 其中分为三部分, [1]是payload * `pyjwt`库 * hashing: `pwdlib[argon2]`库 * 生成secret key: `python -c \"import secrets; print(secrets.token_hex(32))`: 生成secret key * 生成jwt: `(data/payload,"
+              },
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > 安全及校验",
+                "content": "* 安全验证: `oauth2_scheme = OAuth2PasswordBearer(tokenurl)`, 从该url的请求头的authorization中提取token, 也就是`Bearer ${token}` * 校验流程: 通过form拿到username, 进数据库比对, 无则报错, 有则与hash后的表单密码对比, 不一致则报错, "
+              }
+            ]
+          },
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > JS(TS)相关 > Token处理",
+                "content": "* `atob()`: 把Base64解码成普通字符串 * JWT结构: `HEADER.PAYLOAD.SIGNATURE` * `JSON.parse(atob(token.split(\".\")[1]))`得到对象 * 关于Base64: 长度要求被4整除,不够的话末尾用`=`补齐, 补齐逻辑: ```const pad = \"=\"."
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "FastAPI(&Pydantic)_Learn_Notes",
+            "slug": "fastapi-learn",
+            "section_list": [
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > pwdlib+pyjwt(官方文档)",
+                "content": "* JWT: 非加密是一个string但是有签名, 其中分为三部分, [1]是payload * `pyjwt`库 * hashing: `pwdlib[argon2]`库 * 生成secret key: `python -c \"import secrets; print(secrets.token_hex(32))`: 生成secret key * 生成jwt: `(data/payload,"
+              }
+            ]
+          },
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > JS(TS)相关 > Token处理",
+                "content": "* `atob()`: 把Base64解码成普通字符串 * JWT结构: `HEADER.PAYLOAD.SIGNATURE` * `JSON.parse(atob(token.split(\".\")[1]))`得到对象 * 关于Base64: 长度要求被4整除,不够的话末尾用`=`补齐, 补齐逻辑: ```const pad = \"=\"."
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件",
+                "content": "**组件持有状态（useState）**\n**Hook 不持有状态，只是访问、操作组件的状态**"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "生成 JWT 使用的 Python 库是 `pyjwt`。\n\n生成 secret key 的命令是：`python -c \"import secrets; print(secrets.token_hex(32))\"`。\n\nJWT 具体使用的是 HMAC 签名算法（虽然上下文中未明确说明算法名称，但根据 `pyjwt` 库的常见用法和上下文提到的“签名”以及 `secrets.token_hex(32)` 生成密钥，通常默认使用 HMAC-SHA256 算法）。然而，该信息在提供的上下文中并未明确指出签名算法的名称。\n\n因此，基于上下文，可以确认的是：\n- 使用库：`pyjwt`\n- 生成 secret key 命令：`python -c \"import secrets; print(secrets.token_hex(32))\"`\n- 签名算法：**无法从上下文中明确得出**，仅知是基于密钥的签名，但具体算法未说明。\n\n结论：  \n生成 JWT 使用 `pyjwt` 库，生成 secret key 的命令是 `python -c \"import secrets; print(secrets.token_hex(32))\"`，但 JWT 具体使用哪种签名算法在提供的上下文中未明确说明。",
+        "combined_answer": "生成 JWT 使用的 Python 库是 `pyjwt`。\n\n生成 secret key 的命令是：`python -c \"import secrets; print(secrets.token_hex(32))\"`。\n\nJWT 具体使用的是 HMAC 签名算法（虽然上下文中未明确说明算法名称，但根据 `pyjwt` 库的默认行为和常见实践，通常使用 HMAC-SHA256，且在未指定算法时默认为 HMAC-SHA256）。\n\n注意：虽然上下文提到“签名”和“hashing”，但未明确指出具体签名算法名称，因此该部分答案基于常见实践推断，若严格依据上下文，则“签名算法”无法明确得出。  \n\n结论：  \n- 生成 JWT 的库：`pyjwt`  \n- 生成 secret key 的命令：`python -c \"import secrets; print(secrets.token_hex(32))\"`  \n- 签名算法：未在上下文中明确说明，无法准确回答。  \n\n因此，关于签名算法，我不能确定基于提供的上下文。  \n\n最终回答：  \n生成 JWT 使用的 Python 库是 `pyjwt`；生成 secret key 的命令是 `python -c \"import secrets; print(secrets.token_hex(32))\"`；JWT 具体使用哪一种签名算法——**上下文未明确说明，无法确定**。"
+      }
+    },
+    {
+      "id": "H08",
+      "query": "本地 PostgreSQL 服务默认监听哪个 TCP 端口?",
+      "answer": "",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "SQL_SQLalchemy_Learn_Notes",
+            "slug": "sql-sqlalchemy-learn-notes",
+            "section_list": [
+              {
+                "heading": "SQL AND SQLAlchemy > SQLModel: 基于sqlAlchemy结合pydantic",
+                "content": "=\".env\"), 从.env中读取同名的声明变量 6. `postgresql+asyncpg`: 叫dialect+ driver的方式给sqlalchemy使用"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 关联和映射 > CORE",
+                "content": "1. `Table`: 类似原生Table, 用`Column`声明Field, 调取Field用类似`post_tag.c.post_id`"
+              }
+            ]
+          },
+          {
+            "title": "PostgreSQL(&Vector Search)_Learn_Notes",
+            "slug": "ragxue-xi-ji-hua",
+            "section_list": [
+              {
+                "heading": "PostgresSQL(&Vector Search) > Postgres > 基本命令行",
+                "content": "``` bash\nloggin: psql -U postgres -h localhost\n\\l get all databases\n\\c rag_test enter the database rag_test\n\\dt check tables\n\\dx check extensions\n\\d post_chunks  check the post_chunks table\n```"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "PostgreSQL(&Vector Search)_Learn_Notes",
+            "slug": "ragxue-xi-ji-hua",
+            "section_list": [
+              {
+                "heading": "PostgresSQL(&Vector Search) > Postgres > 基本命令行",
+                "content": "``` bash\nloggin: psql -U postgres -h localhost\n\\l get all databases\n\\c rag_test enter the database rag_test\n\\dt check tables\n\\dx check extensions\n\\d post_chunks  check the post_chunks table\n```"
+              }
+            ]
+          },
+          {
+            "title": "SQL_SQLalchemy_Learn_Notes",
+            "slug": "sql-sqlalchemy-learn-notes",
+            "section_list": [
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 关联和映射 > CORE",
+                "content": "1. `Table`: 类似原生Table, 用`Column`声明Field, 调取Field用类似`post_tag.c.post_id`"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLModel: 基于sqlAlchemy结合pydantic",
+                "content": "=\".env\"), 从.env中读取同名的声明变量 6. `postgresql+asyncpg`: 叫dialect+ driver的方式给sqlalchemy使用"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "I don't know based on the provided context.",
+        "combined_answer": "I don't know based on the provided context."
+      }
+    }
+  ]
+}

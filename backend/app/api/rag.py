@@ -5,12 +5,12 @@ from app.db.models import Post, Tag, PostChunk
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from typing import Annotated
-from util.vec_search import vector_search
-from util.get_prompt_v1 import get_prompt
-from util.genetate_answer_v1 import generate_answer
+from app.api.util.vec_search import vector_search
+from app.api.util.get_prompt_v1 import get_prompt
+from app.api.util.genetate_answer_v1 import generate_answer
 from sentence_transformers import SentenceTransformer
 from app.schemas.rag import RagRequest, RagResponse, RagSection, RagSource
-from util.generate_ragsec_and_source import generate_rag_sec_and_source
+from app.api.util.generate_ragsec_and_source import generate_rag_sec_and_source
 
 model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 

@@ -1,0 +1,540 @@
+{
+  "cases": [
+    {
+      "id": "B01",
+      "query": "FastAPI 接收到登录请求后，是怎样验证用户并最终把 token 返回给前端的?",
+      "answer": "通过 form 获取 username,去数据库比对; 没有用户则报错,有用户则将表单密码和 hash 后的密码比对；不一致报错，一致则返回 {access_token: str, token_type: \"bearer\"}.",
+      "gold_section": "FastAPI(&Pydantic) > FastAPI > 类型声明 > 安全及校验",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "FastAPI(&Pydantic)_Learn_Notes",
+            "slug": "fastapi-learn",
+            "section_list": [
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > 安全及校验",
+                "content": "* 安全验证: `oauth2_scheme = OAuth2PasswordBearer(tokenurl)`, 从该url的请求头的authorization中提取token, 也就是`Bearer ${token}` * 校验流程: 通过form拿到username, 进数据库比对, 无则报错, 有则与hash后的表单密码对比, 不一致则报错, "
+              },
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > 安全及校验",
+                "content": "不一致则报错, 一致则返回token对象给前端, 结构为`{access_token: str, token_type: \"bearer\"}`"
+              }
+            ]
+          },
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 状态(以及Hook)",
+                "content": "视为只读, 替换即更新 7. `usePathname`: Hook, 直接拿到host+port后,query+hash前的pathname部分"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "FastAPI(&Pydantic)_Learn_Notes",
+            "slug": "fastapi-learn",
+            "section_list": [
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > 安全及校验",
+                "content": "* 安全验证: `oauth2_scheme = OAuth2PasswordBearer(tokenurl)`, 从该url的请求头的authorization中提取token, 也就是`Bearer ${token}` * 校验流程: 通过form拿到username, 进数据库比对, 无则报错, 有则与hash后的表单密码对比, 不一致则报错, "
+              },
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > 安全及校验",
+                "content": "不一致则报错, 一致则返回token对象给前端, 结构为`{access_token: str, token_type: \"bearer\"}`"
+              },
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > status状态码",
+                "content": "* `fastapi.status`: 提供状态码, 如404, 400等"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "FastAPI 接收到登录请求后，验证用户的过程如下：\n\n1. 通过表单获取用户名和密码。\n2. 将用户名和密码发送到数据库进行比对，若用户名不存在则报错。\n3. 若用户名存在，则将用户密码与数据库中存储的哈希密码进行对比，若密码不一致则报错。\n4. 若用户名和密码均正确，则生成一个 token 对象，结构为 `{access_token: str, token_type: \"bearer\"}`，并返回给前端。\n\n该 token 由 FastAPI 通过 `OAuth2PasswordBearer(tokenurl)` 提取请求头中的 `Authorization: Bearer ${token}` 进行验证，最终将 token 返回给前端。",
+        "combined_answer": "FastAPI接收到登录请求后，通过表单获取用户名和密码，然后在数据库中比对用户名是否存在，若存在则与密码的哈希值进行对比。如果用户名和密码一致，则生成一个token对象，其结构为 `{access_token: str, token_type: \"bearer\"}`，并返回给前端。该token通过HTTP请求头的Authorization字段（格式为 `Bearer ${token}`）进行传输，由前端在后续请求中携带以实现身份验证。"
+      }
+    },
+    {
+      "id": "B02",
+      "query": "我想限制哪些前端域名能够访问 FastAPI 后端，应该配置什么?",
+      "answer": "使用 CORSMiddleware, 先定义 origins, 然后通过 app.add_middleware(CORSMiddleware, allow_origins=origins, allow_credentials=True, allow_methods=['*'], allow_headers=['*']) 配置.",
+      "gold_section": "FastAPI(&Pydantic) > FastAPI > CORSMiddleware",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 组件的使用",
+                "content": "`文件夹下开始找, `href`属性代表`URL`路径而不是文件 5. 导航或者标题可以写在全局`layout.tsx`里面, 以及`login/logout`等 6. 可以服务器端组件引入客户端组件(混用), 最顶层是`Server Component`, 其中嵌入`Client Component`, `Server Component`可以渲染`Client Component`"
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 轻量级 > 重量级",
+                "content": "状态,一改就需要新页面内容 | | **usePathname()** | 仅 URL 变化会触发 | 同理,pathname 是路由依赖 |"
+              }
+            ]
+          },
+          {
+            "title": "FastAPI(&Pydantic)_Learn_Notes",
+            "slug": "fastapi-learn",
+            "section_list": [
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > 安全及校验",
+                "content": "* 安全验证: `oauth2_scheme = OAuth2PasswordBearer(tokenurl)`, 从该url的请求头的authorization中提取token, 也就是`Bearer ${token}` * 校验流程: 通过form拿到username, 进数据库比对, 无则报错, 有则与hash后的表单密码对比, 不一致则报错, "
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "FastAPI(&Pydantic)_Learn_Notes",
+            "slug": "fastapi-learn",
+            "section_list": [
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > 安全及校验",
+                "content": "* 安全验证: `oauth2_scheme = OAuth2PasswordBearer(tokenurl)`, 从该url的请求头的authorization中提取token, 也就是`Bearer ${token}` * 校验流程: 通过form拿到username, 进数据库比对, 无则报错, 有则与hash后的表单密码对比, 不一致则报错, "
+              },
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > 安全及校验",
+                "content": "不一致则报错, 一致则返回token对象给前端, 结构为`{access_token: str, token_type: \"bearer\"}`"
+              },
+              {
+                "heading": "FastAPI(&Pydantic) > FastAPI > 类型声明 > status状态码",
+                "content": "* `fastapi.status`: 提供状态码, 如404, 400等"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "我 don't know based on the provided context.",
+        "combined_answer": "我 don't know based on the provided context."
+      }
+    },
+    {
+      "id": "B03",
+      "query": "React 中我只想保存一个跨 render 持久存在的值，但修改它时不希望组件重新渲染，应该用什么?",
+      "answer": "使用 useRef。它可用于 DOM ref, 也可以作为跨 render 持久化的可变容器；修改 ref.current 不会触发 re-render.",
+      "gold_section": "Next.js > 基础知识 > 组件 > 状态(以及Hook) > useRef Hook",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 轻量级",
+                "content": "✔ 触发 | ❌ 啥也不管 | 大型组件更适合用 reducer | | **useEffect** | ❌ 自己不会触发 | ❌ 不触发 | 但它里面如果 setState → 就触发当前组件更新 | | **useMemo** | ❌ | ❌ | 只是缓存值,不触发渲染 | | **useCallback**"
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 轻量级",
+                "content": "| **useCallback** | ❌ | ❌ | 只是缓存函数 | | **useRef** | ❌ | ❌ | ref.current 改变不会导致渲染 | | **自定义 Hook(只使用上述 Hook)** | 取决于内部是否 setState | ❌ | 本质就是语法糖 |"
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 状态(以及Hook) > useRef Hook",
+                "content": "* `useRef` Hook用于操作dom和保存一些不会触发渲染的状态\n  * DOM ref\n  * 可变的，跨render持久化的容器\n* 不会触发`re-render`"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 轻量级",
+                "content": "| **useCallback** | ❌ | ❌ | 只是缓存函数 | | **useRef** | ❌ | ❌ | ref.current 改变不会导致渲染 | | **自定义 Hook(只使用上述 Hook)** | 取决于内部是否 setState | ❌ | 本质就是语法糖 |"
+              }
+            ]
+          },
+          {
+            "title": "OpenCV_Learn_Notes",
+            "slug": "1234",
+            "section_list": [
+              {
+                "heading": "🧠 Key Differences Between `cv2.threshold` and `cv2.adaptiveThreshold` > HSV in OpenCV > 为了hsv处理我们需要建两组数组来过滤颜色",
+                "content": "sv, lower, upper) #create a binary mask #将[lower,upper]中的颜色转为白色,其余黑色 #取全颜色,低饱和,高亮,实际上取的是白色/亮灰字体 #其他的全部忽略(背景自动为黑色) return cv2.bitwise_and(image, image"
+              },
+              {
+                "heading": "🧠 Key Differences Between `cv2.threshold` and `cv2.adaptiveThreshold`",
+                "content": "`, `C = 2` (subtracted value) | | **Returns** | Tuple: `(ret, thresholded_image)` | Only the thresholded image | | **Requires `[1]` to get image?** | ✅ Yes | ❌ No | | **When to use** | When lighting/background is consistent | When"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "应该使用 `useRef`。\n\n`useRef` 用于保存一个不会触发组件重新渲染的跨 render 持久存在的值，且其值的修改不会导致渲染。它提供了一个可变的、跨 render 持久化的容器，适用于需要持久状态但又不希望因状态变化而触发重渲染的场景。",
+        "combined_answer": "应该用 **useRef**。\n\n理由：根据上下文 [Source 1]，`useRef` 的特性是“ref.current 改变不会导致渲染”，因此适合用于保存一个跨 render 持久存在的值，且在修改该值时不希望组件重新渲染。而 `useCallback` 是缓存函数，不适用于保存值；自定义 Hook 的行为取决于内部是否 setState，无法保证不触发渲染。\n\n因此，针对用户需求，**useRef** 是正确选择。"
+      }
+    },
+    {
+      "id": "B04",
+      "query": "组件里的副作用是不是都应该放进 useEffect?用户点击按钮后发请求也一定要放进去吗?",
+      "answer": "不是。与组件渲染或状态变化绑定的副作用使用 useEffect; 与用户动作相关的副作用可以直接放在 onClick、onSubmit 等事件回调里.",
+      "gold_section": "Next.js > 基础知识 > 组件 > 副作用(useEffect)",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 副作用(useEffect)",
+                "content": "1. `useEffect()`: 用来做副作用, 即比如`fetch`, 操作dom等 不是 \"所有副作用都必须写在 useEffect 里\",而是**和组件渲染/状态变化绑定的副作用** * 和“**组件渲染相关**”的副作用 → 用 `useEffect`(依赖数组控制) * 和“**用户动作相关**”的副作用 → 直接写在"
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 副作用(useEffect)",
+                "content": "”的副作用 → 直接写在事件回调里(`onClick、onSubmit`)"
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 轻量级 > 中量级",
+                "content": "| Hook | 是否触发父/子组件? | 是否触发全页面? | 说明 | | ------------------------- | ---------------------- | ---------- | --------------------- | | **useContext** | ✔ 所有消费 context 的组件都会更新 | ❌ 不会触发页面刷新 | 全局状态共享,非常好用 | | **自定义 Hook +"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 副作用(useEffect)",
+                "content": "1. `useEffect()`: 用来做副作用, 即比如`fetch`, 操作dom等 不是 \"所有副作用都必须写在 useEffect 里\",而是**和组件渲染/状态变化绑定的副作用** * 和“**组件渲染相关**”的副作用 → 用 `useEffect`(依赖数组控制) * 和“**用户动作相关**”的副作用 → 直接写在"
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 副作用(useEffect)",
+                "content": "”的副作用 → 直接写在事件回调里(`onClick、onSubmit`)"
+              },
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 轻量级 > 重量级",
+                "content": "| Hook | 是否触发页面 RSC 重跑? | 原因 | | ---------------------- | -------------- | ----------------------- | | **useRouter().push()** | ✔ 会触发 | URL 改变 → Next 认为用户导航了 | | **useSearchParams()** | ✔ 会触发 | 因为它依赖 URL 状态,一改就需要新页面"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "组件里的副作用并不都必须放进 `useEffect` 里。根据上下文：\n\n- 和“组件渲染相关”的副作用（如数据获取、DOM 操作）→ 应该用 `useEffect`，并通过依赖数组控制其执行时机。\n- 和“用户动作相关”的副作用（如用户点击按钮后发请求）→ 应该直接写在事件回调里（如 `onClick`、`onSubmit`）。\n\n因此，用户点击按钮后发请求**不一定**要放进 `useEffect`，而是可以根据是否与用户动作直接相关，选择在事件回调中处理。\n\n结论：不是所有副作用都必须放进 `useEffect`，用户点击按钮后发请求也可以直接写在事件回调里。",
+        "combined_answer": "组件里的副作用并不都必须放进 `useEffect` 里。根据上下文：\n\n- 和“组件渲染相关”的副作用（如数据获取、DOM 操作）→ 应该用 `useEffect`，并通过依赖数组控制其执行时机。\n- 和“用户动作相关”的副作用（如点击按钮后发请求）→ 应该直接写在事件回调里（如 `onClick`、`onSubmit`）。\n\n因此，用户点击按钮后发请求**不一定**要放进 `useEffect`，而是根据是否与用户动作直接相关来决定：如果是用户操作触发的，应直接写在事件回调中。\n\n结论：  \n不是所有副作用都必须放进 `useEffect`，用户点击按钮后发请求也**不一定**要放进 `useEffect`，而是应根据具体场景判断是否属于“用户动作相关”副作用，属于则应写在事件回调中。"
+      }
+    },
+    {
+      "id": "B05",
+      "query": "在 TypeScript 中，为什么定义了 interface Post 之后, 程序运行时并不会检查接口?",
+      "answer": "interface Post 只告诉 TypeScript 编译器数据应该有什么形状和字段类型, 不会编译成 JavaScript, 因此运行时不存在这个 interface, 也不会检查数据是否真的是 Post.",
+      "gold_section": "JavaScript > TypeScript",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "JS_TS_Learn_Notes",
+            "slug": "js-ts-learn",
+            "section_list": [
+              {
+                "heading": "JavaScript > TypeScript",
+                "content": "* `?: string|null`: 表示该参数可有可无 * `interface Post`的作用: 不会编译成JS代码,运行时不会有这个东西,只是告诉TS编译器有一种数据形状,里面有这些字段类型, eg. ` const data: Post = await res.json();`, 运行时不会查看data是否为`Post`类型 * `catch(err: any) { setError(err.message ?? \"Unknown error\");`: `"
+              }
+            ]
+          },
+          {
+            "title": "SQL_SQLalchemy_Learn_Notes",
+            "slug": "sql-sqlalchemy-learn-notes",
+            "section_list": [
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 连接",
+                "content": "| | `engine.begin()` | ✅ 是 | ✅ 自动提交或出错时回滚 | 一般查询/写入推荐用(安全简洁) | 二者均返回`connection`对象 2. Connection和Session的区别: engine.begin/connect管理结构, 比如`create_all`和`CREATE EXTENSION`, CREATE TABLE, session管理orm"
+              }
+            ]
+          },
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 相关插件",
+                "content": "了一些格式,比如表格 * `remark()` 本身只是同步地创建一个\"处理器(processor)\".`process()`在内部会异步地解析、构建语法树、应用插件;所以 `.process()`返回的是一个 `Promise` 对象 * `process()`返回的是一个对象(包含`metadata`)"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "JS_TS_Learn_Notes",
+            "slug": "js-ts-learn",
+            "section_list": [
+              {
+                "heading": "JavaScript > TypeScript",
+                "content": "* `?: string|null`: 表示该参数可有可无 * `interface Post`的作用: 不会编译成JS代码,运行时不会有这个东西,只是告诉TS编译器有一种数据形状,里面有这些字段类型, eg. ` const data: Post = await res.json();`, 运行时不会查看data是否为`Post`类型 * `catch(err: any) { setError(err.message ?? \"Unknown error\");`: `"
+              },
+              {
+                "heading": "JavaScript > TypeScript",
+                "content": "ers`一个fetch请求头可以是: * 普通对象: `{\"Content-Type\": \"application/json}` * Headers类的实例: `new Headers({})` * 一个二维数组: `[[\"Content-Type\", \"application/json\"]]` * TS定义了一个联合类型: `type HeaderInit = | Headers | string[][] | Record<string,string>;`, 三者任一均可 * TS的泛型: `"
+              }
+            ]
+          },
+          {
+            "title": "Next.js_Learn_Notes",
+            "slug": "next-js-learn-notes",
+            "section_list": [
+              {
+                "heading": "Next.js > 基础知识 > 组件 > 相关插件",
+                "content": "了一些格式,比如表格 * `remark()` 本身只是同步地创建一个\"处理器(processor)\".`process()`在内部会异步地解析、构建语法树、应用插件;所以 `.process()`返回的是一个 `Promise` 对象 * `process()`返回的是一个对象(包含`metadata`)"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "因为在 TypeScript 中，`interface Post` 只是告诉编译器一种数据的“形状”或“结构”，它不会被编译成 JavaScript 代码，因此在程序运行时并不存在这个接口。运行时不会检查数据是否符合 `Post` 类型，这是 TypeScript 的设计原则：类型检查只在编译阶段进行，运行时由 JavaScript 本身处理，不涉及类型信息的验证。",
+        "combined_answer": "因为在 TypeScript 中，`interface Post` 只是告诉编译器一种数据的“形状”或“结构”，它不会被编译成 JavaScript 代码，因此在程序运行时并不存在这个接口。运行时不会检查数据是否符合 `Post` 类型，这是 TypeScript 的设计原则：类型检查只在编译阶段进行，运行时只处理实际的 JavaScript 对象和值。"
+      }
+    },
+    {
+      "id": "B06",
+      "query": "图片有阴影或者不同区域亮度差异很大时, 全局二值化效果不好, 可以换成什么方法?",
+      "answer": "可以使用 adaptiveThreshold。它按局部区域计算阈值, 支持均值法和高斯法, 通过 blockSize 决定邻域大小, 并用 C 调整阈值",
+      "gold_section": "OpenCV in Python > 图像二值化",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "OpenCV_Learn_Notes",
+            "slug": "1234",
+            "section_list": [
+              {
+                "heading": "OpenCV in Python",
+                "content": "值) * THRESH_TRIANGLE(三角形法自动寻求全局阈值) * 缺点: `threshold`全局只用一个阈值,非黑即白,如果有阴影或者光照不均匀会导致阴影覆盖的白色也被转为黑色 * `threshold`原理:对每个像素点的每个通道进行阈值计算,eg.125,255,>125 = 255, 否则为0, 彩色图片虽然可以用但不推荐 * `adaptiveThreshold(src,maxval"
+              },
+              {
+                "heading": "OpenCV in Python",
+                "content": "b格式 B, G, R = cv2.split(image) #生成三张包含不同颜色的图片, 结果还是图片(实际上是numpy的数组) processed = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY, cv2.THRESH_OTSU)[1] #将灰度图像处理为黑白对比图像,运用otsu(大津算法) \"\"\" gray: image to be processed, 0: ignored when using otsu, threshold value, 255"
+              },
+              {
+                "heading": "OpenCV in Python",
+                "content": "THRESH_BINARY`和`THRESH_BINARY_INV` * `blockSize`:自适应确定阈值的像素邻域大小,一般为3,5,7的奇数 * `C`:从平均值或加权平均值中减去的常数,可正可负,越大越容易变黑 * 将灰度图像转为二值图像,通过blocksize计算每块的阈值,之后再进行二值化 8. 相关方法和属性 * `img.shape`:"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "OpenCV_Learn_Notes",
+            "slug": "1234",
+            "section_list": [
+              {
+                "heading": "🧠 Key Differences Between `cv2.threshold` and `cv2.adaptiveThreshold`",
+                "content": "`, `C = 2` (subtracted value) | | **Returns** | Tuple: `(ret, thresholded_image)` | Only the thresholded image | | **Requires `[1]` to get image?** | ✅ Yes | ❌ No | | **When to use** | When lighting/background is consistent | When"
+              },
+              {
+                "heading": "🧠 Key Differences Between `cv2.threshold` and `cv2.adaptiveThreshold`",
+                "content": "/background is consistent | When text sits on uneven or textured background | ```python cv2.bitwise_not(image) image.shape #includes height, width, channels ``` 颜色翻转: new_pixel = 255- old_pixel, 0为黑,255为白, tesseract对黑字白底处理更好"
+              },
+              {
+                "heading": "OpenCV in Python",
+                "content": "值) * THRESH_TRIANGLE(三角形法自动寻求全局阈值) * 缺点: `threshold`全局只用一个阈值,非黑即白,如果有阴影或者光照不均匀会导致阴影覆盖的白色也被转为黑色 * `threshold`原理:对每个像素点的每个通道进行阈值计算,eg.125,255,>125 = 255, 否则为0, 彩色图片虽然可以用但不推荐 * `adaptiveThreshold(src,maxval"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "当图片有阴影或者不同区域亮度差异很大时，全局二值化效果不好，可以换成**自适应阈值化（Adaptive Thresholding）**方法。\n\n理由：自适应阈值化（如 `cv2.adaptiveThreshold`）会根据图像局部区域的亮度情况动态计算阈值，而不是使用一个全局固定的阈值。这样可以有效应对光照不均匀或阴影问题，避免阴影区域被错误地转为黑色。\n\n相关支持信息来自[Source 3]：“将灰度图像转为二值图像，通过blocksize计算每块的阈值，之后再进行二值化”，这正是自适应阈值化的原理。",
+        "combined_answer": "当图片有阴影或者不同区域亮度差异很大时，全局二值化效果不好，可以换成**自适应阈值化（adaptive thresholding）**方法。\n\n理由：根据[Source 1]和[Source 3]，全局阈值（如`cv2.threshold`）使用一个固定的阈值，对光照不均匀或有阴影的图像效果不佳；而自适应阈值（如`cv2.adaptiveThreshold`）会根据局部区域的亮度自适应地计算阈值，更适合处理光照不均匀或有阴影的图像。[Source 3]明确指出“全局阈值...如果有阴影或者光照不均匀会导致阴影覆盖的白色也被转为黑色”，因此推荐使用自适应阈值方法。"
+      }
+    },
+    {
+      "id": "B07",
+      "query": "SQLAlchemy 里我已经查询出了 Post, 之后才发现需要访问 post.tags, 异步环境下该怎么办?",
+      "answer": "可以提前用 selectinload(Post.tags); 如果前面没有加载、后面临时需要, 可以 await post.awaitable_attrs.tags; 也可以在 relationship 上设置 lazy=\"selectin\".",
+      "gold_section": "SQL AND SQLAlchemy > SQLAlChemy > 异步 > 关于懒加载",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "SQL_SQLalchemy_Learn_Notes",
+            "slug": "sql-sqlalchemy-learn-notes",
+            "section_list": [
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 异步 > 关于懒加载",
+                "content": "1. 在查询得到对象后,如果想查询对象属性,如`post.tags`,就会触发惰性查询,此时会报错, 因为不在io的环境中。解决方法: * 提前知道需要 tags: `selectinload(Post.tags)` * 前面没加载,后面临时需要: `await post.awaitable_attrs.tags` * 在关系上直接设置`relationship(..., lazy=\"select"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 关联和映射 > CORE",
+                "content": "1. `Table`: 类似原生Table, 用`Column`声明Field, 调取Field用类似`post_tag.c.post_id`"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 其他函数",
+                "content": "`func()`: 生成SQL的其他函数调用(`COUNT,SUM,MAX`等), eg.`func.count()`, `func.now()`\n\n* `select(func.count()).select_from(Post)`等同于 `SELECT COUNT(*) FROM post;`"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "SQL_SQLalchemy_Learn_Notes",
+            "slug": "sql-sqlalchemy-learn-notes",
+            "section_list": [
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 异步 > 关于懒加载",
+                "content": "1. 在查询得到对象后,如果想查询对象属性,如`post.tags`,就会触发惰性查询,此时会报错, 因为不在io的环境中。解决方法: * 提前知道需要 tags: `selectinload(Post.tags)` * 前面没加载,后面临时需要: `await post.awaitable_attrs.tags` * 在关系上直接设置`relationship(..., lazy=\"select"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 关联和映射 > CORE",
+                "content": "1. `Table`: 类似原生Table, 用`Column`声明Field, 调取Field用类似`post_tag.c.post_id`"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 关联和映射 > 映射类(ORM)",
+                "content": "比如`Employee.id == 1` * `post_tag.c.post_id`: `c`是一个`Table`属性,不是Base类用的,`table.c.column_name`"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "在异步环境下，如果已经查询出了 Post 对象，但后来才发现需要访问 `post.tags`，可以使用 `await post.awaitable_attrs.tags` 来延迟加载 `tags` 属性，从而避免触发惰性查询时因不在 IO 环境中而报错。\n\n解决方法是：  \n使用 `await post.awaitable_attrs.tags` 在需要时动态加载 `tags`。\n\n> 说明：根据 [Source 1]，在异步环境下，若对象属性未提前加载，直接访问会触发惰性查询，导致错误。此时应使用 `await post.awaitable_attrs.tags` 实现延迟加载，这是 SQLAlchemy 异步支持中推荐的做法。\n\n✅ 支持的解决方案：`await post.awaitable_attrs.tags`  \n❌ 不支持的方案（如 `selectinload`）：虽然 `selectinload` 可以提前加载，但需在查询时就指定，无法在查询后临时访问，因此不适用于“查询后才发现需要访问”的场景。\n\n结论：在异步环境下，应使用 `await post.awaitable_attrs.tags`。",
+        "combined_answer": "在异步环境下，如果已经查询出了 Post 对象但后来才发现需要访问 `post.tags`，可以使用 `await post.awaitable_attrs.tags` 来触发懒加载，避免因不在 IO 环境中而报错。\n\n解决方法是：**使用 `await post.awaitable_attrs.tags`**，这会在异步环境中安全地延迟加载 `tags` 属性。\n\n> 说明：根据 [Source 1]，在异步环境下，如果想访问对象属性（如 `post.tags`），会触发惰性查询，此时会报错，因为不在 IO 环境中。解决方法之一是使用 `await post.awaitable_attrs.tags`，该方法允许在异步环境中延迟加载属性。\n\n注意：此方法适用于已经查询出对象后临时需要访问其关系属性的情况。如果提前知道需要 `tags`，也可以使用 `selectinload(Post.tags)` 进行预加载。"
+      }
+    },
+    {
+      "id": "B08",
+      "query": "我只想让数据库事务在代码块正常结束时提交，发生异常时自动回滚，应该选 engine.connect() 还是 engine.begin()?",
+      "answer": "选 engine.begin()。它会自动开启事务，正常退出时提交, 出错时回滚; engine.connect() 更偏低层控制，需要手动处理事务.",
+      "gold_section": "SQL AND SQLAlchemy > SQLAlChemy > 连接",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "SQL_SQLalchemy_Learn_Notes",
+            "slug": "sql-sqlalchemy-learn-notes",
+            "section_list": [
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 连接",
+                "content": "| | `engine.begin()` | ✅ 是 | ✅ 自动提交或出错时回滚 | 一般查询/写入推荐用(安全简洁) | 二者均返回`connection`对象 2. Connection和Session的区别: engine.begin/connect管理结构, 比如`create_all`和`CREATE EXTENSION`, CREATE TABLE, session管理orm"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 关联和映射 > 映射类(ORM)",
+                "content": "相关操作: * 提交事务 * `flush()`: 执行SQL并更新ORM对象,但不提交事务 * `commit()`: 执行三个步骤: 1. `flush` 2. `commit` 3. 自动开启新事务 因为`flush`了所以其实并不需要手动`refresh()` * `rollback`: 也会自动开启一个新事务 * 级联(cascade),"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLModel: 基于sqlAlchemy结合pydantic",
+                "content": "1. `engine`和`session`: * `engine`: 管理和database的连接, 一个database只能有1个engine, 参数为`database_url`和`connect_args` * `session`: 存储objects并跟踪变化, 通过engine和database交互 2. `class Hero(SQLModel, table=True)`: table model, 否则为data model 3. `model_validate(Item)`:"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "SQL_SQLalchemy_Learn_Notes",
+            "slug": "sql-sqlalchemy-learn-notes",
+            "section_list": [
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 连接",
+                "content": "| | `engine.begin()` | ✅ 是 | ✅ 自动提交或出错时回滚 | 一般查询/写入推荐用(安全简洁) | 二者均返回`connection`对象 2. Connection和Session的区别: engine.begin/connect管理结构, 比如`create_all`和`CREATE EXTENSION`, CREATE TABLE, session管理orm"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 连接",
+                "content": "1. `engine.begin`和`engine.connect`的区别: | 方法 | 是否自动开启事务 | 是否自动提交/回滚 | 推荐用途 | | ------------------ | -------- | ------------ | ----------------- | | `engine.connect()` | ❌ 否 | ❌ 否(需手动) | 低层控制(手动提交、适合复杂逻辑) | | `engine.be"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 关联和映射 > 映射类(ORM)",
+                "content": "相关操作: * 提交事务 * `flush()`: 执行SQL并更新ORM对象,但不提交事务 * `commit()`: 执行三个步骤: 1. `flush` 2. `commit` 3. 自动开启新事务 因为`flush`了所以其实并不需要手动`refresh()` * `rollback`: 也会自动开启一个新事务 * 级联(cascade),"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "应该选 `engine.begin()`。\n\n理由：根据 [Source 1]，`engine.begin()` ✅ 是自动提交或出错时回滚的，且一般查询/写入推荐使用（安全简洁），而 `engine.connect()` 只是获取连接，不自动管理事务的提交或回滚。因此，若只想在代码块正常结束时提交、发生异常时自动回滚，`engine.begin()` 更符合需求。",
+        "combined_answer": "你应该选择 `engine.begin()`。\n\n理由：根据上下文，`engine.begin()` 会自动开启事务，并在正常结束时提交、发生异常时自动回滚，符合你“只想让数据库事务在代码块正常结束时提交，发生异常时自动回滚”的需求。而 `engine.connect()` 不会自动开启事务，也不自动提交或回滚，需要手动管理，不适合你的场景。\n\n对比信息来自 [Source 1] 和 [Source 2]，明确指出：\n- `engine.begin()`：✅ 自动提交或出错时回滚，推荐用于一般查询/写入（安全简洁）。\n- `engine.connect()`：❌ 否，需手动处理提交和回滚，适合低层控制和复杂逻辑。\n\n因此，为满足你的需求，应选 `engine.begin()`。"
+      }
+    },
+    {
+      "id": "B09",
+      "query": "正则表达式需要对很多字符串重复使用同一个 pattern 时，有什么方式可以避免每次都重新写 pattern?",
+      "answer": "可以使用 re.compile(pattern) 将正则表达式编译成 Pattern 对象，之后重复调用它的 match()、search()、findall() 等方法.",
+      "gold_section": "Python版本 > Regular Expression",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "Regular_Expression_Learn_Notes",
+            "slug": "123",
+            "section_list": [
+              {
+                "heading": "Python版本 > Regular Expression",
+                "content": ")`: 返回list,如果没有括号,返回整个字符串,一个括号,返回括号提取的,两个或以上括号返回tuple, `findall`返回`result[-1]`剔除污染是个不错的主意 4. `re.compile(pattern)`: 把正则表达式编译为 Pattern 对象,适合同一个 pattern 重复使用;之后可调用 `pattern.match/search/findall` 等。 5. 三者对比: | 函数"
+              },
+              {
+                "heading": "Python版本 > Regular Expression",
+                "content": "的`[ xX]` | | | | | `(?:...)` | 非捕获分组 | 用于分组但不捕获 | | | * 有无括号的区别: `re.split('\\s',text)`和`re.split('(\\s)',text)`, 有捕获的话会**保留**空格 * 替换捕获字符: `re.sub(r'\\s"
+              },
+              {
+                "heading": "Python版本 > Regular Expression",
+                "content": "----- | ---------------------- | | `.` | 任意一个字符(换行符除外) | `a.c` 可匹配 `\"abc\"` | | | | `*` | 0次或多次 | `a*` 可匹配 `\"\"`、`\"a\"`、`\"aaaa\"` | | | | `+` | 1次或多次 | `a+` 匹配 `\"a\"`、`"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "Regular_Expression_Learn_Notes",
+            "slug": "123",
+            "section_list": [
+              {
+                "heading": "Python版本 > Regular Expression",
+                "content": ")`: 返回list,如果没有括号,返回整个字符串,一个括号,返回括号提取的,两个或以上括号返回tuple, `findall`返回`result[-1]`剔除污染是个不错的主意 4. `re.compile(pattern)`: 把正则表达式编译为 Pattern 对象,适合同一个 pattern 重复使用;之后可调用 `pattern.match/search/findall` 等。 5. 三者对比: | 函数"
+              },
+              {
+                "heading": "Python版本 > Regular Expression",
+                "content": "的`[ xX]` | | | | | `(?:...)` | 非捕获分组 | 用于分组但不捕获 | | | * 有无括号的区别: `re.split('\\s',text)`和`re.split('(\\s)',text)`, 有捕获的话会**保留**空格 * 替换捕获字符: `re.sub(r'\\s"
+              },
+              {
+                "heading": "Python版本 > Regular Expression",
+                "content": "----- | ---------------------- | | `.` | 任意一个字符(换行符除外) | `a.c` 可匹配 `\"abc\"` | | | | `*` | 0次或多次 | `a*` 可匹配 `\"\"`、`\"a\"`、`\"aaaa\"` | | | | `+` | 1次或多次 | `a+` 匹配 `\"a\"`、`"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "可以使用 `re.compile(pattern)` 将正则表达式编译为 Pattern 对象，之后就可以重复使用这个 Pattern 对象来调用 `match`、`search`、`findall` 等方法，从而避免每次都重新写 pattern。这种方式特别适合同一个 pattern 重复使用的情况。",
+        "combined_answer": "可以使用 `re.compile(pattern)` 将正则表达式编译为 Pattern 对象，之后就可以重复使用这个 Pattern 对象来调用 `match`、`search`、`findall` 等方法，从而避免每次都重新写 pattern。这种方式特别适合同一个 pattern 重复使用的情况。"
+      }
+    },
+    {
+      "id": "B10",
+      "query": "SQL 查询里 JOIN ... ON ... 中的 ON 到底负责什么，和 JOIN 本身分别起什么作用?",
+      "answer": "JOIN 根据关联条件把分散在不同表里的数据组合起来; ON 决定两张表中的哪些行应该互相连接。",
+      "gold_section": "SQL AND SQLAlchemy > SQL > 主要语句分类 > 数据连接",
+      "response": {
+        "content_only_source_list": [
+          {
+            "title": "SQL_SQLalchemy_Learn_Notes",
+            "slug": "sql-sqlalchemy-learn-notes",
+            "section_list": [
+              {
+                "heading": "SQL AND SQLAlchemy > SQL > 主要语句分类",
+                "content": "` 和 `ON`的语法,区别于`WHERE` `SELECT field FROM table1_name INNER JOIN table_2_name ON` * 外联:(并集) `FULL OUTER JOIN` * 左外联: `LEFT OUTER JOIN`, 左面全部的行, 右外联同理 4. 数据合并 * `UNION SELECT`: 行和行合并,总列数必须一样"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQL > 主要语句分类",
+                "content": "table_name SET column_name=value,` * 一般结合`WHERE`使用 3. 数据连接 外键概念: 多的一方设置外键, 指向一的一方的主键或UNIQUE的键 `JOIN`: 通过关联条件,把原本分散在不同表里的数据组合起来 `ON`: 决定两张表的哪些行应该互相连接 * 内联:(交集) `INNER JOIN` 和 `ON`的语"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 关联和映射 > 映射类(ORM)",
+                "content": "在`relationship(secondary=)`中设置 * 别名(**AS**): `label(\"count\")`等于 `AS COUNT` * 内联和外联: * `join`正常就是inner join * `select(Department, Employee).select_from(Employee).join(Department)` == `join_from(Employee"
+              }
+            ]
+          }
+        ],
+        "combined_source_list": [
+          {
+            "title": "SQL_SQLalchemy_Learn_Notes",
+            "slug": "sql-sqlalchemy-learn-notes",
+            "section_list": [
+              {
+                "heading": "SQL AND SQLAlchemy > SQL > 主要语句分类",
+                "content": "` 和 `ON`的语法,区别于`WHERE` `SELECT field FROM table1_name INNER JOIN table_2_name ON` * 外联:(并集) `FULL OUTER JOIN` * 左外联: `LEFT OUTER JOIN`, 左面全部的行, 右外联同理 4. 数据合并 * `UNION SELECT`: 行和行合并,总列数必须一样"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQL > 主要语句分类",
+                "content": "table_name SET column_name=value,` * 一般结合`WHERE`使用 3. 数据连接 外键概念: 多的一方设置外键, 指向一的一方的主键或UNIQUE的键 `JOIN`: 通过关联条件,把原本分散在不同表里的数据组合起来 `ON`: 决定两张表的哪些行应该互相连接 * 内联:(交集) `INNER JOIN` 和 `ON`的语"
+              },
+              {
+                "heading": "SQL AND SQLAlchemy > SQLAlChemy > 关联和映射 > 映射类(ORM)",
+                "content": "在`relationship(secondary=)`中设置 * 别名(**AS**): `label(\"count\")`等于 `AS COUNT` * 内联和外联: * `join`正常就是inner join * `select(Department, Employee).select_from(Employee).join(Department)` == `join_from(Employee"
+              }
+            ]
+          }
+        ],
+        "content_only_answer": "在 SQL 查询中：\n\n- **JOIN** 本身的作用是“把原本分散在不同表里的数据组合起来”，它是一种数据连接操作，用于将两个或多个表根据某种条件关联起来，形成一个结果集。例如，`INNER JOIN` 表示只保留两个表中匹配的行（交集）。\n\n- **ON** 的作用是“决定两张表的哪些行应该互相连接”，即指定连接的条件。它定义了两个表之间如何通过字段进行匹配，比如 `ON table1.id = table2.id` 表示将 `table1` 的 `id` 字段与 `table2` 的 `id` 字段进行关联。\n\n简而言之：\n- **JOIN** 是“连接操作”的语法，用于组合表；\n- **ON** 是“连接条件”的语法，用于指定连接的规则。\n\n两者配合使用，例如：`SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id`，表示从 `table1` 和 `table2` 中，通过 `id` 相等的条件连接数据。",
+        "combined_answer": "在 SQL 查询中：\n\n- **JOIN** 本身的作用是“把原本分散在不同表里的数据组合起来”，它是一种数据连接操作，用于将两个或多个表根据某种条件关联起来，形成一个结果集。例如，`INNER JOIN` 表示只保留两个表中匹配的行（交集）。\n\n- **ON** 的作用是“决定两张表的哪些行应该互相连接”，即指定连接的条件。它定义了两个表之间如何通过字段进行匹配，比如 `ON table1.id = table2.id` 表示将 `table1` 的 `id` 字段与 `table2` 的 `id` 字段进行关联。\n\n简而言之：\n- **JOIN** 是“连接操作”的语法，用于组合表；\n- **ON** 是“连接条件”的语法，用于指定连接的规则。\n\n两者配合使用，例如：`SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id`，表示从 `table1` 和 `table2` 中，通过 `id` 相等的条件连接数据。"
+      }
+    }
+  ]
+}

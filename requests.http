@@ -3,10 +3,9 @@ GET http://localhost:8000/api/v1/posts
 Accept: application/json
 
 ### POST Check
-POST http://localhost:8000/api/v1/posts
+POST http://localhost:8000/api/v1/rag
 Content-Type: application/json
 
 {
-    "title":"t",
-    "content":"c"
+    "query": "FastAPI 接收到登录请求后，是怎样验证用户并最终把 token 返回给前端的?"
 }
