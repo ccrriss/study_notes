@@ -14,9 +14,7 @@ interface RagSource {
 }
 
 interface RagResponse {
-    content_only_source_list: RagSource[],
     combined_source_list: RagSource[],
-    content_only_answer: string,
     combined_answer: string
 }
 
@@ -178,62 +176,37 @@ export default function Page(props: {}){
                                     <h4 className="font-bold">The correct answer:</h4>
                                     <p>{question.right_answer}</p>
                                     <h4 className="font-bold">Gold Section:</h4>
-                                    <p>{question.gold_section}</p>
-                                    <h4 className="font-bold">The content only answer:</h4>
-                                    <p>{results[question.id].content_only_answer}</p>
-                                    <div className="border-l-4 pl-4 space-y-2">
-                                        <h5>The content only sourceList:</h5>
-                                        {results[question.id].content_only_source_list.map((rag_section:RagSource, index:number) => {
-                                            return (
-                                                <div key={index}>
-                                                    <h5>Title: {rag_section.title}</h5>
-                                                    <h5>Slug: {rag_section.slug}</h5>
-                                                    {rag_section.section_list.map((rag_section:RagSection, index: number) => {
-                                                        return (
-                                                            <div key={index}>
-                                                                <h5>Section {index + 1}:</h5>
-                                                                <h5>{rag_section.heading}</h5>
-                                                                <p className="whitespace-pre-wrap">
-                                                                    {rag_section.content}
-                                                                </p>
-                                                            </div>
-                                                        )
-                                                    })}
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
+                                    <p>{question.gold_section}</p>                              
                                 {/* Combined answer part */}
-                                <div className="border rounded p-4 space-y-3">
-                                    <h4 className="font-bold">The combined answer:</h4>
-                                    <p>{results[question.id].combined_answer}</p>                               
-                                    <div className="border-l-4 pl-4 space-y-2">
-                                        <h5>The combined sourceList:</h5>
-                                        {results[question.id].combined_source_list.map((rag_section:RagSource, index:number) => {
-                                            return (
-                                                <div key={index}>
-                                                    <h5>Title: {rag_section.title}</h5>
-                                                    <h5>Slug: {rag_section.slug}</h5>
-                                                    {rag_section.section_list.map((rag_section:RagSection, index: number) => {
-                                                        return (
-                                                            <div key={index}>
-                                                                <h5>Section {index + 1}:</h5>
-                                                                <h5>{rag_section.heading}</h5>
-                                                                <p className="whitespace-pre-wrap">
-                                                                    {rag_section.content}
-                                                                </p>
-                                                            </div>
-                                                        )
-                                                    })}
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                </div>   
+                                    <div className="border rounded p-4 space-y-3">
+                                        <h4 className="font-bold">The combined answer:</h4>
+                                        <p>{results[question.id].combined_answer}</p>                               
+                                        <div className="border-l-4 pl-4 space-y-2">
+                                            <h5>The combined sourceList:</h5>
+                                            {results[question.id].combined_source_list.map((rag_section:RagSource, index:number) => {
+                                                return (
+                                                    <div key={index}>
+                                                        <h5>Title: {rag_section.title}</h5>
+                                                        <h5>Slug: {rag_section.slug}</h5>
+                                                        {rag_section.section_list.map((rag_section:RagSection, index: number) => {
+                                                            return (
+                                                                <div key={index}>
+                                                                    <h5>Section {index + 1}:</h5>
+                                                                    <h5>{rag_section.heading}</h5>
+                                                                    <p className="whitespace-pre-wrap">
+                                                                        {rag_section.content}
+                                                                    </p>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div> 
+                                </div>  
                             </div>                            
                         )}
-                      
                     </div>
                 )
             })}

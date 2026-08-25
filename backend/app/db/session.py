@@ -14,7 +14,6 @@ engine = create_async_engine(
 )
 
 # local postgres sql for testing
-
 rag_engine = create_async_engine(
     settings.RAG_DATABASE_URL,
     echo = False,
@@ -23,6 +22,7 @@ rag_engine = create_async_engine(
 
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
+# local pg
 Rag_AsyncSessionLocal = async_sessionmaker(rag_engine, expire_on_commit=False)
 
 async def get_db():

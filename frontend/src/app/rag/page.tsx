@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useApiFetch } from "@/hooks/useApiFetch";
 import Link from "next/link";
+import type { RawRetrievedResult } from "@/evaluation/schemas/evaluation_v1";
 
 interface RagSection {
     heading: string,
@@ -16,21 +17,22 @@ interface RagSource {
 }
 
 interface RagResponse {
-    content_only_source_list: RagSource[],
     combined_source_list: RagSource[],
-    content_only_answer: string,
     combined_answer: string
+}
+
+interface EvaluationResponse {
+    combined_answer: string,
+    raw_retrieved_results: RawRetrievedResult[]
 }
 
 export default function Page(props: {}) {
     const api = useApiFetch();
     const [query, setQuery] = useState("");
     const [error, setError] = useState("")
-    const [content_only_source_list, setContent_only_source_list] = useState<RagSource[]>([]);
     const [combined_source_list, setCombined_source_list] = useState<RagSource[]>([]);
-    const [content_only_answer, setContent_only_answer] = useState("");
     const [combined_answer, setCombined_answer] = useState("");
-
+    const [raw_retrieved_results_list, setRaw_retrieved_results_list] = useState<RawRetrievedResult[]>([])
 
     async function submit(e:React.FormEvent){
         e.preventDefault();
@@ -44,15 +46,26 @@ export default function Page(props: {}) {
                 })
             });
             const data: RagResponse = res;
-            setContent_only_source_list(data.content_only_source_list);
             setCombined_source_list(data.combined_source_list);
-            setContent_only_answer(data.content_only_answer);
             setCombined_answer(data.combined_answer);
             
         } catch(err: any){
             setError(err.message ?? "Unknown Error");
         } finally {
         }
+    }
+
+    async function evaluate(query: string){
+        const res = await api("/api/v1/rag/evaluate", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                query
+            })
+        });
+        const data: EvaluationResponse = res;
+        setCombined_answer(data.combined_answer);
+        setRaw_retrieved_results_list(data.raw_retrieved_results);
     }
 
     return (
@@ -67,66 +80,60 @@ export default function Page(props: {}) {
                 )}
                 <textarea placeholder="enter query then submit" value={query} onChange={e => setQuery(e.target.value)} 
                     className="w-full min-h-32 border rounded p-3"></textarea>
-                <button>Submit</button>
+                <button type="submit">Submit</button>
+                <button type="button" onClick={e => evaluate(query)}>Evaluate</button>
             </form>
-            {content_only_source_list && content_only_source_list.map((rag_source: RagSource, index) => {
-                    return (
-                        <div key={rag_source.slug}>
-                            <h5>Content_only Answer{index + 1}: </h5>                           
-                            <h5>Title: {rag_source.title}</h5>
-                            <h5>Slug: {rag_source.slug}</h5>
-                            {rag_source.section_list.map((rag_section: RagSection, index) => {
-                                return (
-                                    <div key={index}>
-                                        <h5>Section {index + 1}:</h5>
-                                        <h5>{rag_section.heading}</h5>
-                                        <p className="whitespace-pre-wrap">
-                                            {rag_section.content}
-                                        </p>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    )
-                })}
-                {content_only_answer && (
-                    <div>
-                        <h5>Content-only Answer: </h5>
-                        <p className="whitespace-pre-wrap">
-                            {content_only_answer}
-                        </p>
-                    </div>
-                )}
-                {combined_source_list && combined_source_list.map((rag_source: RagSource, index) => {
-                    return (
-                        <div key={rag_source.slug}>
-                            <h5>Combined Answer{index + 1}: </h5>
+            {combined_source_list && combined_source_list.map((rag_source: RagSource, index) => {
+                return (
+                    <div key={rag_source.slug}>
+                        <h5>Combined Answer{index + 1}: </h5>
 
-                            <h5>Title: {rag_source.title}</h5>
+                        <h5>Title: {rag_source.title}</h5>
 
-                            <h5>Slug: {rag_source.slug}</h5>
-                            {rag_source.section_list.map((rag_section: RagSection, index) => {
-                                return (
-                                    <div key={index}>
-                                        <h5>Section {index}:</h5>
-                                        <h5>{rag_section.heading}</h5>
-                                        <p className="whitespace-pre-wrap">
-                                            {rag_section.content}
-                                        </p>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    )
-                })}
-                {combined_answer && (
-                    <div>
-                        <h5>Combined Answer: </h5>
-                        <p className="whitespace-pre-wrap">
-                            {combined_answer}
-                        </p>
+                        <h5>Slug: {rag_source.slug}</h5>
+                        {rag_source.section_list.map((rag_section: RagSection, index) => {
+                            return (
+                                <div key={index}>
+                                    <h5>Section {index}:</h5>
+                                    <h5>{rag_section.heading}</h5>
+                                    <p className="whitespace-pre-wrap">
+                                        {rag_section.content}
+                                    </p>
+                                </div>
+                            )
+                        })}
                     </div>
-                )}
+                )
+            })}
+            {combined_answer && (
+                <div>
+                    <h5>Combined Answer: </h5>
+                    <p className="whitespace-pre-wrap">
+                        {combined_answer}
+                    </p>
+                </div>
+            )}
+            {raw_retrieved_results_list.length > 0 && (
+                <div>
+                    <h4>Combined Answer:</h4>
+                    <p>{combined_answer}</p>
+                </div>               
+            )}
+
+            {raw_retrieved_results_list.length > 0 && raw_retrieved_results_list.map((raw_retrieved_result) => {
+                return (
+                    <div key={raw_retrieved_result.rank}>
+                        <p>Rank: {raw_retrieved_result.rank}</p>
+                        <p>Similarity: {raw_retrieved_result.similarity}</p>
+                        <p>Post_id: {raw_retrieved_result.post_id}</p>
+                        <p>Chunk_idx: {raw_retrieved_result.chunk_idx}</p>
+                        <p>Title: {raw_retrieved_result.title}</p>
+                        <p>Slug: {raw_retrieved_result.slug}</p>
+                        <p>Heading_path: {raw_retrieved_result.heading_path.toString()}</p>
+                        <p>Content: {raw_retrieved_result.content}</p>
+                    </div>
+                )
+            })}
         </main>
     );
 }

@@ -53,7 +53,6 @@ class PostChunk(Base):
     chunk_idx: Mapped[int] = mapped_column()
 
     content_chunk: Mapped[str] = mapped_column(Text()) 
-    embedding: Mapped[list[float]] = mapped_column(VECTOR(384))
     combined_embedding: Mapped[list[float]] = mapped_column(VECTOR(384))
 
     heading_path: Mapped[list[str]] = mapped_column(ARRAY(String))

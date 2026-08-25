@@ -8,7 +8,7 @@ import asyncio
 from pathlib import Path
 import sys
 from sentence_transformers import SentenceTransformer
-from models import PostChunk, RagBase
+from backend.app.rag.local.models import PostChunk, RagBase
 
 CURRENT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = CURRENT_DIR.parent.parent
@@ -17,7 +17,7 @@ sys.path.append(str(BACKEND_DIR))
 from app.db.session import AsyncSessionLocal, Rag_AsyncSessionLocal, rag_engine
 from app.db.models import Post
 from transformers import PreTrainedTokenizerBase
-from llm import generate_answer
+from backend.app.rag.local.llm import generate_answer
 
 # copied from app.api.rag
 content_chunk_size = 100
@@ -27,11 +27,11 @@ step_size = content_chunk_size - chunk_overlap
 model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 tokenizer: PreTrainedTokenizerBase = model.tokenizer
 from markdown_aware_chunking_v1 import get_sections_from_posts, preprocessing_post_with_sections_md
-from initialize_db import main
-from q_a_list import get_q_a_list
+from backend.app.rag.local.initialize_db import main
+from backend.app.rag.local.q_a_list import get_q_a_list
 from hold_out_q_a_list import get_hold_out_q_a_list
-from prompt_v1 import get_prompt
-from llm import generate_answer
+from backend.app.rag.local.prompt_v1 import get_prompt
+from backend.app.rag.local.llm import generate_answer
 
 async def getPosts():
     async with AsyncSessionLocal() as db:

@@ -11,9 +11,7 @@ interface RagSource {
 }
 
 interface RagResponse {
-    content_only_source_list: RagSource[],
     combined_source_list: RagSource[],
-    content_only_answer: string,
     combined_answer: string
 }
 

@@ -14,7 +14,19 @@ class RagSource(BaseModel):
     section_list: list[RagSection] = Field()
 
 class RagResponse(BaseModel):
-    content_only_source_list: list[RagSource] = Field()
     combined_source_list: list[RagSource] = Field()
-    content_only_answer: str = Field()
     combined_answer: str = Field()
+
+class RawRetrivedResult(BaseModel):
+    rank: int = Field()
+    similarity: float = Field()
+    post_id: int = Field()
+    chunk_idx: int = Field()
+    title: str = Field()
+    slug: str = Field()
+    heading_path: list[str] = Field()
+    content: str = Field()
+
+class EvaluationResponse(BaseModel):
+    combined_answer: str = Field()
+    raw_retrieved_results: list[RawRetrivedResult] = Field()

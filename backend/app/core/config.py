@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60*24 # 1 day
 
-    # RAG
+    # local RAG
     RAG_DATABASE_URL : str = "postgresql+asyncpg://postgres:password@localhost:5432/rag_test"
 
 settings = Settings()

@@ -1,27 +1,26 @@
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select, text
 import asyncio
+from sentence_transformers import SentenceTransformer
+import re
+from transformers import PreTrainedTokenizerBase
 from pathlib import Path
 import sys
-from sentence_transformers import SentenceTransformer
-from backend.app.rag.local.models import PostChunk, RagBase
 
 CURRENT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = CURRENT_DIR.parent.parent
 sys.path.append(str(BACKEND_DIR))
 
-from app.db.session import AsyncSessionLocal, Rag_AsyncSessionLocal, rag_engine
-from app.db.models import Post
-import re
-from transformers import PreTrainedTokenizerBase
-from sentence_transformers import SentenceTransformer
+from app.db.session import AsyncSessionLocal
+from app.db.models import Post, PostChunk
+
 
 async def getPosts():
     async with AsyncSessionLocal() as db:
         posts = (await db.scalars(select(Post).options(selectinload(Post.tags)))).all()
         return posts
 
-def get_sections_from_posts(posts: list[Post]) -> list[tuple[Post, list[tuple[list[str], str]]]]: # return as [Post, post's sections as tuple]
+def get_post_with_sections_from_posts(posts: list[Post]) -> list[tuple[Post, list[tuple[list[str], str]]]]: # return as [Post, post's sections as tuple]
     
     heading_pattern = re.compile(r"^(#{1,6})\s+(.+)$")
     coding_pattern = re.compile(r"^(`{3})\s*")
@@ -75,15 +74,13 @@ def get_sections_from_posts(posts: list[Post]) -> list[tuple[Post, list[tuple[li
         post_with_sections.append((post, sections))    
     return post_with_sections
 
-def preprocessing_post_with_sections_md(post_with_sections: list[tuple[Post, list[tuple[list[str], str]]]], model: SentenceTransformer, 
+def preprocessing_post_with_sections(post_with_sections: list[tuple[Post, list[tuple[list[str], str]]]], model: SentenceTransformer, 
                       max_seq_length=128, chunk_overlap=8) -> list[PostChunk]:
     tokenizer: PreTrainedTokenizerBase = model.tokenizer
     special_tokens = tokenizer.num_special_tokens_to_add(pair=False)
 
     post_chunks = []
     for post, sections in post_with_sections:
-
-        tags = [tag.name for tag in post.tags]
         chunk_idx = 0
 
         for heading_path, content in sections:
@@ -106,24 +103,36 @@ def preprocessing_post_with_sections_md(post_with_sections: list[tuple[Post, lis
                 for i in range(0, len(content_encoded), step_size):
                     content_chunk = content_encoded[i: i + content_budget]
                     content_text = tokenizer.decode(content_chunk)
-                    embedding = model.encode(content_text).tolist()
+                    
                     combined_embedding = model.encode(heading_text + "\n" + content_text).tolist()
 
-                    chunk = PostChunk(post_id=post.id, chunk_idx=chunk_idx, title=post.title, slug=post.slug, 
-                                      content_chunk=content_text, tags=tags, embedding=embedding, 
+                    chunk = PostChunk(post_id=post.id, chunk_idx=chunk_idx, 
+                                      content_chunk=content_text,
                                       combined_embedding=combined_embedding, heading_path=heading_path) 
                     chunk_idx += 1
                     post_chunks.append(chunk)
                     if i + content_budget >= len(content_encoded):
                         break
             else:
-                embedding = model.encode(content).tolist()
                 combined_embedding = model.encode(heading_text + "\n" + content).tolist()
 
-                chunk = PostChunk(post_id=post.id, chunk_idx=chunk_idx, title=post.title, slug=post.slug, 
-                                                      content_chunk=content, tags=tags, embedding=embedding, 
-                                                      combined_embedding=combined_embedding, heading_path=heading_path) 
+                chunk = PostChunk(post_id=post.id, chunk_idx=chunk_idx, 
+                                content_chunk=content, 
+                                combined_embedding=combined_embedding, heading_path=heading_path)  
                 chunk_idx += 1
                 post_chunks.append(chunk) 
                 
     return post_chunks
+
+async def ingestion():
+    model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+
+    posts = await getPosts()
+    post_with_sections = get_post_with_sections_from_posts(posts)
+    post_chunks = preprocessing_post_with_sections(post_with_sections, model=model)
+
+    async with AsyncSessionLocal() as db:
+        db.add_all(post_chunks)
+        await db.commit()
+
+asyncio.run(ingestion())
