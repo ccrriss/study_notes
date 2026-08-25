@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "code_version": "8375a80",
+    "code_version": "04238a8",
     "prompt_version": "v1",
     "evaluation_config": "rag_dual_baseline_v1",
     "embedding_config": {
