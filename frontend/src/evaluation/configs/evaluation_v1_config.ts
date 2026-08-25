@@ -1,7 +1,7 @@
 import type { EvaluationMetadata } from "../schemas/evaluation_v1"
 
 export const evaluationMetadata : EvaluationMetadata = {
-    code_version: "04238a8",
+    code_version: "e18febd",
     prompt_version: "v1",
     evaluation_config: "evaluation_v1",
     embedding_config: {
