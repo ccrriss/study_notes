@@ -117,16 +117,7 @@ export default function Page(props: {}){
                 query: question.query,
                 gold_answer: question.right_answer,
                 generated_answer: evaluationResponses[question.id].generated_answer,
-                raw_results: evaluationResponses[question.id].raw_retrieved_results.map((raw_retrieved_result) => ({
-                    rank:raw_retrieved_result.rank,
-                    similarity: raw_retrieved_result.similarity,
-                    post_id: raw_retrieved_result.post_id,
-                    chunk_idx: raw_retrieved_result.chunk_idx,
-                    title: raw_retrieved_result.title,
-                    slug: raw_retrieved_result.slug,
-                    heading_path: raw_retrieved_result.heading_path.toString(),
-                    content: raw_retrieved_result.content
-                }))
+                raw_results: evaluationResponses[question.id].raw_retrieved_results
             }))
         };
 
@@ -217,7 +208,7 @@ export default function Page(props: {}){
                                                         <h5>Chunk_idx: {raw_retrieved_result.chunk_idx}</h5>
                                                         <h5>Title: {raw_retrieved_result.title}</h5>
                                                         <h5>Slug: {raw_retrieved_result.slug}</h5>
-                                                        <h5>Heading_path: {raw_retrieved_result.heading_path}</h5>
+                                                        <h5>Heading_path: {raw_retrieved_result.heading_path.join(" > ")}</h5>
                                                         <h5>Content: {raw_retrieved_result.content}</h5>                                                       
                                                     </div>
                                                 )

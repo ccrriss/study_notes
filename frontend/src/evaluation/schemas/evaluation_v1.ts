@@ -49,32 +49,34 @@ export interface EvaluationCase {
     gold_section?: string,
     raw_retrieved_results: RawRetrievedResult[]
 }
-export interface EvaluationV1 {
-    metadata: {
-        code_version: string,
-        prompt_version: string,
-        evaluation_config: string,
-        embedding_config: {
-            embedding_input: string,
-            name: string,
-            max_seq_len: number
-        },
-        retrieval_config: {
-            top_k: number,
-            similarity_method: string
-        },
-        chunking_config: {
-            method: string,
-            chunk_overlap: number
-        },
-        llm_config: {
-            name: string,
-            options: {
-                num_ctx: number, 
-                temperature: number,
-                seed: number
-            }
-        }
+
+export interface EvaluationMetadata {
+    code_version: string,
+    prompt_version: string,
+    evaluation_config: string,
+    embedding_config: {
+        embedding_input: string,
+        name: string,
+        max_seq_len: number
     },
+    retrieval_config: {
+        top_k: number,
+        similarity_method: string
+    },
+    chunking_config: {
+        method: string,
+        chunk_overlap: number
+    },
+    llm_config: {
+        name: string,
+        options: {
+            num_ctx: number, 
+            temperature: number,
+            seed: number
+        }
+    }
+}
+export interface EvaluationV1 {
+    metadata: EvaluationMetadata,
     cases: EvaluationCase[]
 }
