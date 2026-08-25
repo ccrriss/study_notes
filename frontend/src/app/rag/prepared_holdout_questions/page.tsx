@@ -20,16 +20,6 @@ interface RagResponse {
     combined_answer: string
 }
 
-
-interface EvaluationCase {
-    id: string,
-    query: string,
-    gold_answer: string,
-    generated_answer: string,
-    gold_section?: string,
-    raw_retrieved_results: RawRetrievedResult[]
-}
-
 const holdoutQuestions = [
     {
         id: "H01",
@@ -78,7 +68,7 @@ const holdoutQuestions = [
 
 const baselineConfig = {
     metadata: {
-        code_version: "",
+        code_version: "8375a80",
         prompt_version: "v1",
         evaluation_config: "rag_dual_baseline_v1",
         embedding_config: {
@@ -161,6 +151,20 @@ export default function Page(props: {}){
         URL.revokeObjectURL(url);
     }
 
+    function saveConfig(){
+        const jsonData = JSON.stringify(baselineConfig, null, 2);
+        const blob = new Blob([jsonData], {type: 'application/json'});
+
+        const url = URL.createObjectURL(blob)
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "baseline_dual_config.json";
+        a.click();
+
+        URL.revokeObjectURL(url);
+    }
+
     return (
         <main className="max-w-5xl mx-auto p-8 space-y-6">
             <button
@@ -174,6 +178,12 @@ export default function Page(props: {}){
                 onClick={e => save_results()}
             >
                 Generate JSON Results and Save
+            </button>
+            <button
+                className="border rounded px-4 py-2"
+                onClick={e => saveConfig()}
+            >
+                Save Config
             </button>
             {holdoutQuestions.map((question:any) => {
                 return (

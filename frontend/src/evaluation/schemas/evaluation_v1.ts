@@ -27,7 +27,7 @@ interface USER_RES_v1 {
 }
 
 // Evaluation part
-interface RawRetrievedResult {
+export interface RawRetrievedResult {
     rank: number,
     similarity: number,
     post_id: number,
@@ -38,7 +38,7 @@ interface RawRetrievedResult {
     content: string
 }
 
-interface EvaluationCase {
+export interface EvaluationCase {
     id: string,
     query: string,
     gold_answer: string,
@@ -46,7 +46,7 @@ interface EvaluationCase {
     gold_section?: string,
     raw_retrieved_results: RawRetrievedResult[]
 }
-interface EvaluationV1 {
+export interface EvaluationV1 {
     metadata: {
         code_version: string,
         prompt_version: string,
