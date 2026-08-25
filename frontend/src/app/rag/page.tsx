@@ -3,36 +3,21 @@
 import React, { useState } from "react";
 import { useApiFetch } from "@/hooks/useApiFetch";
 import Link from "next/link";
-import type { RawRetrievedResult } from "@/evaluation/schemas/evaluation_v1";
+import type { RawRetrievedResult, EvaluationResponse } from "@/evaluation/schemas/evaluation_v1";
+import type { RagSection, RagResponse, RagSource } from "@/evaluation/schemas/evaluation_v1";
 
-interface RagSection {
-    heading: string,
-    content: string
-}
-
-interface RagSource {
-    title: string,
-    slug: string,
-    section_list: RagSection[]
-}
-
-interface RagResponse {
-    combined_source_list: RagSource[],
-    combined_answer: string
-}
-
-interface EvaluationResponse {
-    combined_answer: string,
-    raw_retrieved_results: RawRetrievedResult[]
-}
 
 export default function Page(props: {}) {
     const api = useApiFetch();
     const [query, setQuery] = useState("");
     const [error, setError] = useState("")
-    const [combined_source_list, setCombined_source_list] = useState<RagSource[]>([]);
-    const [combined_answer, setCombined_answer] = useState("");
-    const [raw_retrieved_results_list, setRaw_retrieved_results_list] = useState<RawRetrievedResult[]>([])
+
+    // for user query
+    const [sources, setSources] = useState<RagSource[]>([]);
+    const [answer, setAnswer] = useState("");
+    // for evaluate
+    const [generated_answer, setGenerated_answer] = useState("");
+    const [raw_retrieved_results, setRaw_retrieved_results] = useState<RawRetrievedResult[]>([])
 
     async function submit(e:React.FormEvent){
         e.preventDefault();
@@ -45,9 +30,9 @@ export default function Page(props: {}) {
                     query
                 })
             });
-            const data: RagResponse = res;
-            setCombined_source_list(data.combined_source_list);
-            setCombined_answer(data.combined_answer);
+            const ragResponse: RagResponse = res;
+            setSources(ragResponse.sources);
+            setAnswer(ragResponse.answer);
             
         } catch(err: any){
             setError(err.message ?? "Unknown Error");
@@ -63,9 +48,9 @@ export default function Page(props: {}) {
                 query
             })
         });
-        const data: EvaluationResponse = res;
-        setCombined_answer(data.combined_answer);
-        setRaw_retrieved_results_list(data.raw_retrieved_results);
+        const evaluationResponse: EvaluationResponse = res;
+        setGenerated_answer(evaluationResponse.generated_answer);
+        setRaw_retrieved_results(evaluationResponse.raw_retrieved_results);
     }
 
     return (
@@ -83,10 +68,20 @@ export default function Page(props: {}) {
                 <button type="submit">Submit</button>
                 <button type="button" onClick={e => evaluate(query)}>Evaluate</button>
             </form>
-            {combined_source_list && combined_source_list.map((rag_source: RagSource, index) => {
+
+            {/* User Answer part:  */}
+            {answer && (
+                <div>
+                    <h5>LLM Answer is: </h5>
+                    <p className="whitespace-pre-wrap">
+                        {answer}
+                    </p>
+                </div>
+            )}
+            {sources && sources.map((rag_source: RagSource, index) => {
                 return (
                     <div key={rag_source.slug}>
-                        <h5>Combined Answer{index + 1}: </h5>
+                        <h5>Source {index + 1}: </h5>
 
                         <h5>Title: {rag_source.title}</h5>
 
@@ -105,22 +100,16 @@ export default function Page(props: {}) {
                     </div>
                 )
             })}
-            {combined_answer && (
-                <div>
-                    <h5>Combined Answer: </h5>
-                    <p className="whitespace-pre-wrap">
-                        {combined_answer}
-                    </p>
-                </div>
-            )}
-            {raw_retrieved_results_list.length > 0 && (
+            
+            <h4>Evaluation Part</h4>
+            {raw_retrieved_results.length > 0 && (
                 <div>
                     <h4>Combined Answer:</h4>
-                    <p>{combined_answer}</p>
+                    <p>{generated_answer}</p>
                 </div>               
             )}
 
-            {raw_retrieved_results_list.length > 0 && raw_retrieved_results_list.map((raw_retrieved_result) => {
+            {raw_retrieved_results.length > 0 && raw_retrieved_results.map((raw_retrieved_result) => {
                 return (
                     <div key={raw_retrieved_result.rank}>
                         <p>Rank: {raw_retrieved_result.rank}</p>

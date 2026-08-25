@@ -1,18 +1,18 @@
 // User part
-interface RagSection {
+export interface RagSection {
     heading: string,
     content: string
 }
 
-interface RagSource {
+export interface RagSource {
     title: string,
     slug: string,
     section_list: RagSection[]
 }
 
-interface RagResponse {
-    combined_source_list: RagSource[],
-    combined_answer: string
+export interface RagResponse {
+    sources: RagSource[],
+    answer: string
 }
 
 interface RagQuery {
@@ -20,7 +20,7 @@ interface RagQuery {
 }
 
 interface USER_RES_v1 {
-    generated_answer: string,
+    answer: string,
     sources: RagSource[]
 }
 
@@ -34,6 +34,11 @@ export interface RawRetrievedResult {
     slug: string,
     heading_path: string[],
     content: string
+}
+
+export interface EvaluationResponse {
+    generated_answer: string,
+    raw_retrieved_results: RawRetrievedResult[]
 }
 
 export interface EvaluationCase {

@@ -14,10 +14,10 @@ class RagSource(BaseModel):
     section_list: list[RagSection] = Field()
 
 class RagResponse(BaseModel):
-    combined_source_list: list[RagSource] = Field()
-    combined_answer: str = Field()
+    sources: list[RagSource] = Field()
+    answer: str = Field()
 
-class RawRetrivedResult(BaseModel):
+class RawRetrievedResult(BaseModel):
     rank: int = Field()
     similarity: float = Field()
     post_id: int = Field()
@@ -28,5 +28,5 @@ class RawRetrivedResult(BaseModel):
     content: str = Field()
 
 class EvaluationResponse(BaseModel):
-    combined_answer: str = Field()
-    raw_retrieved_results: list[RawRetrivedResult] = Field()
+    generated_answer: str = Field()
+    raw_retrieved_results: list[RawRetrievedResult] = Field()

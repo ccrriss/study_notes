@@ -1,3 +1,7 @@
+"""
+This file is for local dev. And works for local pg database.
+"""
+
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select, text
 import asyncio

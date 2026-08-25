@@ -2,22 +2,8 @@
 
 import { useApiFetch } from "@/hooks/useApiFetch";
 import { useState } from "react";
-interface RagSection {
-    heading: string,
-    content: string
-}
 
-interface RagSource {
-    title: string,
-    slug: string,
-    section_list: RagSection[]
-}
-
-interface RagResponse {
-    combined_source_list: RagSource[],
-    combined_answer: string
-}
-
+import type { RawRetrievedResult, EvaluationResponse } from "@/evaluation/schemas/evaluation_v1";
 const benchmarkQuestions = [
     {
         id: "B01",
@@ -84,26 +70,24 @@ const benchmarkQuestions = [
 export default function Page(props: {}){
     const api = useApiFetch();
     const [error, setError] = useState("")
-    const [results, setResults] = useState<Record<string, RagResponse>>({});
+    const [evaluationResponses, setEvaluationResponses] = useState<Record<string, EvaluationResponse>>({});
 
     async function get_answer(query:string, id:string) {
-         try {
-            const res = await api("/api/v1/rag", {
-                method : "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    query
-                })
-            });
-        const data: RagResponse = res;
-        setResults(prev => {
+        try {
+        const res = await api("/api/v1/rag/evaluate", {
+            method : "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                query
+            })
+        });
+        const evaluationResponse: EvaluationResponse = res;
+        setEvaluationResponses(prev => {
             return {
                 ...prev,
-                [id]: data
+                [id]: evaluationResponse
             }
-        })
-        
-        } catch(err: any){
+        })} catch(err: any){
             setError(err.message ?? "Unknown Error");
         } finally {
         }
@@ -120,9 +104,19 @@ export default function Page(props: {}){
             cases: benchmarkQuestions.map((question:any) => ({
                 id: question.id,
                 query: question.query,
-                answer: question.right_answer,
+                gold_answer: question.right_answer,
                 gold_section: question.gold_section,
-                response: results[question.id]
+                generated_answer: evaluationResponses[question.id].generated_answer,
+                raw_results: evaluationResponses[question.id].raw_retrieved_results.map((raw_retrieved_result) => ({
+                    rank:raw_retrieved_result.rank,
+                    similarity: raw_retrieved_result.similarity,
+                    post_id: raw_retrieved_result.post_id,
+                    chunk_idx: raw_retrieved_result.chunk_idx,
+                    title: raw_retrieved_result.title,
+                    slug: raw_retrieved_result.slug,
+                    heading_path: raw_retrieved_result.heading_path.toString(),
+                    content: raw_retrieved_result.content
+                }))
             }))
         };
 
@@ -133,7 +127,7 @@ export default function Page(props: {}){
 
         const a  = document.createElement("a");
         a.href = url;
-        a.download = "benchmark_v1_dual_results.json";
+        a.download = "benchmark_v1_results.json";
         a.click()
 
         URL.revokeObjectURL(url);
@@ -170,35 +164,34 @@ export default function Page(props: {}){
                             Ask this question
                         </button>
                         {/* answer part */}
-                        {results[question.id] && (
+                        {evaluationResponses[question.id] && (
                             <div className="border-t pt-4 space-y-4">
                                 <div className="border rounded p-4 space-y-3">
                                     <h4 className="font-bold">The correct answer:</h4>
                                     <p>{question.right_answer}</p>
                                     <h4 className="font-bold">Gold Section:</h4>
-                                    <p>{question.gold_section}</p>                              
-                                {/* Combined answer part */}
+                                    <p>{question.gold_section}</p>           
+
+                                    {/* Generated answer part */}
                                     <div className="border rounded p-4 space-y-3">
-                                        <h4 className="font-bold">The combined answer:</h4>
-                                        <p>{results[question.id].combined_answer}</p>                               
+
+                                        <h4 className="font-bold">Generated answer:</h4>
+                                        <p>{evaluationResponses[question.id].generated_answer}</p>    
+
                                         <div className="border-l-4 pl-4 space-y-2">
-                                            <h5>The combined sourceList:</h5>
-                                            {results[question.id].combined_source_list.map((rag_section:RagSource, index:number) => {
+                                            <h5>Raw retrieved results:</h5>
+                                            {evaluationResponses[question.id].raw_retrieved_results.map(
+                                                (raw_retrieved_result:RawRetrievedResult, index:number) => {
                                                 return (
                                                     <div key={index}>
-                                                        <h5>Title: {rag_section.title}</h5>
-                                                        <h5>Slug: {rag_section.slug}</h5>
-                                                        {rag_section.section_list.map((rag_section:RagSection, index: number) => {
-                                                            return (
-                                                                <div key={index}>
-                                                                    <h5>Section {index + 1}:</h5>
-                                                                    <h5>{rag_section.heading}</h5>
-                                                                    <p className="whitespace-pre-wrap">
-                                                                        {rag_section.content}
-                                                                    </p>
-                                                                </div>
-                                                            )
-                                                        })}
+                                                        <h5>Rank: {raw_retrieved_result.rank}</h5>
+                                                        <h5>Similarity: {raw_retrieved_result.similarity}</h5>
+                                                        <h5>Post_id: {raw_retrieved_result.post_id}</h5>
+                                                        <h5>Chunk_idx: {raw_retrieved_result.chunk_idx}</h5>
+                                                        <h5>Title: {raw_retrieved_result.title}</h5>
+                                                        <h5>Slug: {raw_retrieved_result.slug}</h5>
+                                                        <h5>Heading_path: {raw_retrieved_result.heading_path}</h5>
+                                                        <h5>Content: {raw_retrieved_result.content}</h5>                                                       
                                                     </div>
                                                 )
                                             })}
