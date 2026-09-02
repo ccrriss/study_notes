@@ -6,7 +6,7 @@ from sqlalchemy import text
 import asyncio
 from pathlib import Path
 import sys
-from backend.app.rag.local.models import RagBase
+from backend.app.rag_local.local.models import RagBase
 
 CURRENT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = CURRENT_DIR.parent.parent

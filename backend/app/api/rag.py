@@ -7,8 +7,12 @@ from app.api.util.get_prompt_v1 import get_prompt
 from app.api.util.genetate_answer_v1 import generate_answer
 from sentence_transformers import SentenceTransformer
 from app.schemas.rag import RagRequest, RagResponse, RagSource, RawRetrievedResult, EvaluationResponse
+from app.schemas.rag import EvaluationQuestion, AnswerQuestion, RefuseQuestion, GenerationJudgement, GenerationEvaluationResponse
 from app.db.models import PostChunk
 from app.api.util.generate_ragsec_and_source import generate_rag_section_and_source
+from app.api.util.get_generation_evaluation_v2 import get_generation_evaluation_prompt, get_generation_evaluation_answer
+from app.api.util.get_generation_evaluation_v2 import get_refuse_generation_evaluation_prompt, get_refuse_generation_evaluation_answer
+import json
 
 model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 
@@ -53,3 +57,49 @@ async def generate_evaluation(
                 content=post_chunk.content_chunk)
         )
     return EvaluationResponse(generated_answer=generated_answer, raw_retrieved_results=raw_retrieved_results_list)
+
+@router.post("/generation_evaluate", response_model=GenerationEvaluationResponse)
+async def create_generation_evaluate(
+    payload: Annotated[EvaluationQuestion, Body()],
+    db: AsyncSession = Depends(get_db)
+) -> GenerationEvaluationResponse :
+    generated_answer, combined_rows = await retrieve(payload=payload, model=model, db=db)
+    query = payload.query
+    judgement_list = []
+    if isinstance(payload, AnswerQuestion):
+        vital_nuggets = payload.vital_nuggets
+        ok_nuggets = payload.ok_nuggets or []
+
+        for vital_nugget in vital_nuggets:
+            generation_evaluation_prompt = get_generation_evaluation_prompt(query=query, nugget=vital_nugget, generated_answer=generated_answer)
+            res_json = await get_generation_evaluation_answer(generation_evaluation_prompt)
+            res_dict = json.loads(res_json)
+            label = res_dict["label"]
+            reason = res_dict["reason"]
+
+            judgement_list.append(GenerationJudgement(judgement_type="vital", nugget=vital_nugget, label=label, reason=reason))
+
+        for ok_nugget in ok_nuggets:
+            generation_evaluation_prompt = get_generation_evaluation_prompt(query=query, nugget=ok_nugget, generated_answer=generated_answer)
+            res_json = await get_generation_evaluation_answer(generation_evaluation_prompt)
+            res_dict = json.loads(res_json)
+            label = res_dict["label"]
+            reason = res_dict["reason"]
+
+            judgement_list.append(GenerationJudgement(judgement_type="ok", nugget=ok_nugget, label=label, reason=reason))
+    else:
+        refuse_generation_evaluation_prompt = get_refuse_generation_evaluation_prompt(query=query, 
+                                            gold_answer=payload.gold_answer, generated_answer=generated_answer)
+        res_json = await get_refuse_generation_evaluation_answer(refuse_generation_evaluation_prompt)
+        res_dict = json.loads(res_json)
+        label = res_dict["label"]
+        reason = res_dict["reason"]
+        judgement_list.append(GenerationJudgement(judgement_type="refusal", label=label, reason=reason))
+        
+    return GenerationEvaluationResponse(
+        id = payload.id,
+        expected_behavior = payload.expected_behavior,
+        generated_answer = generated_answer,
+        judgements = judgement_list
+    )
+

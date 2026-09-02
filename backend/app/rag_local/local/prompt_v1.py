@@ -3,7 +3,7 @@ This file is for local dev. And used in backend/app/api/util/get_prompt_v1.py
 """
 
 
-from backend.app.rag.local.models import PostChunk
+from backend.app.rag_local.local.models import PostChunk
 
 start = """You are answering a user's question using retrieved context.
 

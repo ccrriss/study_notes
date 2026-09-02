@@ -56,7 +56,7 @@ export default function Page(props: {}) {
     return (
         <main className="max-w-5xl mx-auto p-8 space-y-4">
             <Link href={"/rag/prepared_questions"} className="font-medium">prepared_questions</Link>
-            <Link href={"/rag/prepared_holdout_questions"} className="font-medium">prepared_holdout_questions</Link>
+            <Link href={"/rag/generation_evaluation"} className="font-medium">generation_evaluation</Link>
             <form onSubmit={submit}>
                 {error && (
                     <p className="text-sm text-red-500 border border-red-200 p-2 rounded">

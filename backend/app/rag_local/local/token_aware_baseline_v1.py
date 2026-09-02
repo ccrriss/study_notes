@@ -9,7 +9,7 @@ import asyncio
 from pathlib import Path
 import sys
 from sentence_transformers import SentenceTransformer
-from backend.app.rag.local.models import PostChunk, RagBase
+from backend.app.rag_local.local.models import PostChunk, RagBase
 
 CURRENT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = CURRENT_DIR.parent.parent

@@ -1,14 +1,10 @@
-"""
-This file is for local dev. And works for local pg database.
-"""
-
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select, text
 import asyncio
 from pathlib import Path
 import sys
 from sentence_transformers import SentenceTransformer
-from backend.app.rag.local.models import PostChunk, RagBase
+from backend.app.db.models import PostChunk
 
 CURRENT_DIR = Path(__file__).resolve().parent
 BACKEND_DIR = CURRENT_DIR.parent.parent
