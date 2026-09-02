@@ -1,5 +1,5 @@
 """
-This file is for local dev. And used in backend/app/api/util/generete_answer_v1.py
+This file is for local dev. And used in backend/app/rag/genetate_answer_v1.py
 """
 
 

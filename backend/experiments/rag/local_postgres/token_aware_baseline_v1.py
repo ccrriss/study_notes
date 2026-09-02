@@ -9,12 +9,12 @@ import asyncio
 from pathlib import Path
 import sys
 from sentence_transformers import SentenceTransformer
-from backend.app.rag_local.local.models import PostChunk, RagBase
 
 CURRENT_DIR = Path(__file__).resolve().parent
-BACKEND_DIR = CURRENT_DIR.parent.parent
+BACKEND_DIR = CURRENT_DIR.parent.parent.parent
 sys.path.append(str(BACKEND_DIR))
 
+from experiments.rag.local_postgres.models import PostChunk, RagBase
 from app.db.session import AsyncSessionLocal, Rag_AsyncSessionLocal, rag_engine
 from app.db.models import Post
 from transformers import PreTrainedTokenizerBase

@@ -5,7 +5,7 @@ This file is for local dev. And works for local pg database.
 
 from ollama import AsyncClient
 import asyncio
-from backend.app.rag_local.local.llm import generate_answer
+from experiments.rag.local_postgres.llm import generate_answer
 start = """You are answering a user's question using retrieved context.
 
 Rules:

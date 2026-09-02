@@ -2,16 +2,16 @@ from fastapi import APIRouter, Depends, Body
 from app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
-from app.api.util.vec_search import vector_search
-from app.api.util.get_prompt_v1 import get_prompt
-from app.api.util.genetate_answer_v1 import generate_answer
+from app.rag.vec_search import vector_search
+from app.rag.prompts.get_prompt_v1 import get_prompt
+from app.rag.genetate_answer_v1 import generate_answer
 from sentence_transformers import SentenceTransformer
 from app.schemas.rag import RagRequest, RagResponse, RagSource, RawRetrievedResult, EvaluationResponse
 from app.schemas.rag import EvaluationQuestion, AnswerQuestion, RefuseQuestion, GenerationJudgement, GenerationEvaluationResponse
 from app.db.models import PostChunk
-from app.api.util.generate_ragsec_and_source import generate_rag_section_and_source
-from app.api.util.get_generation_evaluation_v2 import get_generation_evaluation_prompt, get_generation_evaluation_answer
-from app.api.util.get_generation_evaluation_v2 import get_refuse_generation_evaluation_prompt, get_refuse_generation_evaluation_answer
+from app.rag.generate_ragsec_and_source import generate_rag_section_and_source
+from app.rag.evaluation.get_generation_evaluation_v2 import get_generation_evaluation_prompt, get_generation_evaluation_answer
+from app.rag.evaluation.get_generation_evaluation_v2 import get_refuse_generation_evaluation_prompt, get_refuse_generation_evaluation_answer
 import json
 
 model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")

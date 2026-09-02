@@ -8,16 +8,16 @@ import asyncio
 from pathlib import Path
 import sys
 from sentence_transformers import SentenceTransformer
-from backend.app.rag_local.local.models import PostChunk, RagBase
 
 CURRENT_DIR = Path(__file__).resolve().parent
-BACKEND_DIR = CURRENT_DIR.parent.parent
+BACKEND_DIR = CURRENT_DIR.parent.parent.parent
 sys.path.append(str(BACKEND_DIR))
 
+from experiments.rag.local_postgres.models import PostChunk, RagBase
 from app.db.session import AsyncSessionLocal, Rag_AsyncSessionLocal, rag_engine
 from app.db.models import Post
 from transformers import PreTrainedTokenizerBase
-from backend.app.rag_local.local.llm import generate_answer
+from experiments.rag.local_postgres.llm import generate_answer
 
 # copied from app.api.rag
 content_chunk_size = 100
@@ -26,12 +26,12 @@ step_size = content_chunk_size - chunk_overlap
 
 model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 tokenizer: PreTrainedTokenizerBase = model.tokenizer
-from markdown_aware_chunking_v1 import get_sections_from_posts, preprocessing_post_with_sections_md
-from backend.app.rag_local.local.initialize_db import main
-from backend.app.rag_local.local.q_a_list import get_q_a_list
-from hold_out_q_a_list import get_hold_out_q_a_list
-from backend.app.rag_local.local.prompt_v1 import get_prompt
-from backend.app.rag_local.local.llm import generate_answer
+from experiments.rag.local_postgres.markdown_aware_chunking_v1 import get_sections_from_posts, preprocessing_post_with_sections_md
+from experiments.rag.local_postgres.initialize_db import main
+from experiments.rag.local_postgres.q_a_list import get_q_a_list
+from experiments.rag.local_postgres.hold_out_q_a_list import get_hold_out_q_a_list
+from experiments.rag.local_postgres.prompt_v1 import get_prompt
+from experiments.rag.local_postgres.llm import generate_answer
 
 async def getPosts():
     async with AsyncSessionLocal() as db:

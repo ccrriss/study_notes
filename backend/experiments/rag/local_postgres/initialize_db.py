@@ -6,12 +6,12 @@ from sqlalchemy import text
 import asyncio
 from pathlib import Path
 import sys
-from backend.app.rag_local.local.models import RagBase
 
 CURRENT_DIR = Path(__file__).resolve().parent
-BACKEND_DIR = CURRENT_DIR.parent.parent
+BACKEND_DIR = CURRENT_DIR.parent.parent.parent
 sys.path.append(str(BACKEND_DIR))
 
+from experiments.rag.local_postgres.models import RagBase
 from app.db.session import rag_engine
 
 async def init_rag_database():   
