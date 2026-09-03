@@ -4,8 +4,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-async def vector_search(query, model: SentenceTransformer, db:AsyncSession, topk:int= 3) -> list[tuple[PostChunk, float]]:
-    query_embedding: list[float] = model.encode(query).tolist() # ndarray to list
+embedding_model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+
+# do the vector search work but a retrieve name for better common use
+async def retrieve_chunks(query, db:AsyncSession, topk:int= 3) -> list[tuple[PostChunk, float]]:
+    query_embedding: list[float] = embedding_model.encode(query).tolist() # ndarray to list
 
     combined_cosine_distance = PostChunk.combined_embedding.cosine_distance(query_embedding)
 

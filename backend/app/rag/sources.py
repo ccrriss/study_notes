@@ -1,6 +1,6 @@
 from app.db.models import PostChunk
 from app.schemas.rag import RagSource, RagSection
-def generate_rag_section_and_source(rows: list[tuple[PostChunk, float]]):
+def build_rag_sources(rows: list[tuple[PostChunk, float]]):
     # for checking 
     rag_source_dict: dict[int, RagSource] = {}
     check_set: set[tuple[int, int]] = set() # for checking duplicate content

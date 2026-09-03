@@ -72,15 +72,15 @@ Rules:
 
 """
 
-def get_generation_evaluation_prompt(query: str, nugget: str, generated_answer: str) -> str:
+def build_nugget_judge_prompt(query: str, nugget: str, generated_answer: str) -> str:
     prompt = start.format(query=query, nugget=nugget, generated_answer=generated_answer)
     return prompt
 
-def get_refuse_generation_evaluation_prompt(query: str, gold_answer: str, generated_answer: str) -> str:
+def build_refusal_judge_prompt(query: str, gold_answer: str, generated_answer: str) -> str:
     prompt = refuse_start.format(query=query, gold_answer=gold_answer, generated_answer=generated_answer)
     return prompt
 
-async def get_generation_evaluation_answer(prompt: str) -> str:
+async def judge_nugget(prompt: str) -> str:
     response = await client.chat(
         model=MODEL_NAME,
         messages=[
@@ -101,7 +101,7 @@ async def get_generation_evaluation_answer(prompt: str) -> str:
     )
     return response.message.content
 
-async def get_refuse_generation_evaluation_answer(prompt: str) -> str:
+async def judge_refusal(prompt: str) -> str:
     response = await client.chat(
         model=MODEL_NAME,
         messages=[

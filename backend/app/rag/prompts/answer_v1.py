@@ -4,7 +4,7 @@ start = """You are answering a user's question using retrieved context.
 
 """
 
-def get_prompt(user_query:str,combined_rows:list[tuple[PostChunk, float]]):
+def build_prompt(user_query:str,combined_rows:list[tuple[PostChunk, float]]):
     combined_prompt_text = (
         start
         + f"User question:\n{user_query}\n\n"

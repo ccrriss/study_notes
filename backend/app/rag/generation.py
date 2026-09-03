@@ -5,7 +5,8 @@ MODEL_NAME = "qwen3:4b-instruct-2507-q4_K_M"
 client = AsyncClient(
     trust_env=False)
 
-rules = """1. Use only the information provided in the context.
+rules = """
+1. Use only the information provided in the context.
 2. Do not use external knowledge or invent information.
 3. If the context does not contain enough information to answer the question,
    say \"I don't know based on the provided context.\"
