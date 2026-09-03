@@ -1,9 +1,3 @@
-from ollama import AsyncClient
-
-MODEL_NAME = "qwen3:4b-instruct-2507-q4_K_M"
-
-client = AsyncClient(trust_env = False)
-
 start = """
 You are judging a generated answer based on query and judging with nuggets.
 
@@ -79,45 +73,3 @@ def build_nugget_judge_prompt(query: str, nugget: str, generated_answer: str) ->
 def build_refusal_judge_prompt(query: str, gold_answer: str, generated_answer: str) -> str:
     prompt = refuse_start.format(query=query, gold_answer=gold_answer, generated_answer=generated_answer)
     return prompt
-
-async def judge_nugget(prompt: str) -> str:
-    response = await client.chat(
-        model=MODEL_NAME,
-        messages=[
-            {
-                'role': 'system',
-                'content': rules
-            },
-            {
-                'role': 'user',
-                'content': prompt
-            }
-        ],
-        options = {
-            "temperature": 0,
-            "seed": 42,
-            "num_ctx": 4096
-        },
-    )
-    return response.message.content
-
-async def judge_refusal(prompt: str) -> str:
-    response = await client.chat(
-        model=MODEL_NAME,
-        messages=[
-            {
-                'role': 'system',
-                'content': refuse_rules
-            },
-            {
-                'role': 'user',
-                'content': prompt
-            }
-        ],
-        options = {
-            "temperature": 0,
-            "seed": 42,
-            "num_ctx": 4096
-        },
-    )
-    return response.message.content
