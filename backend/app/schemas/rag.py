@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Literal, Annotated
 from app.schemas.common import QueryText
 
@@ -18,3 +18,21 @@ class RagSource(BaseModel):
 class RagResponse(BaseModel):
     sources: list[RagSource] = Field()
     answer: str = Field()
+
+# Modelruntime Metadata
+class ModelOptions(BaseModel):
+    temperature: float = Field()
+    seed: int = Field()
+    num_ctx: int = Field()
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ModelRuntimeData(BaseModel):
+    model: str = Field()
+    prompt_version: str = Field()
+    options: ModelOptions = Field()
+
+class RuntimeMetadata(BaseModel):
+    code_version: str = Field()
+    generation: ModelRuntimeData = Field()
+    judge: ModelRuntimeData = Field()

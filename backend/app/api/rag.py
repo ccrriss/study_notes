@@ -2,13 +2,17 @@ from fastapi import APIRouter, Depends, Body
 from app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
-from app.schemas.rag import RagRequest, RagResponse, RagSource
-from app.schemas.evaluation import GenerationEvaluationQuestion, AnswerQuestion, GenerationJudgement, GenerationEvaluationResponse, RawRetrievedResult, RetrievalEvaluationResponse
+from app.schemas.rag import RagRequest, RagResponse, RagSource, RuntimeMetadata, ModelRuntimeData, ModelOptions
+from app.schemas.evaluation import GenerationEvaluationQuestion, GenerationEvaluationResponse, RawRetrievedResult, RetrievalEvaluationResponse
 from app.rag.sources import build_rag_sources
-from app.rag.evaluation.prompts.generation_v2 import build_nugget_judge_prompt, build_refusal_judge_prompt
-from app.rag.evaluation.generation_v2 import evaluate_generation
+from app.rag.evaluation.generation import evaluate_generation
 from app.rag.pipeline import run_rag_pipeline
 import json
+from app.core.version import get_git_version
+from app.rag.evaluation.judge import JUDGE_MODEL_NAME, JUDGE_OPTIONS
+from app.rag.generation import GENERATION_MODEL_NAME, GENERATION_OPTIONS
+from app.rag.evaluation.prompts import generation_v2 as judge_prompt
+from app.rag.prompts import answer_v1 as answer_prompt
 
 router = APIRouter(prefix="/api/v1/rag", tags=['posts', 'rag'])
 
@@ -43,10 +47,21 @@ async def generate_retrieval_evaluation_response(
     return RetrievalEvaluationResponse(generated_answer=generated_answer, raw_retrieved_results=raw_retrieved_results_list)
 
 @router.post("/generation_evaluate", response_model=GenerationEvaluationResponse)
-async def generate_evaluate_generation_response(
+async def generate_generation_evaluation_response(
     payload: Annotated[GenerationEvaluationQuestion, Body()],
     db: AsyncSession = Depends(get_db)
 ) -> GenerationEvaluationResponse :
     generated_answer, combined_rows = await run_rag_pipeline(query=payload.query, db=db)
-    res = evaluate_generation(payload=payload, generated_answer=generated_answer)
+    res = await evaluate_generation(payload=payload, generated_answer=generated_answer)
     return res
+
+@router.get("/runtime_metadata", response_model=RuntimeMetadata)
+def get_runtime_metadata():
+    code_version = get_git_version()
+    generation_metadata = ModelRuntimeData(model=GENERATION_MODEL_NAME, prompt_version=answer_prompt.PROMPT_VERSION,
+                                           options=ModelOptions.model_validate(GENERATION_OPTIONS))
+    judge_metadata = ModelRuntimeData(model=JUDGE_MODEL_NAME, prompt_version=judge_prompt.PROMPT_VERSION,
+                                           options=ModelOptions.model_validate(JUDGE_OPTIONS))
+    return RuntimeMetadata(code_version=code_version,
+                           generation=generation_metadata,
+                           judge=judge_metadata)

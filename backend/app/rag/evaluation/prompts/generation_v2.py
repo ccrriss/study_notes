@@ -1,3 +1,5 @@
+PROMPT_VERSION = "judge_v2"
+
 start = """
 You are judging a generated answer based on query and judging with nuggets.
 

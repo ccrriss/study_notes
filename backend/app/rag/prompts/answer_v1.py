@@ -1,5 +1,7 @@
 from app.db.models import PostChunk
 
+PROMPT_VERSION = "answer_v1"
+
 start = """You are answering a user's question using retrieved context.
 
 """

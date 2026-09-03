@@ -2,6 +2,10 @@
 GET http://localhost:8000/api/v1/posts
 Accept: application/json
 
+### get RuntimeMetadata Check
+GET http://localhost:8000/api/v1/rag/runtime_metadata
+Accept: application/json
+
 ### POST Check
 POST http://localhost:8000/api/v1/rag
 Content-Type: application/json
