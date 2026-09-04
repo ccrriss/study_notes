@@ -1,30 +1,3 @@
-// User part
-export interface RagSection {
-    heading: string,
-    content: string
-}
-
-export interface RagSource {
-    title: string,
-    slug: string,
-    section_list: RagSection[]
-}
-
-export interface RagResponse {
-    sources: RagSource[],
-    answer: string
-}
-
-interface RagQuery {
-    query: string
-}
-
-interface USER_RES_v1 {
-    answer: string,
-    sources: RagSource[]
-}
-
-// Evaluation part
 export interface RawRetrievedResult {
     rank: number,
     similarity: number,
@@ -36,12 +9,12 @@ export interface RawRetrievedResult {
     content: string
 }
 
-export interface EvaluationResponse {
+export interface RetrievalEvaluationResponse {
     generated_answer: string,
     raw_retrieved_results: RawRetrievedResult[]
 }
 
-export interface EvaluationCase {
+export interface RetrievalEvaluationCaseResult {
     id: string,
     query: string,
     gold_answer: string,
@@ -50,7 +23,7 @@ export interface EvaluationCase {
     raw_retrieved_results: RawRetrievedResult[]
 }
 
-export interface EvaluationMetadata {
+export interface RetrieveEvaluationMetadataV1 {
     code_version: string,
     prompt_version: string,
     evaluation_config: string,
@@ -77,6 +50,6 @@ export interface EvaluationMetadata {
     }
 }
 export interface EvaluationV1 {
-    metadata: EvaluationMetadata,
-    cases: EvaluationCase[]
+    metadata: RetrieveEvaluationMetadataV1,
+    cases: RetrievalEvaluationCaseResult[]
 }

@@ -12,11 +12,11 @@ interface AnswerQuestion extends BaseEvaluationQuestion {
     ok_nuggets?: string[]
 }
 
-interface RefuseQuestion extends BaseEvaluationQuestion {
+interface RefusalQuestion extends BaseEvaluationQuestion {
     expected_behavior: "refuse"
 }
 
-export type EvaluationQuestion = AnswerQuestion | RefuseQuestion;
+export type EvaluationQuestion = AnswerQuestion | RefusalQuestion;
 
 export const evaluationQuestions: EvaluationQuestion[] = [
     {

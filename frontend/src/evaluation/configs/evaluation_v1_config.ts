@@ -1,4 +1,4 @@
-import type { EvaluationMetadata } from "../schemas/evaluation_v1"
+import type { EvaluationMetadata } from "../schemas/retrieval_evaluation"
 
 export const evaluationMetadata : EvaluationMetadata = {
     code_version: "e18febd",

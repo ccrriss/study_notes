@@ -2,18 +2,18 @@
 
 import { useApiFetch } from "@/hooks/useApiFetch";
 import { useState } from "react";
-
-import type { RawRetrievedResult, EvaluationResponse, EvaluationCase, EvaluationV1 } from "@/evaluation/schemas/evaluation_v1";
+import type {  EvaluationV1 } from "@/evaluation/schemas/retrieval_evaluation";
 import { evaluationQuestions } from "@/evaluation/datasets/evaluation_questions_v2";
 import { evaluationMetadata } from "@/evaluation/configs/evaluation_v1_config";
-import { get_mrr_and_reslist, EvaluationCaseWithRR } from "@/evaluation/metrics/retrieval_metrics";
+import { RetrievalEvaluationCaseWithRR, calculate_mrr } from "@/evaluation/metrics/retrieval_metrics";
+import { RetrievalEvaluationResponse, RetrievalEvaluationCaseResult, RawRetrievedResult } from "@/evaluation/schemas/retrieval_evaluation";
 
 export default function Page(props: {}){
     const api = useApiFetch();
     const [error, setError] = useState("")
-    const [evaluationResponses, setEvaluationResponses] = useState<Record<string, EvaluationResponse>>({});
+    const [evaluationResponses, setEvaluationResponses] = useState<Record<string, RetrievalEvaluationResponse>>({});
 
-    const [evaluation_with_mrr_list, setEvaluation_with_mrr_list] = useState<EvaluationCaseWithRR[]>([]);
+    const [evaluation_with_mrr_list, setEvaluation_with_mrr_list] = useState<RetrievalEvaluationCaseWithRR[]>([]);
     const [mrr_average, setMrr_average] = useState<number | null>(null);
 
     async function get_answer(query:string, id:string) {
@@ -25,7 +25,7 @@ export default function Page(props: {}){
                     query
                 })
             });
-            const evaluationResponse: EvaluationResponse = res;
+            const evaluationResponse: RetrievalEvaluationResponse = res;
             setEvaluationResponses(prev => {
                 return {
                     ...prev,
@@ -40,10 +40,11 @@ export default function Page(props: {}){
         }
     }
     
-    async function run_evaluation_and_save_results(){
-        let evaluationCases: EvaluationCase[] = [];
+    async function run_retrieval_evaluation_and_save_results(){
+        let evaluationCases: RetrievalEvaluationCaseResult[] = [];
+
         for (const question of evaluationQuestions){
-            const evaluationRes: EvaluationResponse = await get_answer(question.query, question.id);
+            const evaluationRes: RetrievalEvaluationResponse = await get_answer(question.query, question.id);
             evaluationCases.push({
                 id: question.id,
                 query: question.query,
@@ -57,6 +58,8 @@ export default function Page(props: {}){
             metadata: evaluationMetadata,
             cases: evaluationCases
         };
+
+        // save the result as json
         const jsonData = JSON.stringify(evaluationData, null, 2);
         const blob = new Blob([jsonData], {type: "application/json"});
 
@@ -70,14 +73,22 @@ export default function Page(props: {}){
         URL.revokeObjectURL(url);
     }
 
-    async function run_evaluation_and_get_mrr(){
-        const res_list: EvaluationResponse[] = [];
+    async function run_evaluation_and_calculate_mrr(){
+        let evaluationCases: RetrievalEvaluationCaseResult[] = [];
+
         for (const question of evaluationQuestions) {
-            const evaluationRes: EvaluationResponse = await get_answer(question.query, question.id);
-            res_list.push(evaluationRes);
+            const evaluationRes: RetrievalEvaluationResponse = await get_answer(question.query, question.id);
+            evaluationCases.push({
+                id: question.id,
+                query: question.query,
+                gold_answer: question.gold_answer,
+                generated_answer: evaluationRes.generated_answer,
+                gold_section: question.gold_section ?? undefined,
+                raw_retrieved_results: evaluationRes.raw_retrieved_results
+            });
         }
         
-        const evaluation_and_mrr_obj = get_mrr_and_reslist(res_list, evaluationQuestions);
+        const evaluation_and_mrr_obj = calculate_mrr(evaluationCases);
         const mrr_avg = evaluation_and_mrr_obj["mrr_average"];
         const evaluation_case_list = evaluation_and_mrr_obj["evaluation_case_list"];
         setMrr_average(mrr_avg);
@@ -88,13 +99,13 @@ export default function Page(props: {}){
         <main className="max-w-5xl mx-auto p-8 space-y-6">
             <button
                 className="border rounded px-4 py-2"
-                onClick={e => run_evaluation_and_save_results()}
+                onClick={e => run_retrieval_evaluation_and_save_results()}
             >
                 Ask all questions and save
             </button>   
             <button
                 className="border rounded px-4 py-2"
-                onClick={e => run_evaluation_and_get_mrr()}
+                onClick={e => run_evaluation_and_calculate_mrr()}
             >
                 Ask all questions and get MRR and RR for each question
             </button>   

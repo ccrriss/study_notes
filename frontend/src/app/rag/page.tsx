@@ -3,8 +3,8 @@
 import React, { useState } from "react";
 import { useApiFetch } from "@/hooks/useApiFetch";
 import Link from "next/link";
-import type { RawRetrievedResult, EvaluationResponse } from "@/evaluation/schemas/evaluation_v1";
-import type { RagSection, RagResponse, RagSource } from "@/evaluation/schemas/evaluation_v1";
+import type { RawRetrievedResult, RetrievalEvaluationResponse } from "@/evaluation/schemas/retrieval_evaluation";
+import type { RagSection, RagResponse, RagSource } from "@/evaluation/schemas/rag";
 
 
 export default function Page(props: {}) {
@@ -48,7 +48,7 @@ export default function Page(props: {}) {
                 query
             })
         });
-        const evaluationResponse: EvaluationResponse = res;
+        const evaluationResponse: RetrievalEvaluationResponse = res;
         setGenerated_answer(evaluationResponse.generated_answer);
         setRaw_retrieved_results(evaluationResponse.raw_retrieved_results);
     }

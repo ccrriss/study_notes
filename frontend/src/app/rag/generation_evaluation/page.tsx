@@ -4,39 +4,12 @@ import { apiFetch } from "@/lib/api";
 import { useState } from "react";
 import { evaluationQuestions } from "@/evaluation/datasets/evaluation_questions_v2";
 import type { EvaluationQuestion } from "@/evaluation/datasets/evaluation_questions_v2";
+import type { GenerationJudgement, GenerationEvaluationResponse } from "@/evaluation/schemas/generation_evaluation";
 
-interface VitalNuggetJudgement {
-    judgement_type: "vital",
-    nugget: string,
-    label: string,
-    reason: string
-}
-
-interface OkNuggetJudgement {
-    judgement_type: "ok",
-    nugget: string,
-    label: string,
-    reason: string
-}
-
-interface RefuseJudgement {
-    judgement_type: "refusal",
-    label: string,
-    reason: string
-}
-
-type GenerationJudgement = VitalNuggetJudgement | OkNuggetJudgement | RefuseJudgement;
-
-interface GenerationEvaluationRes {
-    id: string,
-    expected_behavior: string, 
-    generated_answer: string,
-    judgements: GenerationJudgement[]
-}
 
 export default function Page(props: {}){
     const [error, setError] = useState("")
-    const [generation_eva_dict, setGeneration_eva_dict] = useState<Record<string, GenerationEvaluationRes>>({});
+    const [generation_eva_dict, setGeneration_eva_dict] = useState<Record<string, GenerationEvaluationResponse>>({});
 
     async function get_generation_eva_dict(question: EvaluationQuestion) {
          try {
@@ -48,7 +21,7 @@ export default function Page(props: {}){
                 )
             });
 
-        const generation_eva_result: GenerationEvaluationRes = res;
+        const generation_eva_result: GenerationEvaluationResponse = res;
         setGeneration_eva_dict(prev => {
             return {
                 ...prev,
