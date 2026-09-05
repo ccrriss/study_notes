@@ -25,25 +25,7 @@ export interface GenerationEvaluationCaseResult {
     judgements: GenerationJudgement[]
 }
 
-export interface GenerationEvaluationMetadata {
-    runtime: RuntimeMetadata,
-
-    embedding_config: {
-        embedding_input: string,
-        name: string,
-        max_seq_len: number
-    },
-    retrieval_config: {
-        top_k: number,
-        similarity_method: string
-    },
-    chunking_config: {
-        method: string,
-        chunk_overlap: number
-    },
-}
-
 export interface GenerationEvaluationRun {
-    metadata: GenerationEvaluationMetadata,
+    metadata: RuntimeMetadata,
     cases: GenerationEvaluationCaseResult[]
 }

@@ -1,6 +1,7 @@
 from ollama import AsyncClient
 
-JUDGE_MODEL_NAME = "qwen3:4b-instruct-2507-q4_K_M"
+# JUDGE_MODEL_NAME = "qwen3:4b-instruct-2507-q4_K_M"
+JUDGE_MODEL_NAME = "qwen3:8b-q4_K_M"
 
 JUDGE_OPTIONS = {
     "temperature": 0,

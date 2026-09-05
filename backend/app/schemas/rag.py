@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Literal, Annotated
 from app.schemas.common import QueryText
 
 class RagRequest(BaseModel):
@@ -32,7 +31,26 @@ class ModelRuntimeData(BaseModel):
     prompt_version: str = Field()
     options: ModelOptions = Field()
 
+# config related metadata
+class EmbeddingConfig(BaseModel):
+    model_name: str = Field()
+    embedding_input: str = Field()
+
+class RetrievalConfig(BaseModel):
+    top_k: int = Field()
+    similarity_method: str = Field()
+
+class ChunkingConfig(BaseModel):
+    method: str = Field()
+    max_seq_length: int = Field()
+    chunk_overlap: int = Field()
+    
+
+# Runtime metadata including all backend metadata
 class RuntimeMetadata(BaseModel):
     code_version: str = Field()
     generation: ModelRuntimeData = Field()
     judge: ModelRuntimeData = Field()
+    embedding: EmbeddingConfig = Field()
+    retrieval: RetrievalConfig = Field()
+    chunking: ChunkingConfig = Field()

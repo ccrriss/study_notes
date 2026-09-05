@@ -1,22 +1,4 @@
-interface BaseEvaluationQuestion {
-    id: string,
-    query: string,
-    gold_answer: string,
-    expected_behavior: "answer" | "refuse",
-    gold_section?: string
-}
-
-interface AnswerQuestion extends BaseEvaluationQuestion {
-    expected_behavior: "answer",
-    vital_nuggets: string[],
-    ok_nuggets?: string[]
-}
-
-interface RefusalQuestion extends BaseEvaluationQuestion {
-    expected_behavior: "refuse"
-}
-
-export type EvaluationQuestion = AnswerQuestion | RefusalQuestion;
+import type { EvaluationQuestion } from "../schemas/evaluation";
 
 export const evaluationQuestions: EvaluationQuestion[] = [
     {

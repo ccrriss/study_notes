@@ -1,5 +1,5 @@
 from sqlalchemy.orm import selectinload
-from sqlalchemy import select, text
+from sqlalchemy import select
 import asyncio
 from sentence_transformers import SentenceTransformer
 import re
@@ -13,7 +13,7 @@ sys.path.append(str(BACKEND_DIR))
 
 from app.db.session import AsyncSessionLocal
 from app.db.models import Post, PostChunk
-
+from app.rag.config import EMBEDDING_CONFIG, CHUNKING_CONFIG
 
 async def getPosts():
     async with AsyncSessionLocal() as db:
@@ -75,7 +75,7 @@ def get_post_with_sections_from_posts(posts: list[Post]) -> list[tuple[Post, lis
     return post_with_sections
 
 def preprocessing_post_with_sections_and_ingest(post_with_sections: list[tuple[Post, list[tuple[list[str], str]]]], model: SentenceTransformer, 
-                      max_seq_length=128, chunk_overlap=8) -> list[PostChunk]:
+                      max_seq_length:int, chunk_overlap: int) -> list[PostChunk]:
     tokenizer: PreTrainedTokenizerBase = model.tokenizer
     special_tokens = tokenizer.num_special_tokens_to_add(pair=False)
 
@@ -127,11 +127,12 @@ def preprocessing_post_with_sections_and_ingest(post_with_sections: list[tuple[P
     return post_chunks
 
 async def ingestion():
-    model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    model = SentenceTransformer(EMBEDDING_CONFIG.model_name)
 
     posts = await getPosts()
     post_with_sections = get_post_with_sections_from_posts(posts)
-    post_chunks = preprocessing_post_with_sections_and_ingest(post_with_sections, model=model)
+    post_chunks = preprocessing_post_with_sections_and_ingest(post_with_sections, model=model, 
+                                        max_seq_length=CHUNKING_CONFIG.max_seq_length, chunk_overlap=CHUNKING_CONFIG.chunk_overlap)
 
     async with AsyncSessionLocal() as db:
         db.add_all(post_chunks)

@@ -23,7 +23,7 @@ export interface RetrievalEvaluationCaseResult {
     raw_retrieved_results: RawRetrievedResult[]
 }
 
-export interface RetrieveEvaluationMetadataV1 {
+export interface RetrievalEvaluationMetadataV1 {
     code_version: string,
     prompt_version: string,
     evaluation_config: string,
@@ -49,7 +49,7 @@ export interface RetrieveEvaluationMetadataV1 {
         }
     }
 }
-export interface EvaluationV1 {
-    metadata: RetrieveEvaluationMetadataV1,
+export interface RetrievalEvaluationRunV1 {
+    metadata: RetrievalEvaluationMetadataV1,
     cases: RetrievalEvaluationCaseResult[]
 }

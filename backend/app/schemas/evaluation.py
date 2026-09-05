@@ -22,7 +22,11 @@ class RefusalQuestion(BaseEvaluationQuestion):
 # EvaluationQuestion = AnswerQuestion | RefuseQuestion
 GenerationEvaluationQuestion = Annotated[AnswerQuestion | RefusalQuestion, Field(discriminator="expected_behavior")]
 
-class GenerationJudgement(BaseModel):
+class JudgeResult(BaseModel):
+    label: str = Field()
+    reason: str = Field()
+
+class GenerationJudgement(JudgeResult):
     judgement_type: Literal["vital", "ok", "refusal"] = Field()
     nugget: str | None = Field(default=None)
     label: str = Field()

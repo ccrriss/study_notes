@@ -3,16 +3,16 @@ from app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 from app.schemas.rag import RagRequest, RagResponse, RagSource, RuntimeMetadata, ModelRuntimeData, ModelOptions
-from app.schemas.evaluation import GenerationEvaluationQuestion, GenerationEvaluationResponse, RawRetrievedResult, RetrievalEvaluationResponse
+from app.schemas.evaluation import JudgeResult, GenerationEvaluationQuestion, GenerationEvaluationResponse, RawRetrievedResult, RetrievalEvaluationResponse
 from app.rag.sources import build_rag_sources
-from app.rag.evaluation.generation import evaluate_generation
+from app.rag.evaluation.generation import evaluate_generation, judge_nugget
 from app.rag.pipeline import run_rag_pipeline
-import json
 from app.core.version import get_git_version
 from app.rag.evaluation.judge import JUDGE_MODEL_NAME, JUDGE_OPTIONS
 from app.rag.generation import GENERATION_MODEL_NAME, GENERATION_OPTIONS
 from app.rag.evaluation.prompts import generation_v2 as judge_prompt
 from app.rag.prompts import answer_v1 as answer_prompt
+from app.rag.config import CHUNKING_CONFIG, EMBEDDING_CONFIG, RETRIEVAL_CONFIG
 
 router = APIRouter(prefix="/api/v1/rag", tags=['posts', 'rag'])
 
@@ -64,4 +64,17 @@ def get_runtime_metadata():
                                            options=ModelOptions.model_validate(JUDGE_OPTIONS))
     return RuntimeMetadata(code_version=code_version,
                            generation=generation_metadata,
-                           judge=judge_metadata)
+                           judge=judge_metadata,
+                           chunking=CHUNKING_CONFIG,
+                           embedding=EMBEDDING_CONFIG,
+                           retrieval=RETRIEVAL_CONFIG)
+
+# TEMP
+@router.post("/judge_comparison", response_model=JudgeResult)
+async def generate_generation_comparison_response(
+    payload: Annotated[dict, Body()],
+    db: AsyncSession = Depends(get_db)
+) -> JudgeResult:
+    judge_result:JudgeResult = await judge_nugget(query=payload["query"], nugget=payload["nugget"],
+                        generated_answer=payload["generated_answer"])
+    return judge_result

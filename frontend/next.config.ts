@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
+  experimental: {
+    proxyTimeout: 120_000,
+  },
+
   async rewrites() {
     return [
       { 

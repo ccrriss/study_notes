@@ -2,9 +2,9 @@
 
 import { useApiFetch } from "@/hooks/useApiFetch";
 import { useState } from "react";
-import type {  EvaluationV1 } from "@/evaluation/schemas/retrieval_evaluation";
+import type {  RetrievalEvaluationRunV1 } from "@/evaluation/schemas/retrieval_evaluation";
 import { evaluationQuestions } from "@/evaluation/datasets/evaluation_questions_v2";
-import { evaluationMetadata } from "@/evaluation/configs/evaluation_v1_config";
+import { retrievalEvaluationMetadataV1 } from "@/evaluation/configs/retrieval_evaluation_v1_config";
 import { RetrievalEvaluationCaseWithRR, calculate_mrr } from "@/evaluation/metrics/retrieval_metrics";
 import { RetrievalEvaluationResponse, RetrievalEvaluationCaseResult, RawRetrievedResult } from "@/evaluation/schemas/retrieval_evaluation";
 
@@ -40,7 +40,7 @@ export default function Page(props: {}){
         }
     }
     
-    async function run_retrieval_evaluation_and_save_results(){
+    async function run_retrieval_evaluation(): Promise<RetrievalEvaluationCaseResult[]>{
         let evaluationCases: RetrievalEvaluationCaseResult[] = [];
 
         for (const question of evaluationQuestions){
@@ -54,8 +54,14 @@ export default function Page(props: {}){
                 raw_retrieved_results: evaluationRes.raw_retrieved_results
             });
         }
-        const evaluationData: EvaluationV1 = {
-            metadata: evaluationMetadata,
+        return evaluationCases;
+    }
+
+    async function run_retrieval_evaluation_and_save_results(){
+        let evaluationCases = await run_retrieval_evaluation();
+
+        const evaluationData: RetrievalEvaluationRunV1 = {
+            metadata: retrievalEvaluationMetadataV1,
             cases: evaluationCases
         };
 
@@ -74,20 +80,8 @@ export default function Page(props: {}){
     }
 
     async function run_evaluation_and_calculate_mrr(){
-        let evaluationCases: RetrievalEvaluationCaseResult[] = [];
-
-        for (const question of evaluationQuestions) {
-            const evaluationRes: RetrievalEvaluationResponse = await get_answer(question.query, question.id);
-            evaluationCases.push({
-                id: question.id,
-                query: question.query,
-                gold_answer: question.gold_answer,
-                generated_answer: evaluationRes.generated_answer,
-                gold_section: question.gold_section ?? undefined,
-                raw_retrieved_results: evaluationRes.raw_retrieved_results
-            });
-        }
-        
+        let evaluationCases = await run_retrieval_evaluation();
+     
         const evaluation_and_mrr_obj = calculate_mrr(evaluationCases);
         const mrr_avg = evaluation_and_mrr_obj["mrr_average"];
         const evaluation_case_list = evaluation_and_mrr_obj["evaluation_case_list"];

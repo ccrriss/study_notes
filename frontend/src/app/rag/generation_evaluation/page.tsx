@@ -3,15 +3,17 @@
 import { apiFetch } from "@/lib/api";
 import { useState } from "react";
 import { evaluationQuestions } from "@/evaluation/datasets/evaluation_questions_v2";
-import type { EvaluationQuestion } from "@/evaluation/datasets/evaluation_questions_v2";
-import type { GenerationJudgement, GenerationEvaluationResponse } from "@/evaluation/schemas/generation_evaluation";
+import type { EvaluationQuestion } from "@/evaluation/schemas/evaluation";
+import type { GenerationEvaluationResponse, GenerationEvaluationCaseResult, GenerationEvaluationRun } from "@/evaluation/schemas/generation_evaluation";
+import type { RuntimeMetadata } from "@/evaluation/schemas/evaluation";
 
+// temp
+import { generation_judge_model_comparison_v1 } from "@/evaluation/calibration/generation_judge_model_comparison_v1";
 
 export default function Page(props: {}){
     const [error, setError] = useState("")
-    const [generation_eva_dict, setGeneration_eva_dict] = useState<Record<string, GenerationEvaluationResponse>>({});
 
-    async function get_generation_eva_dict(question: EvaluationQuestion) {
+    async function run_generation_evaluation(question: EvaluationQuestion): Promise<GenerationEvaluationCaseResult> {
          try {
             const res = await apiFetch("/api/v1/rag/generation_evaluate", {
                 method : "POST",
@@ -21,31 +23,109 @@ export default function Page(props: {}){
                 )
             });
 
-        const generation_eva_result: GenerationEvaluationResponse = res;
-        setGeneration_eva_dict(prev => {
+            const generationEvaluationResponse: GenerationEvaluationResponse = res;
+
             return {
-                ...prev,
-                [question.id]: generation_eva_result
-            }
-        })} catch(err: any){
+                    id: generationEvaluationResponse.id,
+                    query: question.query,
+                    gold_answer: question.gold_answer,
+                    generated_answer: generationEvaluationResponse.generated_answer,
+                    expected_behavior: generationEvaluationResponse.expected_behavior,
+                    judgements: generationEvaluationResponse.judgements,
+                }           
+        } catch(err: any){
             setError(err.message ?? "Unknown Error");
+            throw err;
         } finally {
         }
     }
     
-    async function get_all_generation_eva_results(){
-        for (const question of evaluationQuestions){
-            await get_generation_eva_dict(question);
+    async function get_runtime_metadata(): Promise<RuntimeMetadata>{
+        try {
+            const res = await apiFetch("/api/v1/rag/runtime_metadata", {
+                method: "GET"              
+            })
+            const runtimeMetadata: RuntimeMetadata = res;
+            return runtimeMetadata;
+        } catch(err:any) {
+            setError(err.message ?? "Unknown Error");
+            throw err;
+        } finally {
         }
+    }
+
+    async function run_generation_evaluation_and_save_results(): Promise<void>{
+        const runtime_metadata = await get_runtime_metadata();
+
+        const generationEvaluationCaseResults: GenerationEvaluationCaseResult[] = []
+        for (const question of evaluationQuestions){
+            const generationEvaluationCaseResult = await run_generation_evaluation(question);
+            generationEvaluationCaseResults.push(generationEvaluationCaseResult);           
+        }
+        
+        const generationEvaluationRun: GenerationEvaluationRun = {
+            metadata: runtime_metadata,
+            cases: generationEvaluationCaseResults,
+        }
+
+        const jsonData = JSON.stringify(generationEvaluationRun, null, 2);
+        const blob = new Blob([jsonData], {type: "application/json"});
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "generation_evaluation_results.json"
+        a.click()
+
+        URL.revokeObjectURL(url);     
+    }
+
+    async function run_generate_generation_evaluation_response(){
+        const judge_results = [];
+        for (const data of generation_judge_model_comparison_v1) {
+            const payload = {
+                query: data.query,
+                nugget: data.nugget,
+                generated_answer: data.generated_answer
+            }
+            const judge_result = await apiFetch("/api/v1/rag/judge_comparison", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(payload)
+            })
+            judge_results.push(judge_result);
+        }
+        
+        const judge_results_dict = {
+            results: judge_results
+        }
+
+        const jsonData = JSON.stringify(judge_results_dict);
+        const blob = new Blob([jsonData], {type: "application/json"});
+
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "judge_results.json";
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
     return (
         <main className="max-w-5xl mx-auto p-8 space-y-6">
             <button
                 className="border rounded px-4 py-2"
-                onClick={e => get_all_generation_eva_results()}
+                onClick={e => run_generation_evaluation_and_save_results()}
             >
-                Get_all_generation_eva_results
+                run_generation_evaluation_and_save_results
+            </button>
+            <button
+                className="border rounded px-4 py-2"
+                onClick={e => run_generate_generation_evaluation_response()}
+            >
+                run_generate_generation_evaluation_response_and_save_results
             </button>
 
             {evaluationQuestions.map((question:EvaluationQuestion) => {
@@ -64,7 +144,7 @@ export default function Page(props: {}){
                         <p>{question.expected_behavior}</p>
                         
                         {/* answer part */}
-                        {generation_eva_dict[question.id] && (
+                        {/* {generation_eva_dict[question.id] && (
                             <div className="border-t pt-4 space-y-4">
                                 <div className="border rounded p-4 space-y-3">
                                     <h4 className="font-bold">
@@ -89,7 +169,7 @@ export default function Page(props: {}){
                                     </div>
                                     </div> 
                                 </div>                                                       
-                        )}
+                        )} */}
                       
                     </div>
                 )
