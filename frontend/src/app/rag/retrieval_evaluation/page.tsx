@@ -5,15 +5,13 @@ import { useState } from "react";
 import type {  RetrievalEvaluationRunV1 } from "@/evaluation/schemas/retrieval_evaluation";
 import { evaluationQuestions } from "@/evaluation/datasets/evaluation_questions_v2";
 import { retrievalEvaluationMetadataV1 } from "@/evaluation/configs/retrieval_evaluation_v1_config";
-import { RetrievalEvaluationCaseWithRR, calculate_mrr } from "@/evaluation/metrics/retrieval_metrics";
-import { RetrievalEvaluationResponse, RetrievalEvaluationCaseResult, RawRetrievedResult } from "@/evaluation/schemas/retrieval_evaluation";
+import { calculate_mrr } from "@/evaluation/metrics/retrieval_metrics";
+import { RetrievalEvaluationResponse, RetrievalEvaluationCaseResult, RetrievedResult } from "@/evaluation/schemas/retrieval_evaluation";
 
 export default function Page(props: {}){
     const api = useApiFetch();
     const [error, setError] = useState("")
     const [evaluationResponses, setEvaluationResponses] = useState<Record<string, RetrievalEvaluationResponse>>({});
-
-    const [evaluation_with_mrr_list, setEvaluation_with_mrr_list] = useState<RetrievalEvaluationCaseWithRR[]>([]);
     const [mrr_average, setMrr_average] = useState<number | null>(null);
 
     async function get_answer(query:string, id:string) {
@@ -51,7 +49,9 @@ export default function Page(props: {}){
                 gold_answer: question.gold_answer,
                 generated_answer: evaluationRes.generated_answer,
                 gold_section: question.gold_section ?? undefined,
-                raw_retrieved_results: evaluationRes.raw_retrieved_results
+                dense_results: evaluationRes.dense_results,
+                lexical_results: evaluationRes.lexical_results,
+                hybrid_results: evaluationRes.hybrid_results
             });
         }
         return evaluationCases;
@@ -79,14 +79,30 @@ export default function Page(props: {}){
         URL.revokeObjectURL(url);
     }
 
-    async function run_evaluation_and_calculate_mrr(){
+ 
+    async function run_retrieval_evaluation_and_calculate_rrf(){
         let evaluationCases = await run_retrieval_evaluation();
-     
-        const evaluation_and_mrr_obj = calculate_mrr(evaluationCases);
-        const mrr_avg = evaluation_and_mrr_obj["mrr_average"];
-        const evaluation_case_list = evaluation_and_mrr_obj["evaluation_case_list"];
-        setMrr_average(mrr_avg);
-        setEvaluation_with_mrr_list(evaluation_case_list);
+
+        const mrr_obj = calculate_mrr(evaluationCases);
+
+        const rrf_and_mrr_list_obj = {
+            list: evaluationCases,
+            dense_mrr: mrr_obj["dense_mrr_average"],
+            lexical_mrr: mrr_obj["lexical_mrr_average"],
+            hybrid_mrr: mrr_obj["hybrid_mrr_average"]
+        };
+
+        const jsonData = JSON.stringify(rrf_and_mrr_list_obj, null, 2);
+        const blob = new Blob([jsonData], {type: "application/json"});
+        
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+
+        a.href = url;
+        a.download = "rrf_list.json";
+        a.click();
+
+        URL.revokeObjectURL(url);
     }
 
     return (
@@ -99,26 +115,15 @@ export default function Page(props: {}){
             </button>   
             <button
                 className="border rounded px-4 py-2"
-                onClick={e => run_evaluation_and_calculate_mrr()}
+                onClick={e => run_retrieval_evaluation_and_calculate_rrf()}
             >
-                Ask all questions and get MRR and RR for each question
-            </button>   
+                run_retrieval_evaluation_and_calculate_rrf_and_mrr_and_save
+            </button>     
             {mrr_average != null && (
                 <h4>Average mrr: {mrr_average}</h4>
             )}
 
-            {evaluation_with_mrr_list && (evaluation_with_mrr_list.map((evaluation_case_with_mmr) => {
-                return (
-                    <div key={evaluation_case_with_mmr.id}>
-                        <h5>Id: {evaluation_case_with_mmr.id}</h5>
-                        <h5>Query: {evaluation_case_with_mmr.query}</h5>
-                        <h5>Gold_answer: {evaluation_case_with_mmr.gold_answer}</h5>
-                        <h5>Generated_answer: {evaluation_case_with_mmr.generated_answer}</h5>
-                        <h5>Gold_section: {evaluation_case_with_mmr.gold_section}</h5>
-                        <h5>Reciprocal_rank: {evaluation_case_with_mmr.reciprocal_rank}</h5>
-                    </div>
-                )
-            }))}
+
             {evaluationQuestions.map((question:any) => {
                 return (
                     <div
@@ -151,18 +156,18 @@ export default function Page(props: {}){
 
                                         <div className="border-l-4 pl-4 space-y-2">
                                             <h5>Raw retrieved results:</h5>
-                                            {evaluationResponses[question.id].raw_retrieved_results.map(
-                                                (raw_retrieved_result:RawRetrievedResult, index:number) => {
+                                            {evaluationResponses[question.id].dense_results.map(
+                                                (dense_result:RetrievedResult, index:number) => {
                                                 return (
                                                     <div key={index}>
-                                                        <h5>Rank: {raw_retrieved_result.rank}</h5>
-                                                        <h5>Similarity: {raw_retrieved_result.similarity}</h5>
-                                                        <h5>Post_id: {raw_retrieved_result.post_id}</h5>
-                                                        <h5>Chunk_idx: {raw_retrieved_result.chunk_idx}</h5>
-                                                        <h5>Title: {raw_retrieved_result.title}</h5>
-                                                        <h5>Slug: {raw_retrieved_result.slug}</h5>
-                                                        <h5>Heading_path: {raw_retrieved_result.heading_path.join(" > ")}</h5>
-                                                        <h5>Content: {raw_retrieved_result.content}</h5>                                                       
+                                                        <h5>Rank: {dense_result.rank}</h5>
+                                                        <h5>Similarity: {dense_result.score}</h5>
+                                                        <h5>Post_id: {dense_result.post_id}</h5>
+                                                        <h5>Chunk_idx: {dense_result.chunk_idx}</h5>
+                                                        <h5>Title: {dense_result.title}</h5>
+                                                        <h5>Slug: {dense_result.slug}</h5>
+                                                        <h5>Heading_path: {dense_result.heading_path.join(" > ")}</h5>
+                                                        <h5>Content: {dense_result.content}</h5>                                                       
                                                     </div>
                                                 )
                                             })}

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useApiFetch } from "@/hooks/useApiFetch";
 import Link from "next/link";
-import type { RawRetrievedResult, RetrievalEvaluationResponse } from "@/evaluation/schemas/retrieval_evaluation";
+import type { RetrievedResult, RetrievalEvaluationResponse } from "@/evaluation/schemas/retrieval_evaluation";
 import type { RagSection, RagResponse, RagSource } from "@/evaluation/schemas/rag";
 
 
@@ -17,7 +17,7 @@ export default function Page(props: {}) {
     const [answer, setAnswer] = useState("");
     // for evaluate
     const [generated_answer, setGenerated_answer] = useState("");
-    const [raw_retrieved_results, setRaw_retrieved_results] = useState<RawRetrievedResult[]>([])
+    const [raw_retrieved_results, setRaw_retrieved_results] = useState<RetrievedResult[]>([])
 
     async function submit(e:React.FormEvent){
         e.preventDefault();
@@ -50,7 +50,7 @@ export default function Page(props: {}) {
         });
         const evaluationResponse: RetrievalEvaluationResponse = res;
         setGenerated_answer(evaluationResponse.generated_answer);
-        setRaw_retrieved_results(evaluationResponse.raw_retrieved_results);
+        setRaw_retrieved_results(evaluationResponse.dense_results);
     }
 
     return (
@@ -113,7 +113,7 @@ export default function Page(props: {}) {
                 return (
                     <div key={raw_retrieved_result.rank}>
                         <p>Rank: {raw_retrieved_result.rank}</p>
-                        <p>Similarity: {raw_retrieved_result.similarity}</p>
+                        <p>Similarity: {raw_retrieved_result.score}</p>
                         <p>Post_id: {raw_retrieved_result.post_id}</p>
                         <p>Chunk_idx: {raw_retrieved_result.chunk_idx}</p>
                         <p>Title: {raw_retrieved_result.title}</p>

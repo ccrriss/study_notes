@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Annotated, Literal
 from app.schemas.common import QueryText
 
@@ -40,9 +40,9 @@ class GenerationEvaluationResponse(BaseModel):
 
 # For regular evaluation and mrr
 
-class RawRetrievedResult(BaseModel):
+class RetrievedResult(BaseModel):
     rank: int = Field()
-    similarity: float = Field()
+    score: float = Field()
     post_id: int = Field()
     chunk_idx: int = Field()
     title: str = Field()
@@ -52,4 +52,6 @@ class RawRetrievedResult(BaseModel):
 
 class RetrievalEvaluationResponse(BaseModel):
     generated_answer: str = Field()
-    raw_retrieved_results: list[RawRetrievedResult] = Field()
+    dense_results: list[RetrievedResult] = Field()
+    lexical_results: list[RetrievedResult] = Field()
+    hybrid_results: list[RetrievedResult] = Field()

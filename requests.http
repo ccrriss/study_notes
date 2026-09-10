@@ -13,3 +13,11 @@ Content-Type: application/json
 {
     "query": "FastAPI 接收到登录请求后，是怎样验证用户并最终把 token 返回给前端的?"
 }
+
+### POST Check
+POST http://localhost:8000/api/v1/rag/evaluate
+Content-Type: application/json
+
+{
+    "query": "FastAPI 接收到登录请求后，是怎样验证用户并最终把 token 返回给前端的?"
+}

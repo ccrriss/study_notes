@@ -6,6 +6,11 @@ from app.db.session import engine
 from contextlib import asynccontextmanager
 from app.api import posts, auth, tags, rag
 
+# lexical search
+from app.db.session import AsyncSessionLocal
+from app.rag.retrieval_lexical import build_lexical_search_corpus
+from rank_bm25 import BM25Okapi
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # for local, only when AUTO_CREATE_TABLES is True
@@ -13,6 +18,12 @@ async def lifespan(app: FastAPI):
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         print("AUTO_CREATE_TABLES is enabled, all tables are created")
+
+    async with AsyncSessionLocal() as db:
+        post_chunk_ids, tokenized_corpus = await build_lexical_search_corpus(db)
+        bm25 = BM25Okapi(corpus=tokenized_corpus)
+        app.state.bm25 = bm25
+        app.state.post_chunk_ids = post_chunk_ids
 
     yield
 

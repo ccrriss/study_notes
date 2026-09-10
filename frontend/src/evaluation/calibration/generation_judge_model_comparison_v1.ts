@@ -1,5 +1,14 @@
 // 12 questions for comparing 4B and 8B qwen model
 
+// Judge model comparison V1
+// Dataset: 12 frozen human-labeled cases
+// Prompt: judge_v2
+
+// 4B: 10/12 = 83.3%
+// 8B: 11/12 = 91.7%
+
+// Selected: qwen3:8b-q4_K_M
+
 export const generation_judge_model_comparison_v1 = [{
     id: "B01-2",
     question_id: "B01",

@@ -3,7 +3,7 @@ from app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
 from app.schemas.rag import RagRequest, RagResponse, RagSource, RuntimeMetadata, ModelRuntimeData, ModelOptions
-from app.schemas.evaluation import JudgeResult, GenerationEvaluationQuestion, GenerationEvaluationResponse, RawRetrievedResult, RetrievalEvaluationResponse
+from app.schemas.evaluation import JudgeResult, GenerationEvaluationQuestion, GenerationEvaluationResponse, RetrievedResult, RetrievalEvaluationResponse
 from app.rag.sources import build_rag_sources
 from app.rag.evaluation.generation import evaluate_generation, judge_nugget
 from app.rag.pipeline import run_rag_pipeline
@@ -13,6 +13,13 @@ from app.rag.generation import GENERATION_MODEL_NAME, GENERATION_OPTIONS
 from app.rag.evaluation.prompts import generation_v2 as judge_prompt
 from app.rag.prompts import answer_v1 as answer_prompt
 from app.rag.config import CHUNKING_CONFIG, EMBEDDING_CONFIG, RETRIEVAL_CONFIG
+
+# lexical search
+from app.rag.pipeline import run_lexical_search_pipeline
+from fastapi import Request
+from app.db.models import PostChunk
+from sqlalchemy.orm import selectinload
+from app.rag.retrieval_hybrid import fuse_hybrid_retrieval_results
 
 router = APIRouter(prefix="/api/v1/rag", tags=['posts', 'rag'])
 
@@ -32,19 +39,41 @@ async def generate_rag_response(
 @router.post("/evaluate", response_model=RetrievalEvaluationResponse)
 async def generate_retrieval_evaluation_response(
     payload: Annotated[RagRequest, Body()],
-    db: AsyncSession = Depends(get_db)
+    request: Request,
+    db: AsyncSession = Depends(get_db),
 ) -> RetrievalEvaluationResponse:
-    generated_answer, combined_rows = await run_rag_pipeline(query=payload.query, db=db)
+    query = payload.query
+    generated_answer, combined_rows = await run_rag_pipeline(query=query, db=db)
 
-    raw_retrieved_results_list: list[RawRetrievedResult] = []
-    
+    dense_results: list[RetrievedResult] = []
+    lexical_results: list[RetrievedResult] = []
+
+    bm25 = request.app.state.bm25
+    post_chunk_ids = request.app.state.post_chunk_ids
+    lexical_search_top_k_results = run_lexical_search_pipeline(query=query, bm25=bm25)
+
+    for i, lexical_search_result in enumerate(lexical_search_top_k_results):
+        idx_of_post_chunk_id = lexical_search_result[0]
+        lexical_search_score = lexical_search_result[1]
+        post_chunk_id = post_chunk_ids[idx_of_post_chunk_id]
+        post_chunk = await db.get(PostChunk, post_chunk_id, options=[selectinload(PostChunk.post)])
+        lexical_results.append(
+            RetrievedResult(rank=i+1, score=lexical_search_score, post_id=post_chunk.post_id, chunk_idx=post_chunk.chunk_idx,
+                            title=post_chunk.post.title, slug=post_chunk.post.slug, heading_path=post_chunk.heading_path,
+                            content=post_chunk.content_chunk)
+        )
+
     for i, (post_chunk, similarity) in enumerate(combined_rows):
-        raw_retrieved_results_list.append(
-            RawRetrievedResult(rank=i+1, similarity=similarity, post_id=post_chunk.post_id, chunk_idx=post_chunk.chunk_idx,
+        dense_results.append(
+            RetrievedResult(rank=i+1, score=similarity, post_id=post_chunk.post_id, chunk_idx=post_chunk.chunk_idx,
                 title=post_chunk.post.title, slug=post_chunk.post.slug, heading_path=post_chunk.heading_path,
                 content=post_chunk.content_chunk)
         )
-    return RetrievalEvaluationResponse(generated_answer=generated_answer, raw_retrieved_results=raw_retrieved_results_list)
+
+    hybrid_results = fuse_hybrid_retrieval_results(dense_results=dense_results, lexical_results=lexical_results)
+    
+    return RetrievalEvaluationResponse(generated_answer=generated_answer, 
+                                       dense_results=dense_results, lexical_results=lexical_results, hybrid_results=hybrid_results)
 
 @router.post("/generation_evaluate", response_model=GenerationEvaluationResponse)
 async def generate_generation_evaluation_response(

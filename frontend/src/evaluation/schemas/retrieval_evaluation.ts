@@ -1,6 +1,6 @@
-export interface RawRetrievedResult {
+export interface RetrievedResult {
     rank: number,
-    similarity: number,
+    score: number,
     post_id: number,
     chunk_idx: number,
     title: string,
@@ -11,7 +11,9 @@ export interface RawRetrievedResult {
 
 export interface RetrievalEvaluationResponse {
     generated_answer: string,
-    raw_retrieved_results: RawRetrievedResult[]
+    dense_results: RetrievedResult[],
+    lexical_results: RetrievedResult[]
+    hybrid_results: RetrievedResult[]
 }
 
 export interface RetrievalEvaluationCaseResult {
@@ -20,7 +22,10 @@ export interface RetrievalEvaluationCaseResult {
     gold_answer: string,
     generated_answer: string,
     gold_section?: string,
-    raw_retrieved_results: RawRetrievedResult[]
+    dense_results: RetrievedResult[],
+    lexical_results: RetrievedResult[]
+    hybrid_results: RetrievedResult[]
+
 }
 
 export interface RetrievalEvaluationMetadataV1 {

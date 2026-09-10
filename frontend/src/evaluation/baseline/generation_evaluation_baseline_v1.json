@@ -1,0 +1,428 @@
+{
+  "metadata": {
+    "code_version": "c933ceb",
+    "generation": {
+      "model": "qwen3:4b-instruct-2507-q4_K_M",
+      "prompt_version": "answer_v1",
+      "options": {
+        "temperature": 0,
+        "seed": 42,
+        "num_ctx": 4096
+      }
+    },
+    "judge": {
+      "model": "qwen3:8b-q4_K_M",
+      "prompt_version": "judge_v2",
+      "options": {
+        "temperature": 0,
+        "seed": 42,
+        "num_ctx": 4096
+      }
+    },
+    "embedding": {
+      "model_name": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "embedding_input": "heading_path+content"
+    },
+    "retrieval": {
+      "top_k": 3,
+      "similarity_method": "cos_similarity"
+    },
+    "chunking": {
+      "method": "markdown-aware",
+      "max_seq_length": 128,
+      "chunk_overlap": 8
+    }
+  },
+  "cases": [
+    {
+      "id": "H01",
+      "query": "FastAPI 接收上传文件时，如果文件比较大，参数类型应该用 bytes 还是 UploadFile?",
+      "gold_answer": "文件比较大时应使用 `Annotated[UploadFile, File()]`；`Annotated[bytes, File()]` 适用于小文件。",
+      "generated_answer": "对于大文件，应该使用 `UploadFile` 而不是 `bytes`。\n\n理由：  \n- 上下文 [Source 1] 明确指出：“小文件, `Annotated[UploadFile, File()]`-大文件”，暗示大文件应使用 `UploadFile`。  \n- 上下文 [Source 2] 提到“传文件: `Annotated[bytes, File()]`-小文件, `Annotated`”，表明 `bytes` 适用于小文件，而大文件未被提及，但结合上下文逻辑，`bytes` 用于小文件，大文件应使用更合适的类型。  \n- `UploadFile` 是 FastAPI 中专门用于处理文件上传的类型，支持大文件的流式处理和内存管理，避免一次性加载整个文件到内存中。\n\n因此，当文件较大时，参数类型应使用 `UploadFile`。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确指出大文件应使用 `UploadFile`，与 nugget 中的结论一致。虽然未直接提及 `Annotated` 包装，但核心推荐的类型 `UploadFile` 与 nugget 的事实完全吻合，且未产生矛盾。",
+          "judgement_type": "vital",
+          "nugget": "文件比较大时应使用 `Annotated[UploadFile, File()]`。"
+        },
+        {
+          "label": "supported",
+          "reason": "The generated answer explicitly confirms that `Annotated[bytes, File()]` is suitable for small files (as stated in the nugget), and explains that `UploadFile` is better for large files. This directly supports the fact in the nugget without contradiction.",
+          "judgement_type": "ok",
+          "nugget": "`Annotated[bytes, File()]` 适用于小文件。"
+        }
+      ]
+    },
+    {
+      "id": "H02",
+      "query": "JavaScript 调用 fetch() 后，在请求完成前和完成后分别得到什么类型的对象？完成后的对象里可以看哪些请求结果信息?",
+      "gold_answer": "调用 `fetch()` 后先得到 `Promise` 对象；请求完成后得到 `Response` 对象，其中可以查看 `status`、`statusText`、`ok` 等字段。",
+      "generated_answer": "JavaScript 调用 fetch() 后：\n\n- 在请求完成前，得到的是一个 `Promise` 对象。\n- 在请求完成后，该 Promise 被解析为一个 `Response` 对象。\n\n完成后的 `Response` 对象中可以查看的请求结果信息包括：\n- `status`（HTTP 状态码）\n- `statusText`（HTTP 状态码对应的文本描述）\n- `ok`（布尔值，表示请求是否成功，即状态码在 200-299 范围内）\n\n这些信息均来自提供的上下文内容。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确指出调用 fetch() 后在请求完成前得到的是 Promise 对象，这与 nugget 中的陈述完全一致。后续关于 Response 对象的描述属于补充信息，未影响对当前 nugget 的支持判断。",
+          "judgement_type": "vital",
+          "nugget": "调用 `fetch()` 后先得到 `Promise` 对象。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确说明请求完成后得到 `Response` 对象，与 nugget 的事实完全一致。额外提到的 `status`、`statusText`、`ok` 等属性属于补充信息，未影响 nugget 中核心事实的准确性。",
+          "judgement_type": "vital",
+          "nugget": "请求完成后得到 `Response` 对象。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确提到在请求完成后获得的 Response 对象中包含 status、statusText、ok 等请求结果信息，与 nugget 的描述完全一致。",
+          "judgement_type": "vital",
+          "nugget": "可以在 `Response` 对象中查看 `status`、`statusText`、`ok` 等请求结果信息。"
+        }
+      ]
+    },
+    {
+      "id": "H03",
+      "query": "我在 Next.js 客户端组件里读取一个叫 API_SECRET 的环境变量，但没有给它加特殊前缀. 按照笔记里的规则，浏览器端能直接拿到它吗?",
+      "gold_answer": "不能。在 Next.js 中，只有以 `NEXT_PUBLIC` 开头的环境变量才会被注入浏览器端代码；`API_SECRET` 没有该前缀，因此浏览器端不能直接拿到它。",
+      "generated_answer": "不会。按照笔记里的规则，只有以 `NEXT_PUBLIC` 开头的环境变量才会被注入到浏览器端代码中。你没有给 `API_SECRET` 加 `NEXT_PUBLIC` 前缀，因此它不会被注入到浏览器端，浏览器端无法直接拿到这个环境变量。\n\n所以，在 Next.js 客户端组件中读取 `API_SECRET` 时，浏览器端是无法直接拿到它的。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确说明只有以 NEXT_PUBLIC 开头的环境变量才会被注入浏览器端代码，而 API_SECRET 没有该前缀因此无法被浏览器访问，这与 nugget 中的结论完全一致且无矛盾信息。",
+          "judgement_type": "vital",
+          "nugget": "浏览器端不能直接拿到 `API_SECRET`，因为只有以 `NEXT_PUBLIC` 开头的环境变量才会被注入浏览器端代码，而 `API_SECRET` 没有该前缀。"
+        }
+      ]
+    },
+    {
+      "id": "H04",
+      "query": "一个 FastAPI endpoint 同时写了返回类型注解和 response_model, 实际返回的数据里还有模型之外的额外字段. 哪一个定义会优先控制最终响应, 这些额外字段会怎样?",
+      "gold_answer": "`response_model` 的优先级更高，它负责响应数据的校验和转换；模型之外的多余字段会被删除。返回类型注解 `-> type` 表示真正的返回类型。",
+      "generated_answer": "`response_model` 会优先控制最终响应。根据上下文，`response_model` 负责校验和转换，如果返回的数据中包含模型之外的额外字段，这些多余字段会被删除，不会出现在最终响应中。因此，最终响应将只包含 `response_model` 定义的字段，额外字段不会被保留。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确说明了`response_model`优先控制响应，并解释了额外字段会被删除。这与当前nugget中'response_model的优先级高于返回类型注解，并控制最终响应'的事实完全一致，没有矛盾或遗漏。",
+          "judgement_type": "vital",
+          "nugget": "`response_model` 的优先级高于返回类型注解，并控制最终响应。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确说明了当存在模型外的额外字段时，这些字段会被删除，这与nugget中'模型之外的多余字段会被删除'的事实完全一致。答案未添加与nugget矛盾的信息，且直接支持了该事实。",
+          "judgement_type": "vital",
+          "nugget": "模型之外的多余字段会被删除。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确支持当前nugget的事实，即response_model负责响应数据的校验和转换。答案正确指出当存在额外字段时，response_model会优先控制响应并删除多余字段，这与nugget的描述完全一致。",
+          "judgement_type": "ok",
+          "nugget": "`response_model` 负责响应数据的校验和转换。"
+        },
+        {
+          "label": "not_supported",
+          "reason": "生成的答案声称 response_model 会优先控制响应并删除额外字段，这与 nugget 中 '返回类型注解 -> type 表示真正的返回类型' 的事实直接矛盾。FastAPI 中返回类型注解和 response_model 的作用不同：前者是类型提示，后者用于验证和序列化，但实际返回类型仍由返回类型注解决定。",
+          "judgement_type": "ok",
+          "nugget": "返回类型注解 `-> type` 表示真正的返回类型。"
+        }
+      ]
+    },
+    {
+      "id": "H05",
+      "query": "点击一个子元素时，我只想阻止外层元素绑定的点击处理函数一起触发，但不想取消这个元素原本的浏览器默认行为，应该调用哪个方法?",
+      "gold_answer": "应调用 `e.stopPropagation()`，它会阻止触发绑定在外层标签上的事件处理函数，但不会取消元素原本的浏览器默认行为。",
+      "generated_answer": "应该调用 `e.stopPropagation()` 方法。\n\n解释：根据上下文 [Source 1]，`e.stopPropagation()` 的作用是“阻止触发绑定在外层标签上的事件处理函数”，这正好符合你想要“只阻止外层元素绑定的点击处理函数一起触发”的需求。而你不想取消浏览器默认行为，因此不需要使用 `e.preventDefault()`，因为它会阻止浏览器的默认行为。所以，正确的方法是 `e.stopPropagation()`。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确指出应调用 `e.stopPropagation()`，并准确解释其作用是阻止外层事件处理函数触发，同时说明不需要使用 `e.preventDefault()`。这完全符合 Nuggets 中关于调用 `e.stopPropagation()` 的事实描述，且未引入矛盾信息。",
+          "judgement_type": "vital",
+          "nugget": "应调用 `e.stopPropagation()`；它会阻止绑定在外层标签上的事件处理函数触发，但不会取消元素原本的浏览器默认行为。"
+        }
+      ]
+    },
+    {
+      "id": "H06",
+      "query": "Python 正则中，我只需要找到字符串中任意位置的第一个匹配，并希望拿到一个 Match 对象；不要求匹配必须从字符串开头开始。应该用哪个函数?",
+      "gold_answer": "应使用 `re.search(pattern, string, flags=0)`。它不要求从字符串开头匹配，并返回一个 `Match` 对象或 `None`，最多返回一个匹配。",
+      "generated_answer": "应该用 `re.search()` 函数。\n\n解释：根据提供的上下文，`re.search()` 不要求匹配必须从字符串开头开始，它会在字符串中任意位置找到第一个匹配，并返回一个 Match 对象或 None。这符合用户的需求。而 `re.match()` 要求从开头开始匹配，`re.findall()` 返回的是一个列表，不符合“拿到一个 Match 对象”的要求。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确指出应使用 `re.search()` 函数，并正确解释了其特性（不要求从字符串开头匹配、返回第一个匹配的 Match 对象）。该回答完全符合 nugget 中描述的事实，未添加矛盾信息。",
+          "judgement_type": "vital",
+          "nugget": "应使用 `re.search(pattern, string, flags=0)`；它不要求从字符串开头匹配，并返回第一个匹配的 `Match` 对象或 `None`。"
+        }
+      ]
+    },
+    {
+      "id": "H07",
+      "query": "按照笔记里的 JWT 部分，生成 JWT 使用什么 Python 库？生成 secret key 的命令是什么? JWT 具体使用哪一种签名算法?",
+      "gold_answer": "笔记中写明生成 JWT 使用 `pyjwt` 库，生成 secret key 的命令是 `python -c \"import secrets; print(secrets.token_hex(32))\"`。但笔记没有说明 JWT 具体使用哪一种签名算法，因此无法根据现有 Markdown 文档确定该部分。",
+      "generated_answer": "生成 JWT 使用的 Python 库是 `pyjwt`。\n\n生成 secret key 的命令是：`python -c \"import secrets; print(secrets.token_hex(32))\"`。\n\nJWT 具体使用的是 HMAC 签名算法（虽然上下文中未明确说明算法名称，但根据 `pyjwt` 库的默认行为和常见实践，通常使用 HMAC-SHA256，且在未指定算法时默认为 HMAC-SHA256）。\n\n注意：上下文未明确指出签名算法的名称，因此“JWT 具体使用哪一种签名算法”这一部分无法从上下文中直接确认，仅能基于常见实践推断。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案例子明确指出'生成 JWT 使用的 Python 库是 `pyjwt`'，这与当前 nugget 的事实'生成 JWT 使用 `pyjwt` 库'完全一致，且未出现矛盾或错误信息。",
+          "judgement_type": "vital",
+          "nugget": "生成 JWT 使用 `pyjwt` 库。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案例子中明确给出了与当前 nugget 完全一致的 '生成 secret key 的命令'，即 `python -c \"import secrets; print(secrets.token_hex(32))\"`，且未添加与该事实矛盾的信息。其他关于 JWT 库和签名算法的内容属于其他问题范畴，不影响当前 nugget 的判断。",
+          "judgement_type": "vital",
+          "nugget": "生成 secret key 的命令是 `python -c \"import secrets; print(secrets.token_hex(32))\"`。"
+        },
+        {
+          "label": "not_supported",
+          "reason": "The generated answer specifies HMAC-SHA256 as the signing algorithm, but the nugget explicitly states that the Markdown document does not mention the specific algorithm. The answer introduces information not present in the provided context, which contradicts the nugget's assertion that the algorithm cannot be determined from the document.",
+          "judgement_type": "vital",
+          "nugget": "现有 Markdown 文档没有说明 JWT 具体使用哪一种签名算法，因此无法确定该算法。"
+        }
+      ]
+    },
+    {
+      "id": "H08",
+      "query": "本地 PostgreSQL 服务默认监听哪个 TCP 端口?",
+      "gold_answer": "现有 Markdown 文档内容不足以回答该问题。",
+      "generated_answer": "I don't know based on the provided context.",
+      "expected_behavior": "refuse",
+      "judgements": [
+        {
+          "label": "correct_refusal",
+          "reason": "Both the gold answer and generated answer correctly refuse to answer the query by stating the provided context lacks sufficient information. The generated answer does not provide any specific port number or contradict the gold answer's refusal.",
+          "judgement_type": "refusal",
+          "nugget": null
+        }
+      ]
+    },
+    {
+      "id": "B01",
+      "query": "FastAPI 接收到登录请求后，是怎样验证用户并最终把 token 返回给前端的?",
+      "gold_answer": "先通过表单取得用户名并到数据库中比对；用户不存在就报错。用户存在时，将哈希后的表单密码用于比对，密码不一致就报错；一致时向前端返回 token 对象，结构为 `{access_token: str, token_type: \"bearer\"}`。",
+      "generated_answer": "FastAPI接收到登录请求后，通过表单获取用户名和密码，然后在数据库中比对用户名是否存在，若存在则与密码的哈希值进行对比。如果用户名和密码一致，则生成一个token对象，其结构为 `{access_token: str, token_type: \"bearer\"}`，并返回给前端。该token通过HTTP请求头的 `Authorization: Bearer ${token}` 格式传递，由前端在后续请求中携带以进行身份验证。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "partially_supported",
+          "reason": "生成的回答提到了通过表单获取用户名和密码，并在数据库中比对用户名是否存在，这支持了 nugget 中的前半部分。但 nugget 明确要求『用户不存在时报告错误』，而生成的回答未明确提及此错误报告流程，仅描述了存在时的密码比对逻辑，因此缺少关键事实。",
+          "judgement_type": "vital",
+          "nugget": "通过表单取得用户名并在数据库中查找对应用户；用户不存在时报告错误。"
+        },
+        {
+          "label": "partially_supported",
+          "reason": "生成的回答明确提到在用户存在时会与密码的哈希值进行对比（支持了 nugget 的第一部分），但未提及密码不一致时报告错误的逻辑（缺失了 nugget 的第二部分），因此仅部分支持该 nugget。",
+          "judgement_type": "vital",
+          "nugget": "用户存在时，将哈希后的表单密码用于比对；密码不一致时报告错误。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的回答明确说明了在密码一致时会返回结构为 `{access_token: str, token_type: \"bearer\"}` 的 token 对象，与 nugget 中的描述完全一致。",
+          "judgement_type": "vital",
+          "nugget": "密码一致时向前端返回结构为 `{access_token: str, token_type: \"bearer\"}` 的 token 对象。"
+        }
+      ]
+    },
+    {
+      "id": "B02",
+      "query": "我想限制哪些前端域名能够访问 FastAPI 后端，应该配置什么?",
+      "gold_answer": "应配置 `CORSMiddleware`，把允许访问后端的前端域名放入 `origins`，并通过 `allow_origins=origins` 传给中间件。",
+      "generated_answer": "我 don't know based on the provided context.",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "not_supported",
+          "reason": "生成的答案未提及配置 CORSMiddleware 或任何与限制前端域名访问相关的具体方法，而是以模糊的 'I don't know' 回应，与 nugget 中的 fact 直接不符。",
+          "judgement_type": "vital",
+          "nugget": "应配置 `CORSMiddleware`."
+        },
+        {
+          "label": "not_supported",
+          "reason": "生成的答案完全未提及配置 FastAPI 后端允许访问的前端域名方法，未涉及 `origins` 或 `allow_origins` 参数的使用，与 nugget 中的核心事实无关。",
+          "judgement_type": "ok",
+          "nugget": "把允许访问后端的前端域名放入 `origins`，并通过 `allow_origins=origins` 传给中间件。"
+        }
+      ]
+    },
+    {
+      "id": "B03",
+      "query": "React 中我只想保存一个跨 render 持久存在的值，但修改它时不希望组件重新渲染，应该用什么?",
+      "gold_answer": "应使用 `useRef`。它提供一个可变且能跨 render 持久化的容器，修改 `ref.current` 不会触发组件重新渲染。",
+      "generated_answer": "应该用 **useRef**。\n\n理由：根据上下文 [Source 1]，`useRef` 的特性是“ref.current 改变不会导致渲染”，因此适合用于保存跨 render 持久存在的值，且在修改该值时不希望组件重新渲染。而 `useCallback` 是缓存函数，不适用于保存值；自定义 Hook 的行为取决于内部是否 setState，无法保证不触发渲染。因此，`useRef` 是最符合需求的选项。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确指出应使用 `useRef`，并解释了其特性（修改 `ref.current` 不会触发组件重新渲染），完全符合当前 nugget 的事实描述。",
+          "judgement_type": "vital",
+          "nugget": "应使用 `useRef`；它提供一个能跨 render 持久化的可变容器，修改 `ref.current` 不会触发组件重新渲染。"
+        }
+      ]
+    },
+    {
+      "id": "B04",
+      "query": "组件里的副作用是不是都应该放进 useEffect?用户点击按钮后发请求也一定要放进去吗?",
+      "gold_answer": "不是。与组件渲染或状态变化绑定的副作用应使用 `useEffect`，并通过依赖数组控制；与用户动作相关的副作用应直接写在 `onClick`、`onSubmit` 等事件回调里，因此点击按钮后发请求不一定要放进 `useEffect`。",
+      "generated_answer": "组件里的副作用并不都必须放进 `useEffect` 里。根据上下文：\n\n- 和“组件渲染相关”的副作用（如数据获取、DOM 操作）→ 应该用 `useEffect`，并通过依赖数组控制其执行时机。\n- 和“用户动作相关”的副作用（如用户点击按钮后发请求）→ 应该直接写在事件回调里（如 `onClick`、`onSubmit`）。\n\n因此，用户点击按钮后发请求**不一定**要放进 `useEffect`，而是根据具体场景决定：如果是响应用户操作（如点击按钮），则应直接写在事件回调中。\n\n结论：  \n不是所有副作用都必须放进 `useEffect`，用户点击按钮后发请求也**不一定**要放进 `useEffect`，而是应根据是否与组件渲染或用户动作相关来决定。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确支持当前 nugget 的事实：它指出与组件渲染或状态变化绑定的副作用应使用 `useEffect`，并举例说明用户操作相关的副作用（如按钮点击）应直接写在事件回调中，这与 nugget 中的判断标准完全一致。",
+          "judgement_type": "vital",
+          "nugget": "与组件渲染或状态变化绑定的副作用应使用 `useEffect`。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确支持当前nugget的核心观点：与用户动作相关的副作用（如点击按钮后发请求）应直接写在事件回调中而非useEffect。答案通过分类说明和结论句直接呼应了nugget的主张，未引入矛盾信息。",
+          "judgement_type": "vital",
+          "nugget": "与用户动作相关的副作用应直接写在 `onClick`、`onSubmit` 等事件回调里，因此点击按钮后发请求不一定要放进 `useEffect`。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确提到 \"useEffect 的执行可以通过依赖数组控制\"，并举例说明了通过依赖数组控制 useEffect 执行时机的场景（如数据获取、DOM 操作），这与 nugget 中的表述完全一致。",
+          "judgement_type": "ok",
+          "nugget": "`useEffect` 的执行可以通过依赖数组控制。"
+        }
+      ]
+    },
+    {
+      "id": "B05",
+      "query": "在 TypeScript 中，为什么定义了 interface Post 之后, 程序运行时并不会检查接口?",
+      "gold_answer": "因为 `interface Post` 不会被编译成 JavaScript 代码，运行时不存在这个接口。它只用于告诉 TypeScript 编译器数据应具有哪些字段和类型，运行时不会检查数据是否为 `Post` 类型。",
+      "generated_answer": "因为在 TypeScript 中，`interface Post` 只是告诉编译器一种数据的“形状”或“结构”，它不会被编译成 JavaScript 代码，因此在程序运行时并不存在这个接口。运行时不会检查数据是否符合 `Post` 类型，这是 TypeScript 的设计原则：类型检查只在编译阶段进行，运行时只处理实际的 JavaScript 对象和值。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确说明了 `interface Post` 不会被编译成 JavaScript 代码，因此运行时不存在该接口，并且解释了运行时不会检查数据是否符合 `Post` 类型，这与 nugget 中的描述完全一致。",
+          "judgement_type": "vital",
+          "nugget": "`interface Post` 不会被编译成 JavaScript 代码，因此运行时不存在该接口，也不会检查数据是否为 `Post` 类型。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确说明了 `interface Post` 的作用是告知TypeScript编译器数据结构，且不会在运行时存在，这与nugget中'interface Post只用于告诉TypeScript编译器数据应具有哪些字段和类型'的事实完全一致。",
+          "judgement_type": "ok",
+          "nugget": "`interface Post` 只用于告诉 TypeScript 编译器数据应具有哪些字段和类型。"
+        }
+      ]
+    },
+    {
+      "id": "B06",
+      "query": "图片有阴影或者不同区域亮度差异很大时, 全局二值化效果不好, 可以换成什么方法?",
+      "gold_answer": "可以改用 `cv2.adaptiveThreshold()` 进行局部自适应阈值二值化。它会根据 `blockSize` 为各局部区域计算阈值，可选择均值法 `ADAPTIVE_THRESH_MEAN_C` 或高斯法 `ADAPTIVE_THRESH_GAUSSIAN_C`。",
+      "generated_answer": "当图片有阴影或者不同区域亮度差异很大时，全局二值化效果不好，可以换成**自适应阈值化（adaptive thresholding）**方法。\n\n理由：根据[Source 1]和[Source 3]，全局阈值（如`cv2.threshold`）使用一个固定的阈值，对光照不均匀或有阴影的图像效果不佳；而自适应阈值（如`cv2.adaptiveThreshold`）会根据局部区域的亮度自适应地计算阈值，更适合处理光照不均匀或有阴影的图像。[Source 3]明确指出“全局阈值...如果有阴影或者光照不均匀会导致阴影覆盖的白色也被转为黑色”，因此推荐使用自适应阈值方法。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成答案明确提到可以使用自适应阈值化方法，并具体指出应使用`cv2.adaptiveThreshold()`，这与nugget中推荐的解决方案完全一致。虽然补充了全局阈值与自适应阈值的对比说明，但未 contradict nugget中的核心事实。",
+          "judgement_type": "vital",
+          "nugget": "可以改用 `cv2.adaptiveThreshold()` 进行局部自适应阈值二值化。"
+        },
+        {
+          "label": "partially_supported",
+          "reason": "生成的答案提到自适应阈值化方法，并说明其根据局部区域亮度计算阈值，这与nugget中关于blockSize和局部阈值计算的核心概念一致。但未明确提及nugget中要求的两种具体方法（ADAPTIVE_THRESH_MEAN_C和ADAPTIVE_THRESH_GAUSSIAN_C），因此缺少关键细节支持。",
+          "judgement_type": "ok",
+          "nugget": "它会根据 `blockSize` 为各局部区域计算阈值，并可选择均值法 `ADAPTIVE_THRESH_MEAN_C` 或高斯法 `ADAPTIVE_THRESH_GAUSSIAN_C`。"
+        }
+      ]
+    },
+    {
+      "id": "B07",
+      "query": "SQLAlchemy 里我已经查询出了 Post, 之后才发现需要访问 post.tags, 异步环境下该怎么办?",
+      "gold_answer": "对于已经查询出的 `Post`，之后临时需要加载 `post.tags` 时，应使用 `await post.awaitable_attrs.tags`。如果提前知道需要 tags，可以在查询时使用 `selectinload(Post.tags)`，也可以把关系设置为 `relationship(..., lazy=\"selectin\")`。",
+      "generated_answer": "在异步环境下，如果已经查询出了 Post 但后来才发现需要访问 `post.tags`，可以使用 `await post.awaitable_attrs.tags` 来触发懒加载，避免因不在 IO 环境中而报错。\n\n解决方法是：**使用 `await post.awaitable_attrs.tags`**，这会在异步环境中安全地延迟加载 `tags` 属性。\n\n> 说明：根据 [Source 1]，在异步环境下，如果想访问对象属性（如 `post.tags`），会触发惰性查询，此时会报错，因为不在 IO 环境中。解决方法之一是使用 `await post.awaitable_attrs.tags`，该方法允许在异步环境中延迟加载属性。\n\n注意：此方法适用于已经查询出对象后临时需要访问其关系属性的情况。如果提前知道需要 `tags`，也可以使用 `selectinload(Post.tags)` 进行预加载。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确支持了当前 nugget 的核心事实，即通过 `await post.awaitable_attrs.tags` 在异步环境中安全加载 `post.tags`。虽然补充了预加载方法的信息，但未与 nugget 的事实冲突，且未影响核心判断。",
+          "judgement_type": "vital",
+          "nugget": "对于已经查询出的 `Post`，之后临时加载 `post.tags` 时应使用 `await post.awaitable_attrs.tags`。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确提到了当提前知道需要tags时可以使用selectinload(Post.tags)，这与nugget中建议的解决方案完全一致。虽然答案还提到了awaitable_attrs的方法，但该方法属于补充说明，未影响nugget中核心事实的正确性。",
+          "judgement_type": "ok",
+          "nugget": "如果提前知道需要 tags，可以在查询时使用 `selectinload(Post.tags)`，或把关系设置为 `relationship(..., lazy=\"selectin\")`。"
+        }
+      ]
+    },
+    {
+      "id": "B08",
+      "query": "我只想让数据库事务在代码块正常结束时提交，发生异常时自动回滚，应该选 engine.connect() 还是 engine.begin()?",
+      "gold_answer": "应选择 `engine.begin()`。它会自动开启事务，在代码块正常结束时自动提交，发生异常时自动回滚；`engine.connect()` 不会自动提交或回滚，需要手动控制。",
+      "generated_answer": "你应该选择 `engine.begin()`。\n\n理由：根据上下文，`engine.begin()` 会自动开启事务，并在正常结束时提交、发生异常时自动回滚，符合你“只想让数据库事务在代码块正常结束时提交，发生异常时自动回滚”的需求。而 `engine.connect()` 不会自动开启事务，也不自动提交或回滚，需要手动管理，不适合你的场景。\n\n对比信息来自 [Source 1] 和 [Source 2]，明确指出：\n- `engine.begin()` ✅ 自动提交或出错时回滚，推荐用于一般查询/写入（安全简洁）。\n- `engine.connect()` ❌ 不自动开启事务，❌ 不自动提交/回滚，适合低层控制和复杂逻辑。\n\n因此，为满足你的需求，应选 `engine.begin()`。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确指出应选择 `engine.begin()`，并解释其会自动提交和回滚，与nugget中的事实完全一致。同时明确说明 `engine.connect()` 需要手动管理事务，未出现矛盾或无关信息。",
+          "judgement_type": "vital",
+          "nugget": "应选择 `engine.begin()`；它会在代码块正常结束时自动提交，并在发生异常时自动回滚。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确指出 `engine.begin()` 会自动开启事务，这与当前 nugget 的事实完全一致。答案未添加与 nugget 内容矛盾的信息，且直接支持了 nugget 中的核心事实。",
+          "judgement_type": "ok",
+          "nugget": "`engine.begin()` 会自动开启事务。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确支持当前 nugget 的事实：指出 `engine.connect()` 不会自动提交或回滚，需要手动控制。答案中关于 `engine.connect()` 的描述与 nugget 完全一致，且未添加矛盾信息。",
+          "judgement_type": "ok",
+          "nugget": "`engine.connect()` 不会自动提交或回滚，需要手动控制。"
+        }
+      ]
+    },
+    {
+      "id": "B09",
+      "query": "正则表达式需要对很多字符串重复使用同一个 pattern 时，有什么方式可以避免每次都重新写 pattern?",
+      "gold_answer": "可以使用 `re.compile(pattern)` 将正则表达式编译为 `Pattern` 对象，然后重复调用该对象的 `match`、`search`、`findall` 等方法。",
+      "generated_answer": "可以使用 `re.compile(pattern)` 将正则表达式编译为 Pattern 对象，之后就可以重复使用这个 Pattern 对象来调用 `match`、`search`、`findall` 等方法，从而避免每次都重新写 pattern。这种方式特别适合同一个 pattern 重复使用的情况。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确提到使用 `re.compile(pattern)` 将正则表达式编译为 Pattern 对象，并说明此方法能避免重复书写 pattern，与 nugget 中的表述完全一致且无矛盾信息。",
+          "judgement_type": "vital",
+          "nugget": "可以使用 `re.compile(pattern)` 将正则表达式编译为可重复使用的 `Pattern` 对象。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确说明通过re.compile编译得到Pattern对象后，可以重复调用其match/search/findall等方法，这与nugget中'重复调用Pattern对象的方法'的表述完全一致，且未引入矛盾信息。",
+          "judgement_type": "ok",
+          "nugget": "可以重复调用该 `Pattern` 对象的 `match`、`search`、`findall` 等方法。"
+        }
+      ]
+    },
+    {
+      "id": "B10",
+      "query": "SQL 查询里 JOIN ... ON ... 中的 ON 到底负责什么，和 JOIN 本身分别起什么作用?",
+      "gold_answer": "`JOIN` 通过关联条件把原本分散在不同表里的数据组合起来；`ON` 用来决定两张表中的哪些行应该互相连接。",
+      "generated_answer": "在 SQL 查询中：\n\n- **JOIN** 本身的作用是“把原本分散在不同表里的数据组合起来”，它是一种数据连接操作，用于将两个或多个表根据某种关系合并成一个结果集。常见的 JOIN 类型如 INNER JOIN（交集）、LEFT OUTER JOIN（左外联）等，都是通过 JOIN 实现数据的组合。\n\n- **ON** 的作用是“决定两张表的哪些行应该互相连接”，即指定连接条件。它定义了在 JOIN 操作中，如何匹配两个表中的行（例如，基于主键、外键或其他字段的相等关系）。\n\n简而言之：\n- **JOIN** 是“做什么”——把表的数据组合在一起；\n- **ON** 是“怎么组合”——定义匹配条件，决定哪些行可以连接。\n\n两者配合使用，例如：`SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id`，表示“从 table1 和 table2 中，通过 id 相等的条件连接数据”。",
+      "expected_behavior": "answer",
+      "judgements": [
+        {
+          "label": "supported",
+          "reason": "生成的答案明确说明了 JOIN 的作用是'把原本分散在不同表里的数据组合起来'，这与 nugget 中的描述完全一致。虽然答案也解释了 ON 的作用，但未影响对 JOIN 事实的判断，且未出现矛盾信息。",
+          "judgement_type": "vital",
+          "nugget": "`JOIN` 通过关联条件把原本分散在不同表里的数据组合起来。"
+        },
+        {
+          "label": "supported",
+          "reason": "生成的答案明确说明了`ON`的作用是'决定两张表的哪些行应该互相连接'，这与nugget中的表述完全一致。答案中没有添加与当前nugget矛盾的信息，且直接支持了nugget中的核心事实。",
+          "judgement_type": "vital",
+          "nugget": "`ON` 决定两张表中的哪些行应该互相连接。"
+        }
+      ]
+    }
+  ]
+}
