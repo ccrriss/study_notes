@@ -12,14 +12,12 @@ from app.rag.evaluation.judge import JUDGE_MODEL_NAME, JUDGE_OPTIONS
 from app.rag.generation import GENERATION_MODEL_NAME, GENERATION_OPTIONS
 from app.rag.evaluation.prompts import generation_v2 as judge_prompt
 from app.rag.prompts import answer_v1 as answer_prompt
-from app.rag.config import CHUNKING_CONFIG, EMBEDDING_CONFIG, RETRIEVAL_CONFIG
+from app.rag.config import CHUNKING_CONFIG, EMBEDDING_CONFIG, RETRIEVAL_CONFIG, RERANKING_CONFIG
 
 # lexical search
 from fastapi import Request
 # hybrid search
 from rank_bm25 import BM25Okapi
-# generate_answer after reranking with final k results
-from app.rag.pipeline import run_rag_pipeline
 
 router = APIRouter(prefix="/api/v1/rag", tags=['posts', 'rag'])
 
@@ -91,7 +89,8 @@ def get_runtime_metadata():
                            judge=judge_metadata,
                            chunking=CHUNKING_CONFIG,
                            embedding=EMBEDDING_CONFIG,
-                           retrieval=RETRIEVAL_CONFIG)
+                           retrieval=RETRIEVAL_CONFIG,
+                           reranking=RERANKING_CONFIG)
 
 # TEMP, used for comparing 4b and 8b model judge
 @router.post("/judge_comparison", response_model=JudgeResult)

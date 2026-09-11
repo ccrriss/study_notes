@@ -58,3 +58,4 @@ class RuntimeMetadata(BaseModel):
     embedding: EmbeddingConfig = Field()
     retrieval: RetrievalConfig = Field()
     chunking: ChunkingConfig = Field()
+    reranking: RerankingConfig = Field()

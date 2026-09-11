@@ -29,7 +29,7 @@ export interface RetrievalEvaluationCaseResult {
     reranking_results: RetrievedResult[]
 
 }
-
+// v1 version @deprecated
 export interface RetrievalEvaluationMetadataV1 {
     code_version: string,
     prompt_version: string,

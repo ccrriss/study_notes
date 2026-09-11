@@ -29,13 +29,19 @@ export interface RetrievalConfig {
     similarity_method: string
 }
 
+export interface RerankingConfig {
+    model_name: string,
+    final_k: number
+}
+
 export interface RuntimeMetadata {
     code_version: string,
     generation: ModelRuntimeData,
     judge: ModelRuntimeData,
     chunking: ChunkingConfig,
     embedding: EmbeddingConfig, 
-    retrieval: RetrievalConfig
+    retrieval: RetrievalConfig,
+    reranking: RerankingConfig
 }
 
 // Evaluation Questions

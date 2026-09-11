@@ -1,4 +1,3 @@
-from app.db.models import PostChunk
 from app.schemas.rag import RagSource, RagSection
 from app.schemas.evaluation import RetrievedResult
 

@@ -78,7 +78,7 @@ async def update_post(
 
     await db.commit()
     await db.refresh(post)
-    return PostOut(id=post.id, title=post.title, slug=post.slug, content_md=post.slug, excerpt=post.excerpt, is_published=post.is_published, tags = [
+    return PostOut(id=post.id, title=post.title, slug=post.slug, content_md=post.content_md, excerpt=post.excerpt, is_published=post.is_published, tags = [
         t.name for t in post.tags
     ])
 

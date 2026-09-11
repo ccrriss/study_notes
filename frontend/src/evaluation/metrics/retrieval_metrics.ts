@@ -23,7 +23,7 @@ function calculate_recall(gold_section:string, retrieved_results: RetrievedResul
     return 0;
 }
 
-export function calculate_mrr(retrieval_evaluation_case_results: RetrievalEvaluationCaseResult[]) {
+export function calculate_retrieval_metrics(retrieval_evaluation_case_results: RetrievalEvaluationCaseResult[]) {
     let dense_mrr_total = 0.0;
     let dense_mrr_count = 0;
     let lexical_mrr_total = 0.0;

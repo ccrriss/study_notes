@@ -5,7 +5,7 @@ import { useState } from "react";
 import type {  RetrievalEvaluationRunV1 } from "@/evaluation/schemas/retrieval_evaluation";
 import { evaluationQuestions } from "@/evaluation/datasets/evaluation_questions_v2";
 import { retrievalEvaluationMetadataV1 } from "@/evaluation/configs/retrieval_evaluation_v1_config";
-import { calculate_mrr } from "@/evaluation/metrics/retrieval_metrics";
+import { calculate_retrieval_metrics } from "@/evaluation/metrics/retrieval_metrics";
 import { RetrievalEvaluationResponse, RetrievalEvaluationCaseResult, RetrievedResult } from "@/evaluation/schemas/retrieval_evaluation";
 
 export default function Page(props: {}){
@@ -84,7 +84,7 @@ export default function Page(props: {}){
     async function run_retrieval_evaluation_and_calculate_rrf(){
         let evaluationCases = await run_retrieval_evaluation();
 
-        const mrr_obj = calculate_mrr(evaluationCases);
+        const mrr_obj = calculate_retrieval_metrics(evaluationCases);
 
         const rrf_and_mrr_list_obj = {
             list: evaluationCases,
