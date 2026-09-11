@@ -1,24 +1,16 @@
 from app.db.models import PostChunk
 from app.schemas.rag import RagSource, RagSection
-def build_rag_sources(rows: list[tuple[PostChunk, float]]):
-    # for checking 
-    rag_source_dict: dict[int, RagSource] = {}
-    check_set: set[tuple[int, int]] = set() # for checking duplicate content
-    
-    for post_chunk, similarity in rows:
-        post_id = post_chunk.post_id
-        title = post_chunk.post.title
-        slug = post_chunk.post.slug 
-        
-        heading_text = " > ".join(post_chunk.heading_path).strip() # list[str]
-        content = post_chunk.content_chunk
+from app.schemas.evaluation import RetrievedResult
 
-        chunk_key = (post_chunk.post_id, post_chunk.chunk_idx)
-        # check if duplicate just go ahead
-        if chunk_key in check_set:
-            continue
-        else:
-            check_set.add(chunk_key)
+def build_rag_sources(retrieved_results: list[RetrievedResult]) -> list[RagSource]:
+    rag_source_dict: dict[int, RagSource] = {}
+
+    for retrieved_result in retrieved_results:
+        post_id = retrieved_result.post_id
+        title = retrieved_result.title
+        slug = retrieved_result.slug
+        heading_text = " > ".join(retrieved_result.heading_path).strip()
+        content = retrieved_result.content
 
         rag_section = RagSection(heading=heading_text, content=content)
 

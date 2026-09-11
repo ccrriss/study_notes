@@ -15,15 +15,9 @@ from app.rag.prompts import answer_v1 as answer_prompt
 from app.rag.config import CHUNKING_CONFIG, EMBEDDING_CONFIG, RETRIEVAL_CONFIG
 
 # lexical search
-from app.rag.pipeline import run_lexical_search_pipeline
 from fastapi import Request
-from app.db.models import PostChunk
-from sqlalchemy.orm import selectinload
-from app.rag.retrieval_hybrid import fuse_hybrid_retrieval_results
-from app.rag.reranking import generate_reranking_retrieved_results
-
 # hybrid search
-from app.rag.pipeline import run_hybrid_search_pipeline
+from rank_bm25 import BM25Okapi
 # generate_answer after reranking with final k results
 from app.rag.pipeline import run_rag_pipeline
 
@@ -32,13 +26,21 @@ router = APIRouter(prefix="/api/v1/rag", tags=['posts', 'rag'])
 @router.post("", response_model=RagResponse)
 async def generate_rag_response(
     payload: Annotated[RagRequest, Body()],
+    request: Request,
     db: AsyncSession = Depends(get_db)
 ) -> RagResponse:
-    generated_answer, combined_rows = await run_rag_pipeline(query=payload.query, db=db)
+    query = payload.query
 
-    combined_rag_source_list: list[RagSource] = build_rag_sources(combined_rows)
+    bm25:BM25Okapi = request.app.state.bm25
+    post_chunk_ids = request.app.state.post_chunk_ids
 
-    rag_response = RagResponse(sources=combined_rag_source_list,
+    generated_answer_and_result_dict = await run_rag_pipeline(query=query, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    generated_answer = generated_answer_and_result_dict["generated_answer"]
+    reranking_results = generated_answer_and_result_dict["reranking_results"]
+
+    rag_source_list: list[RagSource] = build_rag_sources(retrieved_results=reranking_results)
+
+    rag_response = RagResponse(sources=rag_source_list,
                       answer=generated_answer)
     return rag_response
 
@@ -50,9 +52,8 @@ async def generate_retrieval_evaluation_response(
 ) -> RetrievalEvaluationResponse:
     query = payload.query
 
-    bm25:list[int] = request.app.state.bm25
+    bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
-
 
     generated_answer_and_result_dict = await run_rag_pipeline(query=query, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
     return RetrievalEvaluationResponse(generated_answer=generated_answer_and_result_dict["generated_answer"], 
@@ -64,9 +65,17 @@ async def generate_retrieval_evaluation_response(
 @router.post("/generation_evaluate", response_model=GenerationEvaluationResponse)
 async def generate_generation_evaluation_response(
     payload: Annotated[GenerationEvaluationQuestion, Body()],
+    request: Request,
     db: AsyncSession = Depends(get_db)
 ) -> GenerationEvaluationResponse :
-    generated_answer, combined_rows = await run_rag_pipeline(query=payload.query, db=db)
+    query = payload.query
+    
+    bm25:BM25Okapi = request.app.state.bm25
+    post_chunk_ids = request.app.state.post_chunk_ids
+
+    generated_answer_and_result_dict = await run_rag_pipeline(query=query, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    generated_answer = generated_answer_and_result_dict["generated_answer"]
+
     res = await evaluate_generation(payload=payload, generated_answer=generated_answer)
     return res
 
@@ -84,7 +93,7 @@ def get_runtime_metadata():
                            embedding=EMBEDDING_CONFIG,
                            retrieval=RETRIEVAL_CONFIG)
 
-# TEMP
+# TEMP, used for comparing 4b and 8b model judge
 @router.post("/judge_comparison", response_model=JudgeResult)
 async def generate_generation_comparison_response(
     payload: Annotated[dict, Body()],

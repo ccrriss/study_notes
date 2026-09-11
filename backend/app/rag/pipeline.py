@@ -8,7 +8,6 @@ from app.rag.config import RETRIEVAL_CONFIG
 # lexical search
 from app.rag.retrieval_lexical import calculate_all_bm25_scores, find_top_k_lexical_search_results
 from rank_bm25 import BM25Okapi
-from fastapi import Request
 from sqlalchemy.orm import selectinload
 # hybrid search pipeline
 from app.rag.retrieval_hybrid import fuse_hybrid_retrieval_results
