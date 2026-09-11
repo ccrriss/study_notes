@@ -14,6 +14,7 @@ export interface RetrievalEvaluationResponse {
     dense_results: RetrievedResult[],
     lexical_results: RetrievedResult[]
     hybrid_results: RetrievedResult[]
+    reranking_results: RetrievedResult[]
 }
 
 export interface RetrievalEvaluationCaseResult {
@@ -23,8 +24,9 @@ export interface RetrievalEvaluationCaseResult {
     generated_answer: string,
     gold_section?: string,
     dense_results: RetrievedResult[],
-    lexical_results: RetrievedResult[]
-    hybrid_results: RetrievedResult[]
+    lexical_results: RetrievedResult[],
+    hybrid_results: RetrievedResult[],
+    reranking_results: RetrievedResult[]
 
 }
 

@@ -55,3 +55,4 @@ class RetrievalEvaluationResponse(BaseModel):
     dense_results: list[RetrievedResult] = Field()
     lexical_results: list[RetrievedResult] = Field()
     hybrid_results: list[RetrievedResult] = Field()
+    reranking_results: list[RetrievedResult] = Field()

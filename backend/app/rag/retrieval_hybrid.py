@@ -1,8 +1,6 @@
-from app.rag.config import RETRIEVAL_CONFIG
 from app.schemas.evaluation import RetrievedResult
 
-def fuse_hybrid_retrieval_results(dense_results: list[RetrievedResult], lexical_results: list[RetrievedResult]) -> list[RetrievedResult]:
-    top_k = RETRIEVAL_CONFIG.top_k
+def fuse_hybrid_retrieval_results(dense_results: list[RetrievedResult], lexical_results: list[RetrievedResult], top_k: int) -> list[RetrievedResult]:
     k = 60
     hybrid_result_dict: dict[str, RetrievedResult] = {}
     for dense_result in dense_results:

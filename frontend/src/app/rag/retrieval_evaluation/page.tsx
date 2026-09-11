@@ -51,7 +51,8 @@ export default function Page(props: {}){
                 gold_section: question.gold_section ?? undefined,
                 dense_results: evaluationRes.dense_results,
                 lexical_results: evaluationRes.lexical_results,
-                hybrid_results: evaluationRes.hybrid_results
+                hybrid_results: evaluationRes.hybrid_results,
+                reranking_results: evaluationRes.reranking_results
             });
         }
         return evaluationCases;
@@ -89,7 +90,12 @@ export default function Page(props: {}){
             list: evaluationCases,
             dense_mrr: mrr_obj["dense_mrr_average"],
             lexical_mrr: mrr_obj["lexical_mrr_average"],
-            hybrid_mrr: mrr_obj["hybrid_mrr_average"]
+            hybrid_mrr: mrr_obj["hybrid_mrr_average"],
+            reranking_mrr: mrr_obj["reranking_mrr_average"],
+            dense_recall: mrr_obj['dense_recall'],
+            lexical_recall: mrr_obj['lexical_recall'],
+            hybrid_recall: mrr_obj['hybrid_recall'],
+            reranking_recall: mrr_obj['reranking_recall']
         };
 
         const jsonData = JSON.stringify(rrf_and_mrr_list_obj, null, 2);

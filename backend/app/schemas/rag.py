@@ -45,6 +45,10 @@ class ChunkingConfig(BaseModel):
     max_seq_length: int = Field()
     chunk_overlap: int = Field()
     
+# Reranking
+class RerankingConfig(BaseModel):
+    model_name: str = Field()
+    final_k: int = Field()
 
 # Runtime metadata including all backend metadata
 class RuntimeMetadata(BaseModel):

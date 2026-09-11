@@ -1,4 +1,5 @@
 from app.db.models import PostChunk
+from app.schemas.evaluation import RetrievedResult
 
 PROMPT_VERSION = "answer_v1"
 
@@ -23,17 +24,18 @@ rules = """
    or "conclusion", unless required by Rules 3, 4, or 5.
 """
 
-def build_prompt(user_query:str,combined_rows:list[tuple[PostChunk, float]]):
+def build_prompt(user_query:str, retrieved_results: list[RetrievedResult]):
     combined_prompt_text = (
         start
         + f"User question:\n{user_query}\n\n"
         + f"Context:\n\n"
     )
 
-    for i, (combined_post_chunk, similarity) in enumerate(combined_rows):
+    for i, retrieved_result in enumerate(retrieved_results):
         combined_prompt_text += (
             f"[Source {i+1}]\n"
-            f"Heading: {' > '.join(combined_post_chunk.heading_path).strip()}\n"
-            f"Content:\n{combined_post_chunk.content_chunk}\n\n"
+            f"Heading: {' > '.join(retrieved_result.heading_path).strip()}\n"
+            f"Content:\n{retrieved_result.content}\n\n"
         )
+
     return combined_prompt_text

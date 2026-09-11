@@ -20,6 +20,12 @@ from fastapi import Request
 from app.db.models import PostChunk
 from sqlalchemy.orm import selectinload
 from app.rag.retrieval_hybrid import fuse_hybrid_retrieval_results
+from app.rag.reranking import generate_reranking_retrieved_results
+
+# hybrid search
+from app.rag.pipeline import run_hybrid_search_pipeline
+# generate_answer after reranking with final k results
+from app.rag.pipeline import run_rag_pipeline
 
 router = APIRouter(prefix="/api/v1/rag", tags=['posts', 'rag'])
 
@@ -43,37 +49,17 @@ async def generate_retrieval_evaluation_response(
     db: AsyncSession = Depends(get_db),
 ) -> RetrievalEvaluationResponse:
     query = payload.query
-    generated_answer, combined_rows = await run_rag_pipeline(query=query, db=db)
 
-    dense_results: list[RetrievedResult] = []
-    lexical_results: list[RetrievedResult] = []
-
-    bm25 = request.app.state.bm25
+    bm25:list[int] = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
-    lexical_search_top_k_results = run_lexical_search_pipeline(query=query, bm25=bm25)
 
-    for i, lexical_search_result in enumerate(lexical_search_top_k_results):
-        idx_of_post_chunk_id = lexical_search_result[0]
-        lexical_search_score = lexical_search_result[1]
-        post_chunk_id = post_chunk_ids[idx_of_post_chunk_id]
-        post_chunk = await db.get(PostChunk, post_chunk_id, options=[selectinload(PostChunk.post)])
-        lexical_results.append(
-            RetrievedResult(rank=i+1, score=lexical_search_score, post_id=post_chunk.post_id, chunk_idx=post_chunk.chunk_idx,
-                            title=post_chunk.post.title, slug=post_chunk.post.slug, heading_path=post_chunk.heading_path,
-                            content=post_chunk.content_chunk)
-        )
 
-    for i, (post_chunk, similarity) in enumerate(combined_rows):
-        dense_results.append(
-            RetrievedResult(rank=i+1, score=similarity, post_id=post_chunk.post_id, chunk_idx=post_chunk.chunk_idx,
-                title=post_chunk.post.title, slug=post_chunk.post.slug, heading_path=post_chunk.heading_path,
-                content=post_chunk.content_chunk)
-        )
-
-    hybrid_results = fuse_hybrid_retrieval_results(dense_results=dense_results, lexical_results=lexical_results)
-    
-    return RetrievalEvaluationResponse(generated_answer=generated_answer, 
-                                       dense_results=dense_results, lexical_results=lexical_results, hybrid_results=hybrid_results)
+    generated_answer_and_result_dict = await run_rag_pipeline(query=query, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    return RetrievalEvaluationResponse(generated_answer=generated_answer_and_result_dict["generated_answer"], 
+                                       dense_results=generated_answer_and_result_dict["dense_results"], 
+                                       lexical_results=generated_answer_and_result_dict["lexical_results"], 
+                                       hybrid_results=generated_answer_and_result_dict["hybrid_results"],
+                                       reranking_results=generated_answer_and_result_dict["reranking_results"])
 
 @router.post("/generation_evaluate", response_model=GenerationEvaluationResponse)
 async def generate_generation_evaluation_response(
