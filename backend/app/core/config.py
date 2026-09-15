@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file= BACKEND_DIR / '.env')
 
     APP_NAME: str = "Study Notes API"
-    DATABASE_URL : str = "sqlite+aiosqlite:///./.notes.db"
+    DATABASE_URL : str
     BACKEND_CORS_ORIGINS : List[str] = ["http://localhost:3000"]
 
     # environment

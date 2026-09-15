@@ -101,7 +101,7 @@ export default function Page(props: {}){
             results: judge_results
         }
 
-        const jsonData = JSON.stringify(judge_results_dict);
+        const jsonData = JSON.stringify(judge_results_dict, null, 2);
         const blob = new Blob([jsonData], {type: "application/json"});
 
         const url = URL.createObjectURL(blob);
