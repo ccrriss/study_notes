@@ -13,6 +13,7 @@ from app.rag.generation import GENERATION_MODEL_NAME, GENERATION_OPTIONS
 from app.rag.evaluation.prompts import generation_v2 as judge_prompt
 from app.rag.prompts import answer_v1 as answer_prompt
 from app.rag.config import CHUNKING_CONFIG, EMBEDDING_CONFIG, RETRIEVAL_CONFIG, RERANKING_CONFIG
+from sentence_transformers import SentenceTransformer
 
 # lexical search
 from fastapi import Request
@@ -31,8 +32,9 @@ async def generate_rag_response(
 
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
+    embedding_model: SentenceTransformer = request.app.state.embedding_model
 
-    generated_answer_and_result_dict = await run_rag_pipeline(query=query, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    generated_answer_and_result_dict = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
     generated_answer = generated_answer_and_result_dict["generated_answer"]
     reranking_results = generated_answer_and_result_dict["reranking_results"]
 
@@ -52,8 +54,9 @@ async def generate_retrieval_evaluation_response(
 
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
+    embedding_model: SentenceTransformer = request.app.state.embedding_model
 
-    generated_answer_and_result_dict = await run_rag_pipeline(query=query, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    generated_answer_and_result_dict = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
     return RetrievalEvaluationResponse(generated_answer=generated_answer_and_result_dict["generated_answer"], 
                                        dense_results=generated_answer_and_result_dict["dense_results"], 
                                        lexical_results=generated_answer_and_result_dict["lexical_results"], 
@@ -70,8 +73,9 @@ async def generate_generation_evaluation_response(
     
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
+    embedding_model: SentenceTransformer = request.app.state.embedding_model
 
-    generated_answer_and_result_dict = await run_rag_pipeline(query=query, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    generated_answer_and_result_dict = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
     generated_answer = generated_answer_and_result_dict["generated_answer"]
 
     res = await evaluate_generation(payload=payload, generated_answer=generated_answer)

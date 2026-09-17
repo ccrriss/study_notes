@@ -4,6 +4,7 @@ from app.rag.retrieval_dense import retrieve_dense_chunks
 from app.rag.prompts import answer_v1 as answer_prompt
 from app.rag.generation import generate_answer
 from app.rag.config import RETRIEVAL_CONFIG
+from sentence_transformers import SentenceTransformer
 
 # lexical search
 from app.rag.retrieval_lexical import calculate_all_bm25_scores, find_top_k_lexical_search_results
@@ -16,9 +17,9 @@ from app.schemas.evaluation import RetrievedResult
 # reranking
 from app.rag.reranking import generate_reranking_retrieved_results
 
-async def run_rag_pipeline(query: str, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession) -> dict:
+async def run_rag_pipeline(query: str, embedding_model: SentenceTransformer, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession) -> dict:
     # top_k
-    dense_results = await run_dense_search_pipeline(query=query, db=db)
+    dense_results = await run_dense_search_pipeline(query=query, embedding_model=embedding_model, db=db)
     lexical_results = await run_lexical_search_pipeline(query=query, bm25=bm25, post_chunk_ids=post_chunk_ids, db=db)
     hybrid_results = run_hybrid_search_pipeline(dense_results, lexical_results)
     # final_k
@@ -35,9 +36,9 @@ async def run_rag_pipeline(query: str, bm25: BM25Okapi, post_chunk_ids: list[int
             "reranking_results": reranking_results
     }
 
-async def run_dense_search_pipeline(query: str, db: AsyncSession) -> list[RetrievedResult]:
+async def run_dense_search_pipeline(query: str, embedding_model: SentenceTransformer, db: AsyncSession) -> list[RetrievedResult]:
     dense_results: list[RetrievedResult] = []
-    combined_rows = await retrieve_dense_chunks(query=query, db=db, top_k=RETRIEVAL_CONFIG.top_k)
+    combined_rows = await retrieve_dense_chunks(query=query, embedding_model=embedding_model, db=db, top_k=RETRIEVAL_CONFIG.top_k)
     for i, (post_chunk, similarity) in enumerate(combined_rows):
         dense_results.append(
             RetrievedResult(rank=i+1, score=similarity, post_id=post_chunk.post_id, chunk_idx=post_chunk.chunk_idx,

@@ -5,10 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from app.rag.config import EMBEDDING_CONFIG
 
-embedding_model = SentenceTransformer(EMBEDDING_CONFIG.model_name)
-
 # do the vector search work but a retrieve name for better common use
-async def retrieve_dense_chunks(query, db:AsyncSession, top_k:int) -> list[tuple[PostChunk, float]]:
+async def retrieve_dense_chunks(query, embedding_model: SentenceTransformer, db:AsyncSession, top_k:int) -> list[tuple[PostChunk, float]]:
     query_embedding: list[float] = embedding_model.encode(query).tolist() # ndarray to list
 
     combined_cosine_distance = PostChunk.combined_embedding.cosine_distance(query_embedding)

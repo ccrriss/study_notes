@@ -44,13 +44,13 @@ async def build_lexical_search_corpus(db: AsyncSession) -> tuple[list[int], list
         post_chunk_ids.append(post_chunk.id)
 
     return post_chunk_ids, tokenized_corpus
-    
+
+# for lexical retrieve
 def calculate_all_bm25_scores(bm25: BM25Okapi, query:str):
     tokenized_query = tokenize_for_lexical_search(query)
     scores = bm25.get_scores(tokenized_query)
     return scores
 
-# TEMP
 def find_top_k_lexical_search_results(scores: list[float], top_k: int) -> list[tuple[int, float]]:
     sorted_results_by_score = list(enumerate(scores))
     sorted_results_by_score.sort(key=(lambda pair: pair[1]))
