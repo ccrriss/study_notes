@@ -104,7 +104,6 @@ def preprocessing_post_with_sections_and_ingest(post_with_sections: list[tuple[P
                     content_chunk = content_encoded[i: i + content_budget]
                     content_text = tokenizer.decode(content_chunk)
                     
-                    embedding = model.encode(content_text).tolist()
                     combined_embedding = model.encode(heading_text + "\n" + content_text).tolist()
 
                     chunk = PostChunk(post_id=post.id, chunk_idx=chunk_idx, 
@@ -115,11 +114,10 @@ def preprocessing_post_with_sections_and_ingest(post_with_sections: list[tuple[P
                     if i + content_budget >= len(content_encoded):
                         break
             else:
-                embedding = model.encode(content).tolist()
                 combined_embedding = model.encode(heading_text + "\n" + content).tolist()
 
                 chunk = PostChunk(post_id=post.id, chunk_idx=chunk_idx, 
-                                content_chunk=content, embedding=embedding, 
+                                content_chunk=content,
                                 combined_embedding=combined_embedding, heading_path=heading_path)  
                 chunk_idx += 1
                 post_chunks.append(chunk) 
