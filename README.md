@@ -4,7 +4,7 @@ A full-stack technical notes platform with an evaluation-driven Retrieval-Augmen
 
 The project combines a Next.js frontend, FastAPI backend, PostgreSQL/pgvector storage, hybrid retrieval, CrossEncoder reranking, and LLM-based evaluation.
 
-It started as a personal technical notes application and evolved into a practical RAG engineering project focused on retrieval quality, evaluation, and deployment.
+It started as a personal technical notes application and evolved into a practical RAG engineering project focused on retrieval quality, evaluation, and deployment readiness.
 
 ---
 
@@ -17,8 +17,9 @@ It started as a personal technical notes application and evolved into a practica
 - CrossEncoder reranking for final context selection
 - Retrieval evaluation with Recall@K and MRR@K
 - Generation evaluation using an LLM-as-a-judge workflow
-- Runtime metadata tracking for reproducible experiments
+- Runtime metadata tracking for traceable experiments
 - Source attribution from retrieved blog sections
+- Pytest coverage for lexical retrieval, RRF fusion, and RAG pipeline orchestration
 
 ---
 
@@ -60,7 +61,7 @@ Current configuration:
 
 ## Retrieval Evaluation
 
-The retrieval pipeline is evaluated against a manually defined benchmark with annotated gold sections.
+The retrieval pipeline is evaluated on a manually annotated 10-question retrieval benchmark using gold sections as the relevance target.
 
 Current Stage 2 results:
 
@@ -213,6 +214,7 @@ Completed:
 - [x] LLM generation
 - [x] LLM-as-a-judge evaluation
 - [x] Runtime metadata tracking
+- [x] Pytest tests for retrieval components and pipeline orchestration
 
 Next priorities:
 
@@ -226,4 +228,4 @@ Next priorities:
 
 ## Local Development
 
-Reproducible local setup instructions will be added as part of the upcoming Docker and deployment work.
+Local RAG generation and evaluation currently use Ollama with the Qwen models listed above. Dockerized setup and expanded deployment documentation are planned as the next deployment milestone.

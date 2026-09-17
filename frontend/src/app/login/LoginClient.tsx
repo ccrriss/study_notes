@@ -26,10 +26,22 @@ export default function LoginPage(){
     // context hook
     const api = useApiFetch();
 
-     // 可选：如果已经有 token，直接跳转到 /posts
+    function safeNext(next: string){
+        const pathCheckReg = /^\/(?!\/)/;
+        return pathCheckReg.test(next);
+    }
+
     useEffect(() => {
         if (!ready) return;
-        if(isLoggedIn) router.replace(next);
+
+        if(isLoggedIn) {
+            const pathCheckReg = /^\/(?!\/)/;
+            if (safeNext(next)){
+                router.replace(next);
+            } else {
+                router.replace("/");
+            }
+        };
     }, [ready, isLoggedIn, router, next]);
 
     async function handleSubmit(e:React.FormEvent) {
@@ -37,9 +49,7 @@ export default function LoginPage(){
         setError(null);
         setLoading(true);
 
-        try {
-            
-
+        try {  
             const res = await api("/api/v1/auth/login", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -50,8 +60,12 @@ export default function LoginPage(){
 
             // context Login
             login(data.access_token);
-            // login success, push to list page/or previous page
-            router.push(next);
+            
+            if (safeNext(next)) {
+                router.push(next);
+            } else {
+                router.push("/");
+            }
         } catch(err: any) {
             setError(err.message ?? "Unknown Error");
         } finally {

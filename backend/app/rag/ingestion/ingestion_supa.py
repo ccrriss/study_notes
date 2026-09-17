@@ -108,7 +108,7 @@ def preprocessing_post_with_sections_and_ingest(post_with_sections: list[tuple[P
                     combined_embedding = model.encode(heading_text + "\n" + content_text).tolist()
 
                     chunk = PostChunk(post_id=post.id, chunk_idx=chunk_idx, 
-                                      content_chunk=content_text, embedding=embedding, 
+                                      content_chunk=content_text,
                                       combined_embedding=combined_embedding, heading_path=heading_path) 
                     chunk_idx += 1
                     post_chunks.append(chunk)
