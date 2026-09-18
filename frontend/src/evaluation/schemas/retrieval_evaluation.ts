@@ -9,12 +9,22 @@ export interface RetrievedResult {
     content: string
 }
 
+export interface LatencyMeasurement {
+    dense_ms: number,
+    lexical_ms: number,
+    hybrid_ms: number,
+    reranking_ms: number,
+    generation_ms: number,
+    total_ms: number
+}
+
 export interface RetrievalEvaluationResponse {
     generated_answer: string,
     dense_results: RetrievedResult[],
-    lexical_results: RetrievedResult[]
-    hybrid_results: RetrievedResult[]
+    lexical_results: RetrievedResult[],
+    hybrid_results: RetrievedResult[],
     reranking_results: RetrievedResult[]
+    latency: LatencyMeasurement
 }
 
 export interface RetrievalEvaluationCaseResult {
@@ -26,7 +36,8 @@ export interface RetrievalEvaluationCaseResult {
     dense_results: RetrievedResult[],
     lexical_results: RetrievedResult[],
     hybrid_results: RetrievedResult[],
-    reranking_results: RetrievedResult[]
+    reranking_results: RetrievedResult[],
+    latency: LatencyMeasurement
 
 }
 // v1 version @deprecated

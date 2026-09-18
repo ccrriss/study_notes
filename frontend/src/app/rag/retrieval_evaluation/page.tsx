@@ -52,7 +52,8 @@ export default function Page(props: {}){
                 dense_results: evaluationRes.dense_results,
                 lexical_results: evaluationRes.lexical_results,
                 hybrid_results: evaluationRes.hybrid_results,
-                reranking_results: evaluationRes.reranking_results
+                reranking_results: evaluationRes.reranking_results,
+                latency: evaluationRes.latency
             });
         }
         return evaluationCases;
@@ -80,7 +81,6 @@ export default function Page(props: {}){
         URL.revokeObjectURL(url);
     }
 
- 
     async function run_retrieval_evaluation_and_calculate_rrf(){
         let evaluationCases = await run_retrieval_evaluation();
 

@@ -40,6 +40,14 @@ class GenerationEvaluationResponse(BaseModel):
 
 # For regular evaluation and mrr
 
+class LatencyMeasurement(BaseModel):
+    dense_ms: float = Field()
+    lexical_ms: float = Field()
+    hybrid_ms: float = Field()
+    reranking_ms: float = Field()
+    generation_ms: float = Field()
+    total_ms: float = Field()
+
 class RetrievedResult(BaseModel):
     rank: int = Field()
     score: float = Field()
@@ -49,10 +57,11 @@ class RetrievedResult(BaseModel):
     slug: str = Field()
     heading_path: list[str] = Field()
     content: str = Field()
-
+    
 class RetrievalEvaluationResponse(BaseModel):
     generated_answer: str = Field()
     dense_results: list[RetrievedResult] = Field()
     lexical_results: list[RetrievedResult] = Field()
     hybrid_results: list[RetrievedResult] = Field()
     reranking_results: list[RetrievedResult] = Field()
+    latency: LatencyMeasurement = Field()

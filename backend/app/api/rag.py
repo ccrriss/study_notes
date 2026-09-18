@@ -34,9 +34,9 @@ async def generate_rag_response(
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: SentenceTransformer = request.app.state.embedding_model
 
-    generated_answer_and_result_dict = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
-    generated_answer = generated_answer_and_result_dict["generated_answer"]
-    reranking_results = generated_answer_and_result_dict["reranking_results"]
+    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    generated_answer = retrieval_evaluation_res.generated_answer
+    reranking_results = retrieval_evaluation_res.reranking_results
 
     rag_source_list: list[RagSource] = build_rag_sources(retrieved_results=reranking_results)
 
@@ -56,12 +56,8 @@ async def generate_retrieval_evaluation_response(
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: SentenceTransformer = request.app.state.embedding_model
 
-    generated_answer_and_result_dict = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
-    return RetrievalEvaluationResponse(generated_answer=generated_answer_and_result_dict["generated_answer"], 
-                                       dense_results=generated_answer_and_result_dict["dense_results"], 
-                                       lexical_results=generated_answer_and_result_dict["lexical_results"], 
-                                       hybrid_results=generated_answer_and_result_dict["hybrid_results"],
-                                       reranking_results=generated_answer_and_result_dict["reranking_results"])
+    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    return retrieval_evaluation_res
 
 @router.post("/generation_evaluate", response_model=GenerationEvaluationResponse)
 async def generate_generation_evaluation_response(
@@ -75,8 +71,8 @@ async def generate_generation_evaluation_response(
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: SentenceTransformer = request.app.state.embedding_model
 
-    generated_answer_and_result_dict = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
-    generated_answer = generated_answer_and_result_dict["generated_answer"]
+    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    generated_answer = retrieval_evaluation_res.generated_answer
 
     res = await evaluate_generation(payload=payload, generated_answer=generated_answer)
     return res

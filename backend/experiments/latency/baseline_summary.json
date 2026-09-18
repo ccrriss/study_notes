@@ -1,0 +1,130 @@
+{
+  "benchmark": "evaluation_v1",
+  "sample_count": 18,
+  "latency_unit": "ms",
+  "measurement": {
+    "timer": "time.perf_counter",
+    "total_latency_definition": "wall-clock time from start of dense retrieval to end of answer generation",
+    "generation_stage_includes": "prompt construction + LLM generation"
+  },
+  "all_samples": {
+    "sample_count": 18,
+    "stats": {
+      "dense_ms": {
+        "mean": 2613.99,
+        "median": 1655.54,
+        "p95": 5058.49,
+        "min": 1408.25,
+        "max": 16741.24
+      },
+      "lexical_ms": {
+        "mean": 7908.83,
+        "median": 6247.75,
+        "p95": 11350.24,
+        "min": 5355.64,
+        "max": 37232.63
+      },
+      "hybrid_ms": {
+        "mean": 0.37,
+        "median": 0.39,
+        "p95": 0.47,
+        "min": 0.22,
+        "max": 0.47
+      },
+      "reranking_ms": {
+        "mean": 3688.41,
+        "median": 3603.51,
+        "p95": 4106.94,
+        "min": 3071.27,
+        "max": 4514.44
+      },
+      "generation_ms": {
+        "mean": 3012.94,
+        "median": 2331.29,
+        "p95": 5888.1,
+        "min": 742.81,
+        "max": 11429.79
+      },
+      "total_ms": {
+        "mean": 17224.55,
+        "median": 14021.88,
+        "p95": 29059.77,
+        "min": 11969.78,
+        "max": 59969.67
+      }
+    }
+  },
+  "steady_state_reference": {
+    "sample_count": 16,
+    "excluded_case_ids": [
+      "H01",
+      "H02"
+    ],
+    "exclusion_reason": {
+      "H01": "first-case generation warm-up-like latency spike",
+      "H02": "large retrieval latency outlier; cause not established"
+    },
+    "stats": {
+      "dense_ms": {
+        "mean": 1749.35,
+        "median": 1632.63,
+        "p95": 2224.16,
+        "min": 1408.25,
+        "max": 2996.82
+      },
+      "lexical_ms": {
+        "mean": 6146.47,
+        "median": 6205.28,
+        "p95": 6639.69,
+        "min": 5355.64,
+        "max": 6671.75
+      },
+      "hybrid_ms": {
+        "mean": 0.38,
+        "median": 0.39,
+        "p95": 0.47,
+        "min": 0.22,
+        "max": 0.47
+      },
+      "reranking_ms": {
+        "mean": 3723.05,
+        "median": 3603.51,
+        "p95": 4154.88,
+        "min": 3334.24,
+        "max": 4514.44
+      },
+      "generation_ms": {
+        "mean": 2534.94,
+        "median": 2281.36,
+        "p95": 4273.04,
+        "min": 742.81,
+        "max": 4910.15
+      },
+      "total_ms": {
+        "mean": 14154.2,
+        "median": 13903.83,
+        "p95": 15933.74,
+        "min": 11969.78,
+        "max": 17093.37
+      }
+    }
+  },
+  "observations": [
+    "Lexical retrieval is the largest steady-state latency contributor.",
+    "Hybrid/RRF fusion latency is negligible relative to the other stages.",
+    "H01 shows a large generation latency spike consistent with warm-up behavior, but this run alone does not prove the exact cause.",
+    "H02 shows a large dense/lexical retrieval latency spike and should be treated as an outlier until the cause is identified."
+  ],
+  "metadata_snapshot": {
+    "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "generation_model": "qwen3:4b-instruct-2507-q4_K_M",
+    "retrieval_config": {
+      "top_k": 3,
+      "similarity_method": "cos_similarity"
+    },
+    "chunking_config": {
+      "method": "markdown-aware",
+      "chunk_overlap": 8
+    }
+  }
+}
