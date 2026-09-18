@@ -20,48 +20,67 @@ from app.rag.reranking import generate_reranking_retrieved_results
 
 # letency_ms
 import time
+# logging
+from app.rag.logging import generate_logging
 
-async def run_rag_pipeline(query: str, embedding_model: SentenceTransformer, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession) -> RetrievalEvaluationResponse:
+async def run_rag_pipeline(query: str, embedding_model: SentenceTransformer, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession,
+                           request_id: str) -> RetrievalEvaluationResponse:
+    # logging of start phase
+    generate_logging(event="rag_request_started", request_id=request_id, query_length=len(query))
+    stage = "start"
+    
     # top_k
-    dense_start = time.perf_counter()
-    dense_results = await run_dense_search_pipeline(query=query, embedding_model=embedding_model, db=db)
-    dense_time = (time.perf_counter() - dense_start) * 1000
+    try:
+        stage = "dense"        
+        dense_start = time.perf_counter()
+        dense_results = await run_dense_search_pipeline(query=query, embedding_model=embedding_model, db=db)
+        dense_time = (time.perf_counter() - dense_start) * 1000
 
-    lexical_start = time.perf_counter()
-    lexical_results = await run_lexical_search_pipeline(query=query, bm25=bm25, post_chunk_ids=post_chunk_ids, db=db)
-    lexical_time = (time.perf_counter() - lexical_start) * 1000
+        stage = "lexical"
+        lexical_start = time.perf_counter()
+        lexical_results = await run_lexical_search_pipeline(query=query, bm25=bm25, post_chunk_ids=post_chunk_ids, db=db)
+        lexical_time = (time.perf_counter() - lexical_start) * 1000
 
-    hybrid_start = time.perf_counter()
-    hybrid_results = run_hybrid_search_pipeline(dense_results, lexical_results)
-    hybrid_time = (time.perf_counter() - hybrid_start) * 1000
-    # final_k
-    reranking_start = time.perf_counter()
-    reranking_results = generate_reranking_retrieved_results(query=query, retrieved_results=hybrid_results)
-    reranking_time = (time.perf_counter() - reranking_start) * 1000
+        stage = "hybrid"
+        hybrid_start = time.perf_counter()
+        hybrid_results = run_hybrid_search_pipeline(dense_results, lexical_results)
+        hybrid_time = (time.perf_counter() - hybrid_start) * 1000
+        # final_k
+        stage = "reranking"
+        reranking_start = time.perf_counter()
+        reranking_results = generate_reranking_retrieved_results(query=query, retrieved_results=hybrid_results)
+        reranking_time = (time.perf_counter() - reranking_start) * 1000
 
-    generation_start = time.perf_counter()
-    prompt_text = answer_prompt.build_prompt(user_query=query, retrieved_results=reranking_results)
-    generated_answer = await generate_answer(prompt=prompt_text, rules=answer_prompt.rules)
-    generation_end = time.perf_counter()
-    generation_time = (generation_end - generation_start) * 1000
-    total_time = (generation_end - dense_start) * 1000
+        stage = "generation"
+        generation_start = time.perf_counter()
+        prompt_text = answer_prompt.build_prompt(user_query=query, retrieved_results=reranking_results)
+        generated_answer = await generate_answer(prompt=prompt_text, rules=answer_prompt.rules)
+        generation_end = time.perf_counter()
+        generation_time = (generation_end - generation_start) * 1000
+        total_time = (generation_end - dense_start) * 1000
 
-    return RetrievalEvaluationResponse(
-        generated_answer=generated_answer,
-        dense_results=dense_results,
-        lexical_results=lexical_results,
-        hybrid_results=hybrid_results,
-        reranking_results=reranking_results,
-        latency=LatencyMeasurement(
-            dense_ms = dense_time,
-            lexical_ms = lexical_time,
-            hybrid_ms = hybrid_time,
-            reranking_ms = reranking_time,
-            generation_ms = generation_time,
-            total_ms = total_time
+        retrieval_evaluation_res = RetrievalEvaluationResponse(
+            generated_answer=generated_answer,
+            dense_results=dense_results,
+            lexical_results=lexical_results,
+            hybrid_results=hybrid_results,
+            reranking_results=reranking_results,
+            latency=LatencyMeasurement(
+                dense_ms = dense_time,
+                lexical_ms = lexical_time,
+                hybrid_ms = hybrid_time,
+                reranking_ms = reranking_time,
+                generation_ms = generation_time,
+                total_ms = total_time
+            )
         )
-    )
-   
+
+        generate_logging(event="rag_request_completed", request_id=request_id, total_ms=total_time)  
+
+        return retrieval_evaluation_res
+    except Exception as e:
+        generate_logging(event="rag_request_failed", request_id=request_id, error=e, stage=stage)
+        raise
 
 async def run_dense_search_pipeline(query: str, embedding_model: SentenceTransformer, db: AsyncSession) -> list[RetrievedResult]:
     dense_results: list[RetrievedResult] = []

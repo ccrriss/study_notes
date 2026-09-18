@@ -19,8 +19,13 @@ from sentence_transformers import SentenceTransformer
 from fastapi import Request
 # hybrid search
 from rank_bm25 import BM25Okapi
+# structured logging
+import uuid
 
-router = APIRouter(prefix="/api/v1/rag", tags=['posts', 'rag'])
+async def generate_request_id(request: Request):
+    request.state.request_id = uuid.uuid4().hex[:8]
+
+router = APIRouter(prefix="/api/v1/rag", tags=['posts', 'rag'], dependencies=[Depends(generate_request_id)])
 
 @router.post("", response_model=RagResponse)
 async def generate_rag_response(
@@ -33,8 +38,10 @@ async def generate_rag_response(
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: SentenceTransformer = request.app.state.embedding_model
+    request_id = request.state.request_id
 
-    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
+                                                      bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
     generated_answer = retrieval_evaluation_res.generated_answer
     reranking_results = retrieval_evaluation_res.reranking_results
 
@@ -55,8 +62,10 @@ async def generate_retrieval_evaluation_response(
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: SentenceTransformer = request.app.state.embedding_model
+    request_id = request.state.request_id
 
-    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
+                                                      bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
     return retrieval_evaluation_res
 
 @router.post("/generation_evaluate", response_model=GenerationEvaluationResponse)
@@ -70,8 +79,10 @@ async def generate_generation_evaluation_response(
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: SentenceTransformer = request.app.state.embedding_model
+    request_id = request.state.request_id
 
-    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, bm25=bm25, post_chunk_ids=post_chunk_ids)
+    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
+                                                      bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
     generated_answer = retrieval_evaluation_res.generated_answer
 
     res = await evaluate_generation(payload=payload, generated_answer=generated_answer)
