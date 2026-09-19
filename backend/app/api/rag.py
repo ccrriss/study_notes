@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Depends, Body, status, HTTPException
 from app.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Annotated
@@ -40,16 +40,19 @@ async def generate_rag_response(
     embedding_model: SentenceTransformer = request.app.state.embedding_model
     request_id = request.state.request_id
 
-    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
+    try:
+        retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
                                                       bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
-    generated_answer = retrieval_evaluation_res.generated_answer
-    reranking_results = retrieval_evaluation_res.reranking_results
+        generated_answer = retrieval_evaluation_res.generated_answer
+        reranking_results = retrieval_evaluation_res.reranking_results
 
-    rag_source_list: list[RagSource] = build_rag_sources(retrieved_results=reranking_results)
+        rag_source_list: list[RagSource] = build_rag_sources(retrieved_results=reranking_results)
 
-    rag_response = RagResponse(sources=rag_source_list,
-                      answer=generated_answer)
-    return rag_response
+        rag_response = RagResponse(sources=rag_source_list,
+                        answer=generated_answer)
+        return rag_response
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "rag request failed")
 
 @router.post("/evaluate", response_model=RetrievalEvaluationResponse)
 async def generate_retrieval_evaluation_response(
@@ -64,9 +67,12 @@ async def generate_retrieval_evaluation_response(
     embedding_model: SentenceTransformer = request.app.state.embedding_model
     request_id = request.state.request_id
 
-    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
+    try :
+        retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
                                                       bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
-    return retrieval_evaluation_res
+        return retrieval_evaluation_res
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "rag request failed")                                    
 
 @router.post("/generation_evaluate", response_model=GenerationEvaluationResponse)
 async def generate_generation_evaluation_response(
@@ -81,12 +87,16 @@ async def generate_generation_evaluation_response(
     embedding_model: SentenceTransformer = request.app.state.embedding_model
     request_id = request.state.request_id
 
-    retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
-                                                      bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
-    generated_answer = retrieval_evaluation_res.generated_answer
+    try:
+        retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
+                                                        bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
+        generated_answer = retrieval_evaluation_res.generated_answer
 
-    res = await evaluate_generation(payload=payload, generated_answer=generated_answer)
-    return res
+        res = await evaluate_generation(payload=payload, generated_answer=generated_answer)
+        return res
+    except Exception:
+        raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "rag request failed")
+
 
 @router.get("/runtime_metadata", response_model=RuntimeMetadata)
 def get_runtime_metadata():

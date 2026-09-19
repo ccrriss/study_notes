@@ -33,6 +33,8 @@ async def run_rag_pipeline(query: str, embedding_model: SentenceTransformer, bm2
     try:
         stage = "dense"        
         dense_start = time.perf_counter()
+        # Test exception raise, uncomment when needed
+        # raise RuntimeError("test")
         dense_results = await run_dense_search_pipeline(query=query, embedding_model=embedding_model, db=db)
         dense_time = (time.perf_counter() - dense_start) * 1000
 
