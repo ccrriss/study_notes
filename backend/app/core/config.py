@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import field_validator
-from typing import List
+from typing import List, Literal
 from pathlib import Path
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
@@ -23,5 +23,8 @@ class Settings(BaseSettings):
 
     # local RAG
     RAG_DATABASE_URL : str = "postgresql+asyncpg://postgres:password@localhost:5432/rag_test"
+
+    # Embedding model
+    EMBEDDING_PROVIDER: Literal["local", "modal"] = "local"
 
 settings = Settings()

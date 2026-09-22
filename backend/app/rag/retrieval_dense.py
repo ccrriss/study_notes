@@ -3,7 +3,6 @@ from sentence_transformers import SentenceTransformer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.rag.config import EMBEDDING_CONFIG
 
 # do the vector search work but a retrieve name for better common use
 async def retrieve_dense_chunks(query, embedding_model: SentenceTransformer, db:AsyncSession, top_k:int) -> list[tuple[PostChunk, float]]:

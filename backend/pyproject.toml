@@ -8,6 +8,7 @@ dependencies = [
     "asyncpg==0.31.0",
     "fastapi==0.124.4",
     "jieba==0.42.1",
+    "modal>=1.5.5",
     "ollama==0.6.2",
     "passlib==1.7.4",
     "pgvector==0.5.0",

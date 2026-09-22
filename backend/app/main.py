@@ -10,8 +10,10 @@ from app.api import posts, auth, tags, rag
 from app.db.session import AsyncSessionLocal
 from app.rag.retrieval_lexical import build_lexical_search_corpus
 from rank_bm25 import BM25Okapi
-from app.rag.config import EMBEDDING_CONFIG
-from sentence_transformers import SentenceTransformer
+
+# for deployment
+from app.rag.embedding_provider import LocalEmbeddingProvider, ModalEmbeddingProvider
+from fastapi import status, HTTPException
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,10 +26,16 @@ async def lifespan(app: FastAPI):
     async with AsyncSessionLocal() as db:
         post_chunk_ids, tokenized_corpus = await build_lexical_search_corpus(db)
         bm25 = BM25Okapi(corpus=tokenized_corpus)
-        embedding_model = SentenceTransformer(EMBEDDING_CONFIG.model_name)
-        app.state.bm25 = bm25
-        app.state.post_chunk_ids = post_chunk_ids
-        app.state.embedding_model = embedding_model
+    if settings.EMBEDDING_PROVIDER == "local":
+        embedding_model = LocalEmbeddingProvider()
+    elif settings.EMBEDDING_PROVIDER == "modal":
+        embedding_model = ModalEmbeddingProvider()
+    else:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="embedding model internal error")
+        
+    app.state.bm25 = bm25
+    app.state.post_chunk_ids = post_chunk_ids
+    app.state.embedding_model = embedding_model
 
     yield
 
