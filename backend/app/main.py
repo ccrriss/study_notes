@@ -69,4 +69,4 @@ app.add_middleware(
 app.include_router(posts.router)
 app.include_router(auth.router)
 app.include_router(tags.router)
-app.include_router(rag.router)
+# app.include_router(rag.router)
