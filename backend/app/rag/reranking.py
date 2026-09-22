@@ -1,4 +1,4 @@
-from provider_protocols import RerankingProvider
+from app.rag.provider_protocols import RerankingProvider
 from app.rag.config import RERANKING_CONFIG
 from app.schemas.evaluation import RetrievedResult
 

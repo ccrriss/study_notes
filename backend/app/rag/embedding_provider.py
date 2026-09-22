@@ -25,7 +25,7 @@ class ModalEmbeddingProvider:
         self.embedding_model = EmbeddingModel()
 
     def encode(self, text:str) -> list[float]:
-        return self.embedding_model.embed.remote(text).tolist()
+        return self.embedding_model.embed.remote(text)
 
 class LocalEmbeddingProvider:
     def __init__(self):

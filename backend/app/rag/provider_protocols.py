@@ -9,5 +9,5 @@ class GenerationProvider(Protocol):
         ...
 
 class RerankingProvider(Protocol):
-    def predict(query_content_pairs: list[tuple[str, str]]) -> list[float]:
+    def predict(self, query_content_pairs: list[tuple[str, str]]) -> list[float]:
         ...

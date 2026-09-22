@@ -17,6 +17,6 @@ class EmbeddingModel:
         self.model = SentenceTransformer(MODEL_NAME)
 
     @modal.method()
-    def embed(self, text: str):
+    def embed(self, text: str) -> list[float]:
         encoded_text = self.model.encode(text)
         return encoded_text.tolist()

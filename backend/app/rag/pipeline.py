@@ -16,7 +16,7 @@ from app.schemas.evaluation import RetrievedResult, RetrievalEvaluationResponse,
 # reranking
 from app.rag.reranking import generate_reranking_retrieved_results
 # for deployment type checking
-from provider_protocols import RerankingProvider, EmbeddingProvider, GenerationProvider
+from app.rag.provider_protocols import RerankingProvider, EmbeddingProvider, GenerationProvider
 
 
 # letency_ms

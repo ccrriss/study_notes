@@ -14,7 +14,7 @@ class ModalRerankingProvider:
         )
         self.reranking_model = RerankingModel()
     def predict(self, query_content_pairs: list[tuple[str, str]]) -> list[float]:
-        return self.reranking_model.predict.remote(query_content_pairs).tolist()
+        return self.reranking_model.predict.remote(query_content_pairs)
 
 class LocalRerankingProvider:
     def __init__(self):
