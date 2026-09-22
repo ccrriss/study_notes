@@ -15,6 +15,7 @@ from rank_bm25 import BM25Okapi
 from app.rag.embedding_provider import LocalEmbeddingProvider, ModalEmbeddingProvider
 from fastapi import status, HTTPException
 from app.rag.reranking_provider import LocalRerankingProvider, ModalRerankingProvider
+from app.rag.generation_provider import OllamaGenerationProvider, QwenGenerationProvider
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -37,12 +38,14 @@ async def lifespan(app: FastAPI):
     print("BM25 done")
 
     print("START embedding provider")
-    if settings.EMBEDDING_PROVIDER == "local":
+    if settings.INFERENCE_MODE == "local":
         embedding_model = LocalEmbeddingProvider()
         reranking_model = LocalRerankingProvider()
-    elif settings.EMBEDDING_PROVIDER == "modal":
+        generation_model = OllamaGenerationProvider()
+    elif settings.INFERENCE_MODE == "modal":
         embedding_model = ModalEmbeddingProvider()
         reranking_model = ModalRerankingProvider()
+        generation_model = QwenGenerationProvider()
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="constructing model internal error")
     print("EMBEDDING provider done")
@@ -51,6 +54,7 @@ async def lifespan(app: FastAPI):
     app.state.post_chunk_ids = post_chunk_ids
     app.state.embedding_model = embedding_model
     app.state.reranking_model = reranking_model
+    app.state.generation_model = generation_model
 
     yield
 

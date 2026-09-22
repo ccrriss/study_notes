@@ -24,7 +24,12 @@ class Settings(BaseSettings):
     # local RAG
     RAG_DATABASE_URL : str = "postgresql+asyncpg://postgres:password@localhost:5432/rag_test"
 
-    # Embedding model
-    EMBEDDING_PROVIDER: Literal["local", "modal"] = "local"
+    # Inference_mode that decide embedding, reranking and generation model are online or local
+    INFERENCE_MODE: Literal["local", "modal"] = "local"
+
+    # Qwen model
+    QWEN_BASE_URL: str
+    QWEN_API_KEY: str
+    QWEN_MODEL_NAME: str
 
 settings = Settings()

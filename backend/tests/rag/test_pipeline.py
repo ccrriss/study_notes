@@ -6,6 +6,11 @@ from app.schemas.evaluation import RetrievedResult
 query = "test query"
 embedding_model = MagicMock()
 reranking_model = MagicMock()
+generation_model = MagicMock()
+fake_generated_answer = "fake generated answer"
+generation_model.generate_answer = AsyncMock(
+    return_value = fake_generated_answer
+)
 bm25 = MagicMock()
 post_chunks = [1, 2]
 db = MagicMock()
@@ -65,20 +70,13 @@ async def test_run_rag_pipeline(monkeypatch):
         prompt_mock
     )
 
-    fake_generated_answer = "fake generated answer"
-    answer_mock = AsyncMock(return_value = fake_generated_answer)
-    monkeypatch.setattr(
-        pipeline,
-        "generate_answer",
-        answer_mock
-    )
-
-    result = await pipeline.run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model, bm25=bm25, post_chunk_ids=post_chunks, db=db, request_id=request_id)
+    result = await pipeline.run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model, generation_model=generation_model,
+                                              bm25=bm25, post_chunk_ids=post_chunks, db=db, request_id=request_id)
 
     hybrid_mock.assert_called_once_with(fake_dense_results, fake_lexical_results)
     ranking_mock.assert_called_once_with(query= query, retrieved_results=fake_hybrid_results, model=reranking_model)
     prompt_mock.assert_called_once_with(user_query=query, retrieved_results=fake_ranking_results)
-    answer_mock.assert_awaited_once_with(prompt=fake_prompt, rules=pipeline.answer_prompt.rules)
+    generation_model.generate_answer.assert_awaited_once_with(prompt=fake_prompt, rules=pipeline.answer_prompt.rules)
     assert result.generated_answer == fake_generated_answer
 
 

@@ -16,6 +16,7 @@ from app.rag.config import CHUNKING_CONFIG, EMBEDDING_CONFIG, RETRIEVAL_CONFIG, 
 
 from app.rag.embedding_provider import EmbeddingProvider
 from app.rag.reranking_provider import RerankingProvider
+from app.rag.generation_provider import GenerationProvider
 
 # lexical search
 from fastapi import Request
@@ -41,11 +42,12 @@ async def generate_rag_response(
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: EmbeddingProvider = request.app.state.embedding_model
     reranking_model: RerankingProvider = request.app.state.reranking_model
+    generation_model: GenerationProvider = request.app.state.generation_model
     request_id = request.state.request_id
 
     try:
         retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model,
-                                                          db=db, 
+                                                          generation_model=generation_model, db=db, 
                                                       bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
         generated_answer = retrieval_evaluation_res.generated_answer
         reranking_results = retrieval_evaluation_res.reranking_results
@@ -70,11 +72,12 @@ async def generate_retrieval_evaluation_response(
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: EmbeddingProvider = request.app.state.embedding_model
     reranking_model: RerankingProvider = request.app.state.reranking_model
+    generation_model: GenerationProvider = request.app.state.generation_model
     request_id = request.state.request_id
 
     try :
         retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model,
-                                                          db=db, 
+                                                          generation_model=generation_model, db=db,  
                                                       bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
         return retrieval_evaluation_res
     except Exception:
@@ -92,11 +95,12 @@ async def generate_generation_evaluation_response(
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: EmbeddingProvider = request.app.state.embedding_model
     reranking_model: RerankingProvider = request.app.state.reranking_model
+    generation_model: GenerationProvider = request.app.state.generation_model
     request_id = request.state.request_id
 
     try:
         retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model,
-                                                          db=db, 
+                                                          generation_model=generation_model, db=db, 
                                                         bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
         generated_answer = retrieval_evaluation_res.generated_answer
 

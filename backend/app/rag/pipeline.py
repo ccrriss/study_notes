@@ -2,7 +2,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import PostChunk
 from app.rag.retrieval_dense import retrieve_dense_chunks
 from app.rag.prompts import answer_v1 as answer_prompt
-from app.rag.generation import generate_answer
 from app.rag.config import RETRIEVAL_CONFIG
 from app.schemas.evaluation import RetrievalEvaluationResponse
 
@@ -16,16 +15,18 @@ from app.schemas.evaluation import RetrievedResult, RetrievalEvaluationResponse,
 
 # reranking
 from app.rag.reranking import generate_reranking_retrieved_results
-# for reployment
+# for deployment
 from app.rag.reranking_provider import RerankingProvider
 from app.rag.embedding_provider import EmbeddingProvider
+from app.rag.generation_provider import GenerationProvider
 
 # letency_ms
 import time
 # logging
 from app.rag.logging import generate_logging
 
-async def run_rag_pipeline(query: str, embedding_model: EmbeddingProvider, reranking_model: RerankingProvider, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession,
+async def run_rag_pipeline(query: str, embedding_model: EmbeddingProvider, reranking_model: RerankingProvider, generation_model:GenerationProvider,
+                           bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession,
                            request_id: str) -> RetrievalEvaluationResponse:
     # logging of start phase
     generate_logging(event="rag_request_started", request_id=request_id, query_length=len(query))
@@ -58,7 +59,7 @@ async def run_rag_pipeline(query: str, embedding_model: EmbeddingProvider, reran
         stage = "generation"
         generation_start = time.perf_counter()
         prompt_text = answer_prompt.build_prompt(user_query=query, retrieved_results=reranking_results)
-        generated_answer = await generate_answer(prompt=prompt_text, rules=answer_prompt.rules)
+        generated_answer = await generation_model.generate_answer(prompt=prompt_text, rules=answer_prompt.rules)
         generation_end = time.perf_counter()
         generation_time = (generation_end - generation_start) * 1000
         total_time = (generation_end - dense_start) * 1000

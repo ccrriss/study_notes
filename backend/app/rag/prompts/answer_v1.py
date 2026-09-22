@@ -1,4 +1,3 @@
-from app.db.models import PostChunk
 from app.schemas.evaluation import RetrievedResult
 
 PROMPT_VERSION = "answer_v1"
