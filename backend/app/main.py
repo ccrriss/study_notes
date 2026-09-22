@@ -4,7 +4,10 @@ from app.core.config import settings
 from app.db.models import Base
 from app.db.session import engine
 from contextlib import asynccontextmanager
-from app.api import posts, auth, tags, rag
+# from app.api import posts, auth, tags, rag
+
+# TEMP, for test, will be deleted after testing
+from app.api import posts, auth, tags
 
 # lexical search
 from app.db.session import AsyncSessionLocal
@@ -43,7 +46,7 @@ async def lifespan(app: FastAPI):
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="embedding model internal error")
     print("EMBEDDING provider done")
-    
+
     app.state.bm25 = bm25
     app.state.post_chunk_ids = post_chunk_ids
     app.state.embedding_model = embedding_model
