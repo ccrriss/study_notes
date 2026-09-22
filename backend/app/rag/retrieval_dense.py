@@ -2,7 +2,7 @@ from app.db.models import PostChunk
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.rag.embedding_provider import EmbeddingProvider
+from app.rag.provider_protocols import EmbeddingProvider
 
 # do the vector search work but a retrieve name for better common use
 async def retrieve_dense_chunks(query, embedding_model: EmbeddingProvider, db:AsyncSession, top_k:int) -> list[tuple[PostChunk, float]]:

@@ -13,16 +13,14 @@ class ModalRerankingProvider:
             name="RerankingModel"
         )
         self.reranking_model = RerankingModel()
-    def predict(self, query_content_pairs: list[tuple[str, str]]):
-        return self.reranking_model.predict.remote(query_content_pairs)
+    def predict(self, query_content_pairs: list[tuple[str, str]]) -> list[float]:
+        return self.reranking_model.predict.remote(query_content_pairs).tolist()
 
 class LocalRerankingProvider:
     def __init__(self):
         from sentence_transformers.cross_encoder import CrossEncoder
 
         self.reranking_model = CrossEncoder(RERANKING_CONFIG.model_name)
-    def predict(self, query_content_pairs: list[tuple[str, str]]):
-        return self.reranking_model.predict(query_content_pairs)
-
-RerankingProvider = ModalRerankingProvider | LocalRerankingProvider
+    def predict(self, query_content_pairs: list[tuple[str, str]]) -> list[float]:
+        return self.reranking_model.predict(query_content_pairs).tolist()
         

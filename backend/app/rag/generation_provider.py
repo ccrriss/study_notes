@@ -55,5 +55,3 @@ class QwenGenerationProvider:
         if content is None:
             raise RuntimeError("Qwen returned empty content")
         return response.choices[0].message.content
-
-GenerationProvider = OllamaGenerationProvider | QwenGenerationProvider

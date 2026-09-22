@@ -14,9 +14,8 @@ from app.rag.evaluation.prompts import generation_v2 as judge_prompt
 from app.rag.prompts import answer_v1 as answer_prompt
 from app.rag.config import CHUNKING_CONFIG, EMBEDDING_CONFIG, RETRIEVAL_CONFIG, RERANKING_CONFIG
 
-from app.rag.embedding_provider import EmbeddingProvider
-from app.rag.reranking_provider import RerankingProvider
-from app.rag.generation_provider import GenerationProvider
+# for type checking
+from app.rag.provider_protocols import EmbeddingProvider, RerankingProvider, GenerationProvider
 
 # lexical search
 from fastapi import Request
