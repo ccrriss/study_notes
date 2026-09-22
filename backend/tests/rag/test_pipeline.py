@@ -76,7 +76,7 @@ async def test_run_rag_pipeline(monkeypatch):
     result = await pipeline.run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model, bm25=bm25, post_chunk_ids=post_chunks, db=db, request_id=request_id)
 
     hybrid_mock.assert_called_once_with(fake_dense_results, fake_lexical_results)
-    ranking_mock.assert_called_once_with(query= query, retrieved_results=fake_hybrid_results)
+    ranking_mock.assert_called_once_with(query= query, retrieved_results=fake_hybrid_results, model=reranking_model)
     prompt_mock.assert_called_once_with(user_query=query, retrieved_results=fake_ranking_results)
     answer_mock.assert_awaited_once_with(prompt=fake_prompt, rules=pipeline.answer_prompt.rules)
     assert result.generated_answer == fake_generated_answer
