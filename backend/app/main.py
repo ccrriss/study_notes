@@ -17,22 +17,33 @@ from fastapi import status, HTTPException
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    print("START lifespan")
+
     # for local, only when AUTO_CREATE_TABLES is True
     if settings.AUTO_CREATE_TABLES: 
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         print("AUTO_CREATE_TABLES is enabled, all tables are created")
+    print("TABLES done")
 
+    print("START lexical corpus")
     async with AsyncSessionLocal() as db:
         post_chunk_ids, tokenized_corpus = await build_lexical_search_corpus(db)
-        bm25 = BM25Okapi(corpus=tokenized_corpus)
+    print("CORPUS done")
+
+    print("START BM25")
+    bm25 = BM25Okapi(corpus=tokenized_corpus)
+    print("BM25 done")
+
+    print("START embedding provider")
     if settings.EMBEDDING_PROVIDER == "local":
         embedding_model = LocalEmbeddingProvider()
     elif settings.EMBEDDING_PROVIDER == "modal":
         embedding_model = ModalEmbeddingProvider()
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="embedding model internal error")
-        
+    print("EMBEDDING provider done")
+    
     app.state.bm25 = bm25
     app.state.post_chunk_ids = post_chunk_ids
     app.state.embedding_model = embedding_model
