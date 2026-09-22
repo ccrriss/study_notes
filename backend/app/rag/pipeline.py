@@ -4,7 +4,7 @@ from app.rag.retrieval_dense import retrieve_dense_chunks
 from app.rag.prompts import answer_v1 as answer_prompt
 from app.rag.config import RETRIEVAL_CONFIG
 from app.schemas.evaluation import RetrievalEvaluationResponse
-
+from typing import TYPE_CHECKING
 # lexical search
 from app.rag.retrieval_lexical import calculate_all_bm25_scores, find_top_k_lexical_search_results
 from rank_bm25 import BM25Okapi
@@ -16,9 +16,10 @@ from app.schemas.evaluation import RetrievedResult, RetrievalEvaluationResponse,
 # reranking
 from app.rag.reranking import generate_reranking_retrieved_results
 # for deployment
-from app.rag.reranking_provider import RerankingProvider
-from app.rag.embedding_provider import EmbeddingProvider
-from app.rag.generation_provider import GenerationProvider
+if TYPE_CHECKING:
+    from app.rag.reranking_provider import RerankingProvider
+    from app.rag.embedding_provider import EmbeddingProvider
+    from app.rag.generation_provider import GenerationProvider
 
 # letency_ms
 import time
