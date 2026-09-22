@@ -17,7 +17,7 @@ from app.schemas.evaluation import RetrievedResult, RetrievalEvaluationResponse,
 # reranking
 from app.rag.reranking import generate_reranking_retrieved_results
 # for reployment
-from app.rag.reranking_provider import RankingProvider
+from app.rag.reranking_provider import RerankingProvider
 from app.rag.embedding_provider import EmbeddingProvider
 
 # letency_ms
@@ -25,7 +25,7 @@ import time
 # logging
 from app.rag.logging import generate_logging
 
-async def run_rag_pipeline(query: str, embedding_model: EmbeddingProvider, reranking_model: RankingProvider, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession,
+async def run_rag_pipeline(query: str, embedding_model: EmbeddingProvider, reranking_model: RerankingProvider, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession,
                            request_id: str) -> RetrievalEvaluationResponse:
     # logging of start phase
     generate_logging(event="rag_request_started", request_id=request_id, query_length=len(query))

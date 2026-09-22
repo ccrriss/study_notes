@@ -5,6 +5,7 @@ from app.schemas.evaluation import RetrievedResult
 
 query = "test query"
 embedding_model = MagicMock()
+reranking_model = MagicMock()
 bm25 = MagicMock()
 post_chunks = [1, 2]
 db = MagicMock()
@@ -72,7 +73,7 @@ async def test_run_rag_pipeline(monkeypatch):
         answer_mock
     )
 
-    result = await pipeline.run_rag_pipeline(query=query, embedding_model=embedding_model, bm25=bm25, post_chunk_ids=post_chunks, db=db, request_id=request_id)
+    result = await pipeline.run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model, bm25=bm25, post_chunk_ids=post_chunks, db=db, request_id=request_id)
 
     hybrid_mock.assert_called_once_with(fake_dense_results, fake_lexical_results)
     ranking_mock.assert_called_once_with(query= query, retrieved_results=fake_hybrid_results)
