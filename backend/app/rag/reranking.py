@@ -1,10 +1,10 @@
-from sentence_transformers.cross_encoder import CrossEncoder
+from app.rag.reranking_provider import RerankingProvider
 from app.rag.config import RERANKING_CONFIG
 from app.schemas.evaluation import RetrievedResult
 
 final_k = RERANKING_CONFIG.final_k
 
-def generate_reranking_retrieved_results(query: str, model: CrossEncoder, retrieved_results: list[RetrievedResult]) -> list[RetrievedResult]:
+def generate_reranking_retrieved_results(query: str, model: RerankingProvider, retrieved_results: list[RetrievedResult]) -> list[RetrievedResult]:
     query_content_pairs = [(query, f"{' > '.join(retrieved_result.heading_path)} {retrieved_result.content}")
                             for retrieved_result in retrieved_results]
     scores = model.predict(query_content_pairs)

@@ -33,3 +33,5 @@ class LocalEmbeddingProvider:
         self.embedding_model = SentenceTransformer(EMBEDDING_CONFIG.model_name)
     def encode(self, text: str) -> list[float]:
         return self.embedding_model.encode(text).tolist()
+
+EmbeddingProvider = ModalEmbeddingProvider | LocalEmbeddingProvider

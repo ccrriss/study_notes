@@ -1,12 +1,12 @@
 from app.db.models import PostChunk
-from sentence_transformers import SentenceTransformer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from app.rag.embedding_provider import EmbeddingProvider
 
 # do the vector search work but a retrieve name for better common use
-async def retrieve_dense_chunks(query, embedding_model: SentenceTransformer, db:AsyncSession, top_k:int) -> list[tuple[PostChunk, float]]:
-    query_embedding: list[float] = embedding_model.encode(query).tolist() # ndarray to list
+async def retrieve_dense_chunks(query, embedding_model: EmbeddingProvider, db:AsyncSession, top_k:int) -> list[tuple[PostChunk, float]]:
+    query_embedding: list[float] = embedding_model.encode(query) # ndarray to list
 
     combined_cosine_distance = PostChunk.combined_embedding.cosine_distance(query_embedding)
 

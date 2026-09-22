@@ -14,7 +14,7 @@ class ModalRerankingProvider:
         )
         self.reranking_model = RerankingModel()
     def predict(self, query_content_pairs: list[tuple[str, str]]):
-        return self.reranking_model.predict(query_content_pairs)
+        return self.reranking_model.predict.remote(query_content_pairs)
 
 class LocalRerankingProvider:
     def __init__(self):
@@ -23,4 +23,6 @@ class LocalRerankingProvider:
         self.reranking_model = CrossEncoder(RERANKING_CONFIG.model_name)
     def predict(self, query_content_pairs: list[tuple[str, str]]):
         return self.reranking_model.predict(query_content_pairs)
+
+RerankingProvider = ModalRerankingProvider | LocalRerankingProvider
         

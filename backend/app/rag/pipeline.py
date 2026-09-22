@@ -4,7 +4,6 @@ from app.rag.retrieval_dense import retrieve_dense_chunks
 from app.rag.prompts import answer_v1 as answer_prompt
 from app.rag.generation import generate_answer
 from app.rag.config import RETRIEVAL_CONFIG
-from sentence_transformers import SentenceTransformer
 from app.schemas.evaluation import RetrievalEvaluationResponse
 
 # lexical search
@@ -17,14 +16,16 @@ from app.schemas.evaluation import RetrievedResult, RetrievalEvaluationResponse,
 
 # reranking
 from app.rag.reranking import generate_reranking_retrieved_results
-from sentence_transformers.cross_encoder import CrossEncoder
+# for reployment
+from app.rag.reranking_provider import RankingProvider
+from app.rag.embedding_provider import EmbeddingProvider
 
 # letency_ms
 import time
 # logging
 from app.rag.logging import generate_logging
 
-async def run_rag_pipeline(query: str, embedding_model: SentenceTransformer, reranking_model: CrossEncoder, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession,
+async def run_rag_pipeline(query: str, embedding_model: EmbeddingProvider, reranking_model: RankingProvider, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession,
                            request_id: str) -> RetrievalEvaluationResponse:
     # logging of start phase
     generate_logging(event="rag_request_started", request_id=request_id, query_length=len(query))
@@ -85,7 +86,7 @@ async def run_rag_pipeline(query: str, embedding_model: SentenceTransformer, rer
         generate_logging(event="rag_request_failed", request_id=request_id, error=e, stage=stage)
         raise
 
-async def run_dense_search_pipeline(query: str, embedding_model: SentenceTransformer, db: AsyncSession) -> list[RetrievedResult]:
+async def run_dense_search_pipeline(query: str, embedding_model: EmbeddingProvider, db: AsyncSession) -> list[RetrievedResult]:
     dense_results: list[RetrievedResult] = []
     combined_rows = await retrieve_dense_chunks(query=query, embedding_model=embedding_model, db=db, top_k=RETRIEVAL_CONFIG.top_k)
     for i, (post_chunk, similarity) in enumerate(combined_rows):

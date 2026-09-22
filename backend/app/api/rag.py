@@ -13,8 +13,9 @@ from app.rag.generation import GENERATION_MODEL_NAME, GENERATION_OPTIONS
 from app.rag.evaluation.prompts import generation_v2 as judge_prompt
 from app.rag.prompts import answer_v1 as answer_prompt
 from app.rag.config import CHUNKING_CONFIG, EMBEDDING_CONFIG, RETRIEVAL_CONFIG, RERANKING_CONFIG
-from sentence_transformers import SentenceTransformer
-from sentence_transformers.cross_encoder import CrossEncoder
+
+from app.rag.embedding_provider import EmbeddingProvider
+from app.rag.reranking_provider import RerankingProvider
 
 # lexical search
 from fastapi import Request
@@ -38,8 +39,8 @@ async def generate_rag_response(
 
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
-    embedding_model: SentenceTransformer = request.app.state.embedding_model
-    reranking_model: CrossEncoder = request.app.state.reranking_model
+    embedding_model: EmbeddingProvider = request.app.state.embedding_model
+    reranking_model: RerankingProvider = request.app.state.reranking_model
     request_id = request.state.request_id
 
     try:
@@ -67,8 +68,8 @@ async def generate_retrieval_evaluation_response(
 
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
-    embedding_model: SentenceTransformer = request.app.state.embedding_model
-    reranking_model: CrossEncoder = request.app.state.reranking_model
+    embedding_model: EmbeddingProvider = request.app.state.embedding_model
+    reranking_model: RerankingProvider = request.app.state.reranking_model
     request_id = request.state.request_id
 
     try :
@@ -89,8 +90,8 @@ async def generate_generation_evaluation_response(
     
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
-    embedding_model: SentenceTransformer = request.app.state.embedding_model
-    reranking_model: CrossEncoder = request.app.state.reranking_model
+    embedding_model: EmbeddingProvider = request.app.state.embedding_model
+    reranking_model: RerankingProvider = request.app.state.reranking_model
     request_id = request.state.request_id
 
     try:
