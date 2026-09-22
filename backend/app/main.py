@@ -4,10 +4,7 @@ from app.core.config import settings
 from app.db.models import Base
 from app.db.session import engine
 from contextlib import asynccontextmanager
-# from app.api import posts, auth, tags, rag
-
-# TEMP, for test, will be deleted after testing
-from app.api import posts, auth, tags
+from app.api import posts, auth, tags, rag
 
 # lexical search
 from app.db.session import AsyncSessionLocal
@@ -17,6 +14,7 @@ from rank_bm25 import BM25Okapi
 # for deployment
 from app.rag.embedding_provider import LocalEmbeddingProvider, ModalEmbeddingProvider
 from fastapi import status, HTTPException
+from app.rag.reranking_provider import LocalRerankingProvider, ModalRerankingProvider
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -41,15 +39,18 @@ async def lifespan(app: FastAPI):
     print("START embedding provider")
     if settings.EMBEDDING_PROVIDER == "local":
         embedding_model = LocalEmbeddingProvider()
+        reranking_model = LocalRerankingProvider()
     elif settings.EMBEDDING_PROVIDER == "modal":
         embedding_model = ModalEmbeddingProvider()
+        reranking_model = ModalRerankingProvider()
     else:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="embedding model internal error")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="constructing model internal error")
     print("EMBEDDING provider done")
 
     app.state.bm25 = bm25
     app.state.post_chunk_ids = post_chunk_ids
     app.state.embedding_model = embedding_model
+    app.state.reranking_model = reranking_model
 
     yield
 
@@ -69,4 +70,4 @@ app.add_middleware(
 app.include_router(posts.router)
 app.include_router(auth.router)
 app.include_router(tags.router)
-# app.include_router(rag.router)
+app.include_router(rag.router)

@@ -17,13 +17,14 @@ from app.schemas.evaluation import RetrievedResult, RetrievalEvaluationResponse,
 
 # reranking
 from app.rag.reranking import generate_reranking_retrieved_results
+from sentence_transformers.cross_encoder import CrossEncoder
 
 # letency_ms
 import time
 # logging
 from app.rag.logging import generate_logging
 
-async def run_rag_pipeline(query: str, embedding_model: SentenceTransformer, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession,
+async def run_rag_pipeline(query: str, embedding_model: SentenceTransformer, reranking_model: CrossEncoder, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession,
                            request_id: str) -> RetrievalEvaluationResponse:
     # logging of start phase
     generate_logging(event="rag_request_started", request_id=request_id, query_length=len(query))
@@ -50,7 +51,7 @@ async def run_rag_pipeline(query: str, embedding_model: SentenceTransformer, bm2
         # final_k
         stage = "reranking"
         reranking_start = time.perf_counter()
-        reranking_results = generate_reranking_retrieved_results(query=query, retrieved_results=hybrid_results)
+        reranking_results = generate_reranking_retrieved_results(query=query, model=reranking_model, retrieved_results=hybrid_results)
         reranking_time = (time.perf_counter() - reranking_start) * 1000
 
         stage = "generation"

@@ -14,6 +14,7 @@ from app.rag.evaluation.prompts import generation_v2 as judge_prompt
 from app.rag.prompts import answer_v1 as answer_prompt
 from app.rag.config import CHUNKING_CONFIG, EMBEDDING_CONFIG, RETRIEVAL_CONFIG, RERANKING_CONFIG
 from sentence_transformers import SentenceTransformer
+from sentence_transformers.cross_encoder import CrossEncoder
 
 # lexical search
 from fastapi import Request
@@ -38,10 +39,12 @@ async def generate_rag_response(
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: SentenceTransformer = request.app.state.embedding_model
+    reranking_model: CrossEncoder = request.app.state.reranking_model
     request_id = request.state.request_id
 
     try:
-        retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
+        retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model,
+                                                          db=db, 
                                                       bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
         generated_answer = retrieval_evaluation_res.generated_answer
         reranking_results = retrieval_evaluation_res.reranking_results
@@ -65,10 +68,12 @@ async def generate_retrieval_evaluation_response(
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: SentenceTransformer = request.app.state.embedding_model
+    reranking_model: CrossEncoder = request.app.state.reranking_model
     request_id = request.state.request_id
 
     try :
-        retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
+        retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model,
+                                                          db=db, 
                                                       bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
         return retrieval_evaluation_res
     except Exception:
@@ -85,10 +90,12 @@ async def generate_generation_evaluation_response(
     bm25:BM25Okapi = request.app.state.bm25
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: SentenceTransformer = request.app.state.embedding_model
+    reranking_model: CrossEncoder = request.app.state.reranking_model
     request_id = request.state.request_id
 
     try:
-        retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, db=db, 
+        retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model,
+                                                          db=db, 
                                                         bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
         generated_answer = retrieval_evaluation_res.generated_answer
 
