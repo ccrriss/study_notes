@@ -6,6 +6,8 @@ The project combines a Next.js frontend, FastAPI backend, PostgreSQL/pgvector st
 
 It started as a personal technical notes application and evolved into a practical RAG engineering project focused on retrieval quality, evaluation, and deployment readiness.
 
+Local backend setup:
+uv sync --extra local-inference
 ---
 
 ## Highlights
