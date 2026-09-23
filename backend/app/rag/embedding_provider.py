@@ -24,12 +24,12 @@ class ModalEmbeddingProvider:
         )
         self.embedding_model = EmbeddingModel()
 
-    def encode(self, text:str) -> list[float]:
-        return self.embedding_model.embed.remote(text)
+    async def encode(self, text:str) -> list[float]:
+        return await self.embedding_model.embed.remote.aio(text)
 
 class LocalEmbeddingProvider:
     def __init__(self):
         from sentence_transformers import SentenceTransformer
         self.embedding_model = SentenceTransformer(EMBEDDING_CONFIG.model_name)
-    def encode(self, text: str) -> list[float]:
+    async def encode(self, text: str) -> list[float]:
         return self.embedding_model.encode(text).tolist()

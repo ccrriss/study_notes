@@ -23,7 +23,7 @@ rules = """
    or "conclusion", unless required by Rules 3, 4, or 5.
 """
 
-def build_prompt(user_query:str, retrieved_results: list[RetrievedResult]):
+def build_prompt(user_query:str, retrieved_results: list[RetrievedResult]) -> str:
     combined_prompt_text = (
         start
         + f"User question:\n{user_query}\n\n"

@@ -1,7 +1,7 @@
 from typing import Protocol
 
 class EmbeddingProvider(Protocol):
-     def encode(self, text:str) -> list[float]:
+    async def encode(self, text:str) -> list[float]:
         ...
 
 class GenerationProvider(Protocol):
@@ -9,5 +9,5 @@ class GenerationProvider(Protocol):
         ...
 
 class RerankingProvider(Protocol):
-    def predict(self, query_content_pairs: list[tuple[str, str]]) -> list[float]:
+    async def predict(self, query_content_pairs: list[tuple[str, str]]) -> list[float]:
         ...

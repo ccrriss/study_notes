@@ -52,7 +52,7 @@ async def run_rag_pipeline(query: str, embedding_model: EmbeddingProvider, reran
         # final_k
         stage = "reranking"
         reranking_start = time.perf_counter()
-        reranking_results = generate_reranking_retrieved_results(query=query, model=reranking_model, retrieved_results=hybrid_results)
+        reranking_results = await generate_reranking_retrieved_results(query=query, model=reranking_model, retrieved_results=hybrid_results)
         reranking_time = (time.perf_counter() - reranking_start) * 1000
 
         stage = "generation"

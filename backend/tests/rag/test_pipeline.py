@@ -55,7 +55,7 @@ async def test_run_rag_pipeline(monkeypatch):
         RetrievedResult(rank=1, score=1, post_id=1, chunk_idx=1, title="fake_reranking_1", slug="fr1", content="fake_reranking_1_content", heading_path=["fr1"]),
         RetrievedResult(rank=2, score=0.5, post_id=1, chunk_idx=2, title="fake_reranking_2", slug="fr2", content="fake_reranking_2_content", heading_path=["fr2"]),
     ]
-    ranking_mock = MagicMock(return_value=fake_ranking_results)
+    ranking_mock = AsyncMock(return_value=fake_ranking_results)
     monkeypatch.setattr(
         pipeline,
         "generate_reranking_retrieved_results",
@@ -74,7 +74,7 @@ async def test_run_rag_pipeline(monkeypatch):
                                               bm25=bm25, post_chunk_ids=post_chunks, db=db, request_id=request_id)
 
     hybrid_mock.assert_called_once_with(fake_dense_results, fake_lexical_results)
-    ranking_mock.assert_called_once_with(query= query, retrieved_results=fake_hybrid_results, model=reranking_model)
+    ranking_mock.assert_awaited_once_with(query= query, retrieved_results=fake_hybrid_results, model=reranking_model)
     prompt_mock.assert_called_once_with(user_query=query, retrieved_results=fake_ranking_results)
     generation_model.generate_answer.assert_awaited_once_with(prompt=fake_prompt, rules=pipeline.answer_prompt.rules)
     assert result.generated_answer == fake_generated_answer

@@ -10,8 +10,17 @@ basic_segment = r'[a-zA-Z][0-9a-zA-Z]*'
 underscore_pattern = rf'{basic_segment}(?:_{basic_segment})+'
 dotted_pattern = rf'{basic_segment}(?:_{basic_segment})*(?:\.{basic_segment}(?:_{basic_segment})*)+'
 
+"""
+process: cheking dotted pattern first, then check underscore pattern. and replace the checked part with ""
+
+then use jieba to split English and Chinese words to get the list of lexical tokens.
+
+And use bm25 to get the scores of tokenized query and tokenized postchunk content
+"""
+
+
 # preprocessing technical words with re and patterns
-def extract_technical_tokens_with_remaining_text(text: str):
+def extract_technical_tokens_with_remaining_text(text: str) -> tuple[list[str], str]:
     tech_token_list = []
     def mask_match(match: re.Match):
         tech_token_list.append(match.group().lower())
@@ -22,7 +31,7 @@ def extract_technical_tokens_with_remaining_text(text: str):
     return tech_token_list, remaining_text
 
 # tokenize the text for general use with jieba
-def tokenize_for_lexical_search(text: str):
+def tokenize_for_lexical_search(text: str) -> list[str]:
     tech_token_list, remaining_text = extract_technical_tokens_with_remaining_text(text)
     remaining_text_token_list = jieba.lcut(remaining_text)
     remaining_text_token_list = [token.strip().lower() for token in remaining_text_token_list if token.strip() and 

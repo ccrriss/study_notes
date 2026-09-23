@@ -6,7 +6,7 @@ from app.rag.provider_protocols import EmbeddingProvider
 
 # do the vector search work but a retrieve name for better common use
 async def retrieve_dense_chunks(query, embedding_model: EmbeddingProvider, db:AsyncSession, top_k:int) -> list[tuple[PostChunk, float]]:
-    query_embedding: list[float] = embedding_model.encode(query) # ndarray to list
+    query_embedding: list[float] = await embedding_model.encode(query) # ndarray to list
 
     combined_cosine_distance = PostChunk.combined_embedding.cosine_distance(query_embedding)
 
