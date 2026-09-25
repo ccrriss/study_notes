@@ -1,7 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import PostChunk
 from app.rag.retrieval_dense import retrieve_dense_chunks
-from app.rag.prompts import answer_v1 as answer_prompt
 from app.rag.config import RETRIEVAL_CONFIG
 from app.schemas.evaluation import RetrievalEvaluationResponse
 from typing import TYPE_CHECKING
@@ -17,7 +16,8 @@ from app.schemas.evaluation import RetrievedResult, RetrievalEvaluationResponse,
 from app.rag.reranking import generate_reranking_retrieved_results
 # for deployment type checking
 from app.rag.provider_protocols import RerankingProvider, EmbeddingProvider, GenerationProvider
-
+# answer v2
+from app.rag.prompts import answer_v4 as answer_prompt
 
 # letency_ms
 import time
