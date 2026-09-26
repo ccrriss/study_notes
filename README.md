@@ -19,7 +19,7 @@ It started as a personal technical notes application and evolved into a practica
 - Generation evaluation using an LLM-as-a-judge workflow
 - Runtime metadata tracking for traceable experiments
 - Source attribution from retrieved blog sections
-- Basic RAG safety regression tests covering out-of-scope queries, hallucination pressure, prompt injection, prompt leakage, and malformed input
+- Basic RAG safety regression tests covering out-of-scope queries, hallucination pressure, direct and indirect prompt injection, prompt leakage, and malformed input
 - Structured logging, latency measurement, and graceful failure handling
 - Provider abstraction for local and cloud inference
 - Async Modal inference integration for non-blocking remote embedding and reranking calls
@@ -177,7 +177,7 @@ This makes evaluation results traceable to the configuration that produced them.
 
 ## RAG Safety
 
-A basic safety regression suite is being used to test how the generation layer behaves under adversarial or unsupported inputs.
+A basic safety regression suite is used to test how the generation layer behaves under adversarial, unsupported, or malformed inputs.
 
 Current test categories include:
 
@@ -186,11 +186,12 @@ Current test categories include:
 - direct prompt injection
 - attempts to bypass retrieval grounding
 - system-prompt / internal-instruction leakage attempts
+- indirect prompt injection through malicious retrieved documents
 - malformed or meaningless input
 
-The initial safety baseline exposed direct prompt-injection failures where user instructions could override grounding behavior. Prompt revisions were then regression-tested against the same safety cases, improving resistance without changing the retrieval pipeline.
+The safety tests reproduced both direct user-input injection and indirect injection through retrieved context. Prompt revisions were regression-tested against the same cases, improving resistance while preserving retrieval grounding.
 
-Indirect prompt injection through malicious instructions embedded inside retrieved documents is the current safety-testing work in progress.
+Indirect-injection testing also exposed a practical trade-off: stronger prompt defenses can cause conservative refusal when adversarial instructions and useful factual content appear in the same retrieved context. The current prompt version favors a balanced mitigation rather than treating the suite as a claim of comprehensive RAG security.
 
 ---
 
@@ -314,12 +315,8 @@ Completed:
 - [x] Production deployment with Vercel + Render + Supabase + Modal
 - [x] Async remote inference integration
 - [x] Basic RAG safety regression testing
+- [x] Single-post RAG re-ingestion / index refresh workflow
 - [x] Pytest tests for retrieval components and pipeline orchestration
-
-Current work:
-
-- [ ] Indirect prompt-injection testing through retrieved context
-- [ ] Single-post RAG re-ingestion / index refresh workflow
 
 Future improvements:
 

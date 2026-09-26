@@ -17,7 +17,7 @@ from app.rag.reranking import generate_reranking_retrieved_results
 # for deployment type checking
 from app.rag.provider_protocols import RerankingProvider, EmbeddingProvider, GenerationProvider
 # answer v2
-from app.rag.prompts import answer_v4 as answer_prompt
+from app.rag.prompts import answer_v5 as answer_prompt
 
 # letency_ms
 import time
