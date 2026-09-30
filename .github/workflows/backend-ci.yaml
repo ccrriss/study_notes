@@ -5,6 +5,12 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5433/study_notes_test
+      QWEN_BASE_URL: http://localhost
+      QWEN_API_KEY: test
+      QWEN_MODEL_NAME: test
+    
     services:
       postgres:
         image: pgvector/pgvector:pg17
