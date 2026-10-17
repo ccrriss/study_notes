@@ -25,7 +25,7 @@ class Post(Base):
     updated_at: Mapped[datetime] = mapped_column(onupdate=func.now(), server_default=func.now())
     tags: Mapped[list["Tag"]] = relationship(secondary=post_tag, back_populates="posts")
 
-    post_chunks: Mapped[list["PostChunk"]] = relationship(back_populates="post")
+    post_chunks: Mapped[list["PostChunk"]] = relationship(back_populates="post", cascade="all, delete-orphan", passive_deletes=True)
 
 class Tag(Base):
     __tablename__ = "tags"
@@ -47,7 +47,7 @@ class PostChunk(Base):
 
     id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True)
 
-    post_id: Mapped[int] = mapped_column(ForeignKey("posts.id"), index=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey("posts.id", ondelete="CASCADE"), index=True)
     post: Mapped[Post] = relationship(back_populates="post_chunks")
 
     chunk_idx: Mapped[int] = mapped_column()

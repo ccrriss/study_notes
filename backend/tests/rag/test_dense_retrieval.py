@@ -1,6 +1,6 @@
 import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy import text, select
+from sqlalchemy import text, select, delete
 from sqlalchemy.pool import NullPool
 from app.db.models import Post, PostChunk
 from app.rag.retrieval_dense import retrieve_dense_chunks
@@ -66,3 +66,10 @@ async def test_integration_dense_retrieval():
         assert results[0][1] > results[1][1]
         assert results[1][1] > results[2][1]
         assert len(results) == 3
+
+        stmt = delete(Post).where(Post.id == test_post.id)
+        await db.execute(stmt)
+        await db.flush()
+        result = await db.execute(select(PostChunk).where(PostChunk.post_id == test_post.id))
+        result = result.all()
+        assert len(result) == 0
