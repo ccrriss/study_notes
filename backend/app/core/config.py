@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     # Inference_mode that decide embedding, reranking and generation model are online or local
     INFERENCE_MODE: Literal["local", "modal"] = "local"
 
+    # For docker database connection
+    DATABASE_SSL: bool = True
+
     # Qwen model
     QWEN_BASE_URL: str
     QWEN_API_KEY: str

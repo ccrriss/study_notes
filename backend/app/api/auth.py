@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from app.schemas.login import LoginIn, TokenOut
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,22 +17,39 @@ from app.db.models import User
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
-# 登录接口
-@router.post("/login", response_model=TokenOut)
-async def login(payload: LoginIn, db:AsyncSession = Depends(get_db)) -> TokenOut:
-    user = await db.scalar(select(User).where(User.username == payload.username))
+async def authenticate_user(username: str, password: str, db: AsyncSession) -> User:
+    user = await db.scalar(select(User).where(User.username == username))
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect username or password",
         )
-    if not verify_password(payload.password, user.password_hash):
+
+    if not verify_password(password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Incorrect username or password"
         )
+
+    return user
+
+# 登录接口
+@router.post("/login", response_model=TokenOut)
+async def login(payload: LoginIn, db:AsyncSession = Depends(get_db)) -> TokenOut:
+    user = await authenticate_user(username=payload.username, password=payload.password, db=db)
+
+    # payload中的sub放user.id
+    access_token = create_access_token(
+        data={"sub": str(user.id)},
+    )
+    return TokenOut(access_token=access_token)
+
+# for swagger only since the request sent to token url is application/x-www-form-urlencoded but login accept application/json
+@router.post("/token", response_model=TokenOut)
+async def swagger_login(payload_form: Annotated[OAuth2PasswordRequestForm, Depends()], db:AsyncSession = Depends(get_db)) -> TokenOut:
+    user = await authenticate_user(username=payload_form.username, password=payload_form.password, db=db)
 
     # payload中的sub放user.id
     access_token = create_access_token(

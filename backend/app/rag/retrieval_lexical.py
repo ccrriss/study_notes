@@ -66,4 +66,11 @@ def find_top_k_lexical_search_results(scores: list[float], top_k: int) -> list[t
     sorted_results_by_score.reverse()
     return sorted_results_by_score[:top_k]
 
+async def build_bm25_index(db: AsyncSession) -> tuple[BM25Okapi | None, list[int]]:
+    post_chunk_ids, tokenized_corpus = await build_lexical_search_corpus(db=db)
 
+    if not tokenized_corpus:
+        return None, post_chunk_ids
+
+    bm25 = BM25Okapi(corpus=tokenized_corpus)
+    return bm25, post_chunk_ids

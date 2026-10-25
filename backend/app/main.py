@@ -8,7 +8,7 @@ from app.api import posts, auth, tags, rag
 
 # lexical search
 from app.db.session import AsyncSessionLocal
-from app.rag.retrieval_lexical import build_lexical_search_corpus
+from app.rag.retrieval_lexical import build_bm25_index
 from rank_bm25 import BM25Okapi
 
 # for deployment
@@ -30,12 +30,10 @@ async def lifespan(app: FastAPI):
 
     print("START lexical corpus")
     async with AsyncSessionLocal() as db:
-        post_chunk_ids, tokenized_corpus = await build_lexical_search_corpus(db)
+        print("START BM25")
+        bm25, post_chunk_ids = await build_bm25_index(db=db)
+        print("BM25 done")
     print("CORPUS done")
-
-    print("START BM25")
-    bm25 = BM25Okapi(corpus=tokenized_corpus)
-    print("BM25 done")
 
     print("START embedding provider")
     if settings.INFERENCE_MODE == "local":

@@ -18,9 +18,11 @@ class ModalRerankingProvider:
 
 class LocalRerankingProvider:
     def __init__(self):
-        from sentence_transformers.cross_encoder import CrossEncoder
-
-        self.reranking_model = CrossEncoder(RERANKING_CONFIG.model_name)
+        self.reranking_model = None
+        
     async def predict(self, query_content_pairs: list[tuple[str, str]]) -> list[float]:
+        if self.reranking_model is None:
+            from sentence_transformers.cross_encoder import CrossEncoder
+            self.reranking_model = CrossEncoder(RERANKING_CONFIG.model_name)
         return self.reranking_model.predict(query_content_pairs).tolist()
         

@@ -9,15 +9,26 @@ from slugify import slugify
 from app.api.auth import require_admin_user
 from app.db.models import User
 
+# PostChunk related
+from app.rag.provider_protocols import EmbeddingProvider
+from fastapi import Request
+from app.rag.ingestion.post_chunks import refresh_post_chunks, add_post_chunks
+from app.rag.retrieval_lexical import build_bm25_index
+
 router = APIRouter(prefix="/api/v1/posts", tags=["posts"])
 
 @router.post("", response_model = PostOut)
 async def create_post(
     payload: PostIn, 
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin_user) # need to be admin
 ) -> PostOut:
     slug = payload.slug or slugify(payload.title)
+
+    # Embedding model
+    embedding_model: EmbeddingProvider = request.app.state.embedding_model
+
     # slug 去重
     exists = await db.scalar(select(Post.id).where(Post.slug == slug))
     if exists:
@@ -35,9 +46,20 @@ async def create_post(
     # post = Post(title=payload.title, slug = slug, content_md=payload.content_md, excerpt = payload.excerpt, is_published = payload.is_published, 
     #             tags = tag_entities)
     post = Post(**payload.model_dump(exclude={"slug", "tags"}), slug=slug, tags=tag_entities)
+
     db.add(post)
+    
+    await db.flush()
+    # add post_chunks
+    await add_post_chunks(post=post, db=db, model=embedding_model)
+
     await db.commit()
-    await db.refresh(post)
+
+    # rebuild bm25 after adding post_chunks
+    bm25, post_chunk_ids = await build_bm25_index(db=db)
+    request.app.state.bm25 = bm25
+    request.app.state.post_chunk_ids = post_chunk_ids
+
     return PostOut(
         id=post.id, title=post.title, slug=post.slug, content_md= post.content_md, excerpt=post.excerpt, is_published=post.is_published, 
         tags=[t.name for t in tag_entities]
@@ -47,16 +69,20 @@ async def create_post(
 async def update_post(
     post_id: int, 
     payload: PostIn, 
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin_user)
 ):
     stmt = select(Post).where(Post.id == post_id).options(selectinload(Post.tags))
+    # Embedding model
+    embedding_model: EmbeddingProvider = request.app.state.embedding_model
+
     post = await db.scalar(stmt)
     if not post:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "post not found for update")
     # slug 去重
     new_slug = payload.slug or slugify(payload.title)
-    exists = await db.scalar(select(Post.id).where(new_slug == Post.slug, Post.id != post_id))
+    exists = await db.scalar(select(Post.id).where(Post.slug == new_slug, Post.id != post_id))
     if exists:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "slug already exists")
     # 更新字段
@@ -76,8 +102,16 @@ async def update_post(
     # 处理完毕
     post.tags = tag_entities
 
+    # refresh post_chunks after updating posts
+    await refresh_post_chunks(post=post, db=db, model=embedding_model)
+
     await db.commit()
-    await db.refresh(post)
+
+    # rebuild bm25 after updating post_chunks
+    bm25, post_chunk_ids = await build_bm25_index(db=db)
+    request.app.state.bm25 = bm25
+    request.app.state.post_chunk_ids = post_chunk_ids
+
     return PostOut(id=post.id, title=post.title, slug=post.slug, content_md=post.content_md, excerpt=post.excerpt, is_published=post.is_published, tags = [
         t.name for t in post.tags
     ])
@@ -85,6 +119,7 @@ async def update_post(
 @router.delete("/{post_id}", status_code=204)
 async def delete_note(
     post_id: int, 
+    request: Request, 
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin_user)
 ):
@@ -93,6 +128,11 @@ async def delete_note(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "post not found")
     await db.delete(post)
     await db.commit()
+
+    # rebuild bm25 after deleting post_chunks
+    bm25, post_chunk_ids = await build_bm25_index(db=db)
+    request.app.state.bm25 = bm25
+    request.app.state.post_chunk_ids = post_chunk_ids
 
     return Response(status_code=204)
 

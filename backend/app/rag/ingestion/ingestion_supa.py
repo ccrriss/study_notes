@@ -6,7 +6,7 @@ import sys
 import argparse
 
 """
-ingetstion_supa is for local use only that generate the postchunks to the supabase database
+ingestion_supa is for local use only that generate the postchunks to the supabase database
 
 also including methods for local testing
 
@@ -22,7 +22,6 @@ from app.rag.config import EMBEDDING_CONFIG, CHUNKING_CONFIG
 from app.rag.ingestion.post_chunks import getPost, generate_sections, getPosts
 
 from transformers import PreTrainedTokenizerBase
-from sqlalchemy import delete
 
 def generate_post_chunks(post: Post, sections: list[tuple[list[str], str]], tokenizer: PreTrainedTokenizerBase, 
                        model: SentenceTransformer, max_seq_length:int, chunk_overlap: int) -> list[PostChunk]:
@@ -60,7 +59,7 @@ def generate_post_chunks(post: Post, sections: list[tuple[list[str], str]], toke
             for i in range(0, len(content_encoded), step_size):
                 content_chunk = content_encoded[i: i+content_budget]
                 content_text = tokenizer.decode(content_chunk)
-                combined_embedding = model.encode(heading_text + "\n" + content_text)
+                combined_embedding = model.encode(heading_text + "\n" + content_text).tolist()
                 chunk = PostChunk(post_id=post.id, chunk_idx=chunk_idx, content_chunk=content_text, combined_embedding=combined_embedding,
                                   heading_path=heading_path)
                 chunk_idx += 1
@@ -68,7 +67,7 @@ def generate_post_chunks(post: Post, sections: list[tuple[list[str], str]], toke
                 if i + content_budget >= len(content_encoded):
                     break
         else:
-            combined_embedding = model.encode(heading_text + "\n" + content)
+            combined_embedding = model.encode(heading_text + "\n" + content).tolist()
             chunk = PostChunk(post_id=post.id, chunk_idx=chunk_idx, content_chunk=content, combined_embedding=combined_embedding,
                                               heading_path=heading_path)
             chunk_idx += 1
@@ -94,18 +93,19 @@ async def ingest_one(post_id: int):
         post_chunks = generate_post_chunks(post=post, sections=sections, tokenizer=model.tokenizer, model=model, 
                                            max_seq_length=CHUNKING_CONFIG.max_seq_length, chunk_overlap=CHUNKING_CONFIG.chunk_overlap)
         await db.execute(stmt)
-        
+
         db.add_all(post_chunks)
         await db.commit()
 
 async def ingest_all():
     model = SentenceTransformer(EMBEDDING_CONFIG.model_name)
     tokenizer = model.tokenizer
+    stmt = delete(PostChunk)
 
     async with AsyncSessionLocal() as db:
         posts = await getPosts(db=db)
         post_chunks: list[PostChunk] = generate_all_post_chunks(posts=posts, model=model, tokenizer=tokenizer)
-        await db.delete(PostChunk)
+        await db.execute(stmt)
         db.add_all(post_chunks)
         await db.commit()
 

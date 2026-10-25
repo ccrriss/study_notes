@@ -25,7 +25,7 @@ import time
 from app.rag.logging import generate_logging
 
 async def run_rag_pipeline(query: str, embedding_model: EmbeddingProvider, reranking_model: RerankingProvider, generation_model:GenerationProvider,
-                           bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession,
+                           bm25: BM25Okapi | None, post_chunk_ids: list[int], db: AsyncSession,
                            request_id: str) -> RetrievalEvaluationResponse:
     # logging of start phase
     generate_logging(event="rag_request_started", request_id=request_id, query_length=len(query))
@@ -97,8 +97,11 @@ async def run_dense_search_pipeline(query: str, embedding_model: EmbeddingProvid
         )
     return dense_results
 
-async def run_lexical_search_pipeline(query: str, bm25: BM25Okapi, post_chunk_ids: list[int], db: AsyncSession) -> list[RetrievedResult]:
+async def run_lexical_search_pipeline(query: str, bm25: BM25Okapi | None, post_chunk_ids: list[int], db: AsyncSession) -> list[RetrievedResult]:
     lexical_results: list[RetrievedResult] = []
+
+    if bm25 is None:
+        return []
     
     bm_25_scores = calculate_all_bm25_scores(bm25, query)
     lexical_search_top_k_results = find_top_k_lexical_search_results(bm_25_scores, top_k=RETRIEVAL_CONFIG.top_k)
