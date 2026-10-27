@@ -5,7 +5,7 @@ from app.rag.config import RETRIEVAL_CONFIG
 from app.schemas.evaluation import RetrievalEvaluationResponse
 from typing import TYPE_CHECKING
 # lexical search
-from app.rag.retrieval_lexical import calculate_all_bm25_scores, find_top_k_lexical_search_results
+from app.rag.retrieval_lexical import calculate_all_bm25_scores, find_top_k_lexical_search_results, find_lexical_candidate_indices
 from rank_bm25 import BM25Okapi
 from sqlalchemy.orm import selectinload
 # hybrid search pipeline
@@ -25,7 +25,8 @@ import time
 from app.rag.logging import generate_logging
 
 async def run_rag_pipeline(query: str, embedding_model: EmbeddingProvider, reranking_model: RerankingProvider, generation_model:GenerationProvider,
-                           bm25: BM25Okapi | None, post_chunk_ids: list[int], db: AsyncSession,
+                           bm25: BM25Okapi | None, inverted_idx_dict: dict[str, set[int]], 
+                           post_chunk_ids: list[int], db: AsyncSession,
                            request_id: str) -> RetrievalEvaluationResponse:
     # logging of start phase
     generate_logging(event="rag_request_started", request_id=request_id, query_length=len(query))
@@ -42,7 +43,8 @@ async def run_rag_pipeline(query: str, embedding_model: EmbeddingProvider, reran
 
         stage = "lexical"
         lexical_start = time.perf_counter()
-        lexical_results = await run_lexical_search_pipeline(query=query, bm25=bm25, post_chunk_ids=post_chunk_ids, db=db)
+        lexical_results = await run_lexical_search_pipeline(query=query, bm25=bm25, inverted_idx_dict=inverted_idx_dict, 
+                                                            post_chunk_ids=post_chunk_ids, db=db)
         lexical_time = (time.perf_counter() - lexical_start) * 1000
 
         stage = "hybrid"
@@ -97,14 +99,17 @@ async def run_dense_search_pipeline(query: str, embedding_model: EmbeddingProvid
         )
     return dense_results
 
-async def run_lexical_search_pipeline(query: str, bm25: BM25Okapi | None, post_chunk_ids: list[int], db: AsyncSession) -> list[RetrievedResult]:
+async def run_lexical_search_pipeline(query: str, bm25: BM25Okapi | None, inverted_idx_dict: dict[str, set[int]], 
+                                      post_chunk_ids: list[int], db: AsyncSession) -> list[RetrievedResult]:
     lexical_results: list[RetrievedResult] = []
 
     if bm25 is None:
         return []
     
     bm_25_scores = calculate_all_bm25_scores(bm25, query)
-    lexical_search_top_k_results = find_top_k_lexical_search_results(bm_25_scores, top_k=RETRIEVAL_CONFIG.top_k)
+    candidate_indices = find_lexical_candidate_indices(query=query, inverted_index_dict=inverted_idx_dict)
+    lexical_search_top_k_results = find_top_k_lexical_search_results(scores=bm_25_scores, candidate_idx_set=candidate_indices,
+                                                                      top_k=RETRIEVAL_CONFIG.top_k)
 
     for i, lexical_search_result in enumerate(lexical_search_top_k_results):
         idx_of_post_chunk_id = lexical_search_result[0]

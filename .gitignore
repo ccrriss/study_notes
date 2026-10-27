@@ -13,6 +13,7 @@ backend/*.sqlite3
 *.db
 *.sqlite
 *.sqlite3
+db_backup/
 
 # ---------- python ----------
 __pycache__/

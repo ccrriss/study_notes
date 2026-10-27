@@ -54,23 +54,49 @@ async def build_lexical_search_corpus(db: AsyncSession) -> tuple[list[int], list
 
     return post_chunk_ids, tokenized_corpus
 
+# for building inverted index, the idx is the position of post_chunk_ids
+def build_inverted_index(tokenized_corpus: list[list[str]]) -> dict[str, set[int]]:
+    inverted_index_dict = {}
+    for idx, document in enumerate(tokenized_corpus):
+        for token in document:
+            if token not in inverted_index_dict:
+                inverted_index_dict[token] = {idx}
+            else:
+                inverted_index_dict[token].add(idx)
+    # token: {idx1, idx2, ....}
+    return inverted_index_dict
+
+# if the query in inverted_index_dict, save all the relative document idx in a set
+def find_lexical_candidate_indices(query: str, inverted_index_dict: dict[str, set[int]]) -> set[int]:
+    tokenized_query_list = tokenize_for_lexical_search(text=query)
+    index_set = set()
+    for tokenized_query in tokenized_query_list:
+        if tokenized_query in inverted_index_dict:
+            index_set.update(inverted_index_dict[tokenized_query])
+
+    return index_set
+
 # for lexical retrieve
 def calculate_all_bm25_scores(bm25: BM25Okapi, query:str):
-    tokenized_query = tokenize_for_lexical_search(query)
-    scores = bm25.get_scores(tokenized_query)
+    tokenized_query_list = tokenize_for_lexical_search(query)
+    scores = bm25.get_scores(tokenized_query_list)
     return scores
 
-def find_top_k_lexical_search_results(scores: list[float], top_k: int) -> list[tuple[int, float]]:
+def find_top_k_lexical_search_results(scores: list[float], candidate_idx_set: set[int], top_k: int) -> list[tuple[int, float]]:
     sorted_results_by_score = list(enumerate(scores))
-    sorted_results_by_score.sort(key=(lambda pair: pair[1]))
-    sorted_results_by_score.reverse()
+    # pair is (index, score)
+    sorted_results_by_score = [(idx, score) for (idx, score) in sorted_results_by_score if idx in candidate_idx_set]
+    sorted_results_by_score.sort(key=(lambda pair: pair[1]), reverse=True) 
+    
     return sorted_results_by_score[:top_k]
 
-async def build_bm25_index(db: AsyncSession) -> tuple[BM25Okapi | None, list[int]]:
+async def build_bm25_index(db: AsyncSession) -> tuple[BM25Okapi | None, dict[str, set[int]], list[int]]:
     post_chunk_ids, tokenized_corpus = await build_lexical_search_corpus(db=db)
 
     if not tokenized_corpus:
-        return None, post_chunk_ids
+        return None, {}, post_chunk_ids
+
+    inverted_idx_dict = build_inverted_index(tokenized_corpus=tokenized_corpus)
 
     bm25 = BM25Okapi(corpus=tokenized_corpus)
-    return bm25, post_chunk_ids
+    return bm25, inverted_idx_dict , post_chunk_ids

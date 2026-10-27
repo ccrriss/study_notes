@@ -37,7 +37,8 @@ async def generate_rag_response(
 ) -> RagResponse:
     query = payload.query
 
-    bm25:BM25Okapi = request.app.state.bm25
+    bm25: BM25Okapi = request.app.state.bm25
+    inverted_idx_dict: dict[str, set[int]] = request.app.state.inverted_idx_dict
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: EmbeddingProvider = request.app.state.embedding_model
     reranking_model: RerankingProvider = request.app.state.reranking_model
@@ -47,7 +48,8 @@ async def generate_rag_response(
     try:
         retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model,
                                                           generation_model=generation_model, db=db, 
-                                                      bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
+                                                      bm25=bm25, inverted_idx_dict=inverted_idx_dict,
+                                                      post_chunk_ids=post_chunk_ids, request_id=request_id)
         generated_answer = retrieval_evaluation_res.generated_answer
         reranking_results = retrieval_evaluation_res.reranking_results
 
@@ -68,6 +70,7 @@ async def generate_retrieval_evaluation_response(
     query = payload.query
 
     bm25:BM25Okapi = request.app.state.bm25
+    inverted_idx_dict: dict[str, set[int]] = request.app.state.inverted_idx_dict
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: EmbeddingProvider = request.app.state.embedding_model
     reranking_model: RerankingProvider = request.app.state.reranking_model
@@ -77,7 +80,8 @@ async def generate_retrieval_evaluation_response(
     try :
         retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model,
                                                           generation_model=generation_model, db=db,  
-                                                      bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
+                                                      bm25=bm25, inverted_idx_dict=inverted_idx_dict,
+                                                      post_chunk_ids=post_chunk_ids, request_id=request_id)
         return retrieval_evaluation_res
     except Exception:
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, "rag request failed")                                    
@@ -91,6 +95,7 @@ async def generate_generation_evaluation_response(
     query = payload.query
     
     bm25:BM25Okapi = request.app.state.bm25
+    inverted_idx_dict: dict[str, set[int]] = request.app.state.inverted_idx_dict
     post_chunk_ids = request.app.state.post_chunk_ids
     embedding_model: EmbeddingProvider = request.app.state.embedding_model
     reranking_model: RerankingProvider = request.app.state.reranking_model
@@ -100,7 +105,8 @@ async def generate_generation_evaluation_response(
     try:
         retrieval_evaluation_res = await run_rag_pipeline(query=query, embedding_model=embedding_model, reranking_model=reranking_model,
                                                           generation_model=generation_model, db=db, 
-                                                        bm25=bm25, post_chunk_ids=post_chunk_ids, request_id=request_id)
+                                                        bm25=bm25, inverted_idx_dict=inverted_idx_dict,
+                                                        post_chunk_ids=post_chunk_ids, request_id=request_id)
         generated_answer = retrieval_evaluation_res.generated_answer
 
         res = await evaluate_generation(payload=payload, generated_answer=generated_answer)

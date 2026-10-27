@@ -1,4 +1,4 @@
-from app.rag.retrieval_lexical import tokenize_for_lexical_search, calculate_all_bm25_scores, find_top_k_lexical_search_results
+from app.rag.retrieval_lexical import tokenize_for_lexical_search, calculate_all_bm25_scores, find_top_k_lexical_search_results, build_inverted_index, find_lexical_candidate_indices
 from rank_bm25 import BM25Okapi
 
 """
@@ -32,13 +32,20 @@ tokenized_corpus = [
 ]
 
 bm25 = BM25Okapi(corpus=tokenized_corpus)
+inverted_idx_dict = build_inverted_index(tokenized_corpus=tokenized_corpus)
+candidate_idx_set = find_lexical_candidate_indices(query=query, inverted_index_dict=inverted_idx_dict)
 
 def test_bm25_scores_and_top_k_results():
     scores = calculate_all_bm25_scores(bm25=bm25, query=query)
     assert(scores[1] > scores[0])
     assert(scores[1] > scores[2])
 
-    sorted_results_by_score = find_top_k_lexical_search_results(scores=scores, top_k=2)
+    print(tokenized_corpus)
+    print(tokenize_for_lexical_search(query))
+
+    # return list[(index, score)]
+    sorted_results_by_score = find_top_k_lexical_search_results(scores=scores, candidate_idx_set=candidate_idx_set,
+                                                                top_k=3)
     assert(len(sorted_results_by_score) == 2)
     # check whether the original index is 1
     assert(sorted_results_by_score[0][0] == 1)

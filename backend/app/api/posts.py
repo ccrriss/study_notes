@@ -56,8 +56,9 @@ async def create_post(
     await db.commit()
 
     # rebuild bm25 after adding post_chunks
-    bm25, post_chunk_ids = await build_bm25_index(db=db)
+    bm25, inverted_idx_dict, post_chunk_ids = await build_bm25_index(db=db)
     request.app.state.bm25 = bm25
+    request.app.state.inverted_idx_dict = inverted_idx_dict
     request.app.state.post_chunk_ids = post_chunk_ids
 
     return PostOut(
@@ -108,8 +109,9 @@ async def update_post(
     await db.commit()
 
     # rebuild bm25 after updating post_chunks
-    bm25, post_chunk_ids = await build_bm25_index(db=db)
+    bm25, inverted_idx_dict, post_chunk_ids = await build_bm25_index(db=db)
     request.app.state.bm25 = bm25
+    request.app.state.inverted_idx_dict = inverted_idx_dict
     request.app.state.post_chunk_ids = post_chunk_ids
 
     return PostOut(id=post.id, title=post.title, slug=post.slug, content_md=post.content_md, excerpt=post.excerpt, is_published=post.is_published, tags = [
@@ -130,8 +132,9 @@ async def delete_note(
     await db.commit()
 
     # rebuild bm25 after deleting post_chunks
-    bm25, post_chunk_ids = await build_bm25_index(db=db)
+    bm25, inverted_idx_dict, post_chunk_ids = await build_bm25_index(db=db)
     request.app.state.bm25 = bm25
+    request.app.state.inverted_idx_dict = inverted_idx_dict
     request.app.state.post_chunk_ids = post_chunk_ids
 
     return Response(status_code=204)

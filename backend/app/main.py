@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     print("START lexical corpus")
     async with AsyncSessionLocal() as db:
         print("START BM25")
-        bm25, post_chunk_ids = await build_bm25_index(db=db)
+        bm25, inverted_idx_dict , post_chunk_ids = await build_bm25_index(db=db)
         print("BM25 done")
     print("CORPUS done")
 
@@ -49,6 +49,7 @@ async def lifespan(app: FastAPI):
     print("EMBEDDING provider done")
 
     app.state.bm25 = bm25
+    app.state.inverted_idx_dict = inverted_idx_dict
     app.state.post_chunk_ids = post_chunk_ids
     app.state.embedding_model = embedding_model
     app.state.reranking_model = reranking_model

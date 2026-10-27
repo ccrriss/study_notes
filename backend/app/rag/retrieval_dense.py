@@ -10,8 +10,9 @@ async def retrieve_dense_chunks(query, embedding_model: EmbeddingProvider, db:As
 
     combined_cosine_distance = PostChunk.combined_embedding.cosine_distance(query_embedding)
 
+    # only save the similarity>0 results, and similarity = 1-distance, so distance<1 is the condition
     combined_stmt = select(PostChunk, (1-combined_cosine_distance).label("combined_cos_similarity")
-                           ).order_by(combined_cosine_distance).limit(top_k).options(selectinload(PostChunk.post))
+                           ).order_by(combined_cosine_distance).limit(top_k).options(selectinload(PostChunk.post)).where(combined_cosine_distance < 1)
 
     combined_result = await db.execute(combined_stmt)
 
