@@ -69,12 +69,12 @@ def build_inverted_index(tokenized_corpus: list[list[str]]) -> dict[str, set[int
 # if the query in inverted_index_dict, save all the relative document idx in a set
 def find_lexical_candidate_indices(query: str, inverted_index_dict: dict[str, set[int]]) -> set[int]:
     tokenized_query_list = tokenize_for_lexical_search(text=query)
-    index_set = set()
+    candidate_index_set = set()
     for tokenized_query in tokenized_query_list:
         if tokenized_query in inverted_index_dict:
-            index_set.update(inverted_index_dict[tokenized_query])
+            candidate_index_set.update(inverted_index_dict[tokenized_query])
 
-    return index_set
+    return candidate_index_set
 
 # for lexical retrieve
 def calculate_all_bm25_scores(bm25: BM25Okapi, query:str):
