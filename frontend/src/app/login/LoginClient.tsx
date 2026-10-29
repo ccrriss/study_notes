@@ -9,6 +9,8 @@ import { useApiFetch } from "@/hooks/useApiFetch";
 interface LoginResponse {
     access_token: string;
     token_type: string; //bearer
+    username: string;
+    is_admin: boolean;
 }
 
 export default function LoginPage(){
@@ -35,7 +37,7 @@ export default function LoginPage(){
         if (!ready) return;
 
         if(isLoggedIn) {
-            const pathCheckReg = /^\/(?!\/)/;
+            
             if (safeNext(next)){
                 router.replace(next);
             } else {
@@ -56,10 +58,10 @@ export default function LoginPage(){
                 body: JSON.stringify({username, password})
             });
             
-            const data: LoginResponse = res;
+            const loginResponse: LoginResponse = res;
 
             // context Login
-            login(data.access_token);
+            login(loginResponse.access_token, loginResponse.is_admin, loginResponse.username);
             
             if (safeNext(next)) {
                 router.push(next);

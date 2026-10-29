@@ -7,3 +7,5 @@ class LoginIn(BaseModel):
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    username: str
+    is_admin: bool

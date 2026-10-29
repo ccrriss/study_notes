@@ -3,13 +3,17 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState} from "react";
 
 const TOKEN_KEY = 'access_token';
+const IS_ADMIN_KEY = 'is_admin';
+const USERNAME_KEY = 'username';
 
 type AuthCtx = {
     token: string | null;
     ready: boolean;
     isLoggedIn: boolean;
-    login: (token: string) => void;
+    login: (token: string, is_admin: boolean, username: string) => void;
     logout: () => void;
+    isAdmin: boolean;
+    username: string | null;
 };
 
 const AuthContext = createContext<AuthCtx | null>(null);
@@ -38,27 +42,46 @@ function isTokenExpired(token: string | null): boolean {
 export function AuthProvider({children}: {children: React.ReactNode}) {
     const [token, setToken] = useState<string | null>(null);
     const [ready, setReady] = useState(false);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const [username, setUsername] = useState<string | null>(null);
 
     const logout = useCallback(() => {
         localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(IS_ADMIN_KEY);
+        localStorage.removeItem(USERNAME_KEY);
         setToken(null);
         setReady(true);
+        setIsAdmin(false);
+        setUsername(null);
     }, [])
 
-    const login = useCallback((t:string) => {
+    const login = useCallback((t:string, is_admin: boolean, username: string) => {
         localStorage.setItem(TOKEN_KEY, t);
+        localStorage.setItem(IS_ADMIN_KEY, String(is_admin));
+        localStorage.setItem(USERNAME_KEY, username);
         setToken(t);
         setReady(true);
+        setIsAdmin(is_admin);
+        setUsername(username);
     }, []);
 
     // 从LocalStorage恢复，并做过期检查
     const syncFromStorage = useCallback(() => {
         const tk = localStorage.getItem(TOKEN_KEY);
+        const storedAdmin = localStorage.getItem(IS_ADMIN_KEY);
+        const is_admin = storedAdmin === "true";
+        const storedUsername = localStorage.getItem(USERNAME_KEY);
         if(isTokenExpired(tk)) {
             localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem(IS_ADMIN_KEY);
+            localStorage.removeItem(USERNAME_KEY);
             setToken(null);
+            setIsAdmin(false);
+            setUsername(null);
         } else {
             setToken(tk);
+            setIsAdmin(is_admin);
+            setUsername(storedUsername);
         }
         setReady(true);
     }, []);
@@ -90,8 +113,10 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
             isLoggedIn: !!token,
             login,
             logout,
+            isAdmin,
+            username,
         }),
-        [token, ready, login, logout]
+        [token, ready, login, logout, isAdmin, username]
     );
 
     return <AuthContext value={value}>{children}</AuthContext>

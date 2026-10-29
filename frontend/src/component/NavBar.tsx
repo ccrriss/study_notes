@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Fragment } from "react";
 
 export default function NavBar(){
-  const {isLoggedIn, logout, ready} = useAuth();
+  const {isLoggedIn, logout, ready, isAdmin, username} = useAuth();
   //避免初次渲染闪烁
   if(!ready) return null;
 
@@ -15,10 +15,16 @@ export default function NavBar(){
         My Blog
       </Link>
 
-      <div className="space-x-4">
+      <div className="flex items-center gap-4">
+        <Link href={"/rag"} className="underline">Rag Demo</Link>
         {isLoggedIn? (
           <Fragment>
-            <Link href={"/new"} className="underline">New Post</Link>
+            {username && (
+              <span>Hello, {username}</span>
+            )}
+            {isAdmin && (
+              <Link href={"/new"} className="underline">New Post</Link>
+            )}
             <button onClick={logout} className="underline">
               Logout
             </button>

@@ -29,6 +29,7 @@ export default function RequireAuth({children}: {children: React.ReactNode}){
     }
 
     // useAuth的useEffect触发第二次渲染时
+    // ready but not loggin yet
     if(!isLoggedIn) {
         return null;
     }

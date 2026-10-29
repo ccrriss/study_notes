@@ -24,6 +24,10 @@ from rank_bm25 import BM25Okapi
 # structured logging
 import uuid
 
+# for authenticating
+from app.api.auth import require_admin_user, get_current_user
+from app.db.models import User
+
 async def generate_request_id(request: Request):
     request.state.request_id = uuid.uuid4().hex[:8]
 
@@ -33,7 +37,8 @@ router = APIRouter(prefix="/api/v1/rag", tags=['posts', 'rag'], dependencies=[De
 async def generate_rag_response(
     payload: Annotated[RagRequest, Body()],
     request: Request,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ) -> RagResponse:
     query = payload.query
 
@@ -66,6 +71,7 @@ async def generate_retrieval_evaluation_response(
     payload: Annotated[RagRequest, Body()],
     request: Request,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin_user)
 ) -> RetrievalEvaluationResponse:
     query = payload.query
 
@@ -90,7 +96,8 @@ async def generate_retrieval_evaluation_response(
 async def generate_generation_evaluation_response(
     payload: Annotated[GenerationEvaluationQuestion, Body()],
     request: Request,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin_user)
 ) -> GenerationEvaluationResponse :
     query = payload.query
     
@@ -116,7 +123,7 @@ async def generate_generation_evaluation_response(
 
 
 @router.get("/runtime_metadata", response_model=RuntimeMetadata)
-def get_runtime_metadata():
+def get_runtime_metadata(current_user: User = Depends(require_admin_user)):
     code_version = get_git_version()
     generation_metadata = ModelRuntimeData(model=GENERATION_MODEL_NAME, prompt_version=answer_prompt.PROMPT_VERSION,
                                            options=ModelOptions.model_validate(GENERATION_OPTIONS))
@@ -130,11 +137,13 @@ def get_runtime_metadata():
                            retrieval=RETRIEVAL_CONFIG,
                            reranking=RERANKING_CONFIG)
 
+
 # TEMP, used for comparing 4b and 8b model judge
 @router.post("/judge_comparison", response_model=JudgeResult)
 async def generate_generation_comparison_response(
     payload: Annotated[dict, Body()],
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin_user)
 ) -> JudgeResult:
     judge_result:JudgeResult = await judge_nugget(query=payload["query"], nugget=payload["nugget"],
                         generated_answer=payload["generated_answer"])

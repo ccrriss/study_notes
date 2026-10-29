@@ -20,7 +20,8 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
-backend/create_admin_local.py
+backend/*_local.py
+
 # ---------- next / node ----------
 frontend/node_modules/
 frontend/.next/

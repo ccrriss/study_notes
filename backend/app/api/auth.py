@@ -44,7 +44,7 @@ async def login(payload: LoginIn, db:AsyncSession = Depends(get_db)) -> TokenOut
     access_token = create_access_token(
         data={"sub": str(user.id)},
     )
-    return TokenOut(access_token=access_token)
+    return TokenOut(access_token=access_token, username=user.username, is_admin=user.is_admin)
 
 # for swagger only since the request sent to token url is application/x-www-form-urlencoded but login accept application/json
 @router.post("/token", response_model=TokenOut)
@@ -55,7 +55,7 @@ async def swagger_login(payload_form: Annotated[OAuth2PasswordRequestForm, Depen
     access_token = create_access_token(
         data={"sub": str(user.id)},
     )
-    return TokenOut(access_token=access_token)
+    return TokenOut(access_token=access_token, username=user.username, is_admin=user.is_admin)
 
 # 从token找到User(底层工具)
 async def get_user_by_token(

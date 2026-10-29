@@ -8,6 +8,8 @@ import { retrievalEvaluationMetadataV1 } from "@/evaluation/configs/retrieval_ev
 import { calculate_retrieval_metrics } from "@/evaluation/metrics/retrieval_metrics";
 import { RetrievalEvaluationResponse, RetrievalEvaluationCaseResult, RetrievedResult } from "@/evaluation/schemas/retrieval_evaluation";
 
+import RequireAdmin from "@/component/RequireAdmin";
+
 export default function Page(props: {}){
     const api = useApiFetch();
     const [error, setError] = useState("")
@@ -112,79 +114,81 @@ export default function Page(props: {}){
     }
 
     return (
-        <main className="max-w-5xl mx-auto p-8 space-y-6">
-            <button
-                className="border rounded px-4 py-2"
-                onClick={e => run_retrieval_evaluation_and_save_results()}
-            >
-                Ask all questions and save
-            </button>   
-            <button
-                className="border rounded px-4 py-2"
-                onClick={e => run_retrieval_evaluation_and_calculate_rrf()}
-            >
-                run_retrieval_evaluation_and_calculate_rrf_and_mrr_and_save
-            </button>     
-            {mrr_average != null && (
-                <h4>Average mrr: {mrr_average}</h4>
-            )}
+        <RequireAdmin>
+            <main className="max-w-5xl mx-auto p-8 space-y-6">
+                <button
+                    className="border rounded px-4 py-2"
+                    onClick={e => run_retrieval_evaluation_and_save_results()}
+                >
+                    Ask all questions and save
+                </button>   
+                <button
+                    className="border rounded px-4 py-2"
+                    onClick={e => run_retrieval_evaluation_and_calculate_rrf()}
+                >
+                    run_retrieval_evaluation_and_calculate_rrf_and_mrr_and_save
+                </button>     
+                {mrr_average != null && (
+                    <h4>Average mrr: {mrr_average}</h4>
+                )}
 
 
-            {evaluationQuestions.map((question:any) => {
-                return (
-                    <div
-                        key={question.id}
-                        className="border rounded-lg p-5 space-y-4"
-                    >
-                        <p className="font-semibold text-lg">
-                            {question.id}: {question.query}
-                        </p>
-                        <button
-                            className="border rounded px-4 py-2"
-                            onClick={e => get_answer(question.query, question.id)}
+                {evaluationQuestions.map((question:any) => {
+                    return (
+                        <div
+                            key={question.id}
+                            className="border rounded-lg p-5 space-y-4"
                         >
-                            Ask this question
-                        </button>
-                        {/* answer part */}
-                        {evaluationResponses[question.id] && (
-                            <div className="border-t pt-4 space-y-4">
-                                <div className="border rounded p-4 space-y-3">
-                                    <h4 className="font-bold">The correct answer:</h4>
-                                    <p>{question.gold_answer}</p>
-                                    <h4 className="font-bold">Gold Section:</h4>
-                                    <p>{question.gold_section}</p>           
-
-                                    {/* Generated answer part */}
+                            <p className="font-semibold text-lg">
+                                {question.id}: {question.query}
+                            </p>
+                            <button
+                                className="border rounded px-4 py-2"
+                                onClick={e => get_answer(question.query, question.id)}
+                            >
+                                Ask this question
+                            </button>
+                            {/* answer part */}
+                            {evaluationResponses[question.id] && (
+                                <div className="border-t pt-4 space-y-4">
                                     <div className="border rounded p-4 space-y-3">
+                                        <h4 className="font-bold">The correct answer:</h4>
+                                        <p>{question.gold_answer}</p>
+                                        <h4 className="font-bold">Gold Section:</h4>
+                                        <p>{question.gold_section}</p>           
 
-                                        <h4 className="font-bold">Generated answer:</h4>
-                                        <p>{evaluationResponses[question.id].generated_answer}</p>    
+                                        {/* Generated answer part */}
+                                        <div className="border rounded p-4 space-y-3">
 
-                                        <div className="border-l-4 pl-4 space-y-2">
-                                            <h5>Raw retrieved results:</h5>
-                                            {evaluationResponses[question.id].dense_results.map(
-                                                (dense_result:RetrievedResult, index:number) => {
-                                                return (
-                                                    <div key={index}>
-                                                        <h5>Rank: {dense_result.rank}</h5>
-                                                        <h5>Similarity: {dense_result.score}</h5>
-                                                        <h5>Post_id: {dense_result.post_id}</h5>
-                                                        <h5>Chunk_idx: {dense_result.chunk_idx}</h5>
-                                                        <h5>Title: {dense_result.title}</h5>
-                                                        <h5>Slug: {dense_result.slug}</h5>
-                                                        <h5>Heading_path: {dense_result.heading_path.join(" > ")}</h5>
-                                                        <h5>Content: {dense_result.content}</h5>                                                       
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    </div> 
-                                </div>  
-                            </div>                            
-                        )}
-                    </div>
-                )
-            })}
-        </main>        
+                                            <h4 className="font-bold">Generated answer:</h4>
+                                            <p>{evaluationResponses[question.id].generated_answer}</p>    
+
+                                            <div className="border-l-4 pl-4 space-y-2">
+                                                <h5>Raw retrieved results:</h5>
+                                                {evaluationResponses[question.id].dense_results.map(
+                                                    (dense_result:RetrievedResult, index:number) => {
+                                                    return (
+                                                        <div key={index}>
+                                                            <h5>Rank: {dense_result.rank}</h5>
+                                                            <h5>Similarity: {dense_result.score}</h5>
+                                                            <h5>Post_id: {dense_result.post_id}</h5>
+                                                            <h5>Chunk_idx: {dense_result.chunk_idx}</h5>
+                                                            <h5>Title: {dense_result.title}</h5>
+                                                            <h5>Slug: {dense_result.slug}</h5>
+                                                            <h5>Heading_path: {dense_result.heading_path.join(" > ")}</h5>
+                                                            <h5>Content: {dense_result.content}</h5>                                                       
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div> 
+                                    </div>  
+                                </div>                            
+                            )}
+                        </div>
+                    )
+                })}
+            </main> 
+        </RequireAdmin>       
     )
 }

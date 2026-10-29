@@ -1,21 +1,24 @@
 "use client"
 
-import { apiFetch } from "@/lib/api";
+import { useApiFetch } from "@/hooks/useApiFetch";
 import { useState } from "react";
 import { evaluationQuestions } from "@/evaluation/datasets/evaluation_questions_v2";
 import type { EvaluationQuestion } from "@/evaluation/schemas/evaluation";
 import type { GenerationEvaluationResponse, GenerationEvaluationCaseResult, GenerationEvaluationRun } from "@/evaluation/schemas/generation_evaluation";
 import type { RuntimeMetadata } from "@/evaluation/schemas/evaluation";
 
+import RequireAdmin from "@/component/RequireAdmin";
+
 // temp
 import { generation_judge_model_comparison_v1 } from "@/evaluation/calibration/generation_judge_model_comparison_v1";
 
 export default function Page(props: {}){
     const [error, setError] = useState("")
+    const api = useApiFetch();
 
     async function run_generation_evaluation(question: EvaluationQuestion): Promise<GenerationEvaluationCaseResult> {
          try {
-            const res = await apiFetch("/api/v1/rag/generation_evaluate", {
+            const res = await api("/api/v1/rag/generation_evaluate", {
                 method : "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(
@@ -42,7 +45,7 @@ export default function Page(props: {}){
     
     async function get_runtime_metadata(): Promise<RuntimeMetadata>{
         try {
-            const res = await apiFetch("/api/v1/rag/runtime_metadata", {
+            const res = await api("/api/v1/rag/runtime_metadata", {
                 method: "GET"              
             })
             const runtimeMetadata: RuntimeMetadata = res;
@@ -89,7 +92,7 @@ export default function Page(props: {}){
                 nugget: data.nugget,
                 generated_answer: data.generated_answer
             }
-            const judge_result = await apiFetch("/api/v1/rag/judge_comparison", {
+            const judge_result = await api("/api/v1/rag/judge_comparison", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(payload)
@@ -114,66 +117,68 @@ export default function Page(props: {}){
     }
 
     return (
-        <main className="max-w-5xl mx-auto p-8 space-y-6">
-            <button
-                className="border rounded px-4 py-2"
-                onClick={e => run_generation_evaluation_and_save_results()}
-            >
-                run_generation_evaluation_and_save_results
-            </button>
-            <button
-                className="border rounded px-4 py-2"
-                onClick={e => run_generate_generation_evaluation_response()}
-            >
-                run_generate_generation_evaluation_response_and_save_results
-            </button>
+        <RequireAdmin> 
+            <main className="max-w-5xl mx-auto p-8 space-y-6">
+                <button
+                    className="border rounded px-4 py-2"
+                    onClick={e => run_generation_evaluation_and_save_results()}
+                >
+                    run_generation_evaluation_and_save_results
+                </button>
+                <button
+                    className="border rounded px-4 py-2"
+                    onClick={e => run_generate_generation_evaluation_response()}
+                >
+                    run_generate_generation_evaluation_response_and_save_results
+                </button>
 
-            {evaluationQuestions.map((question:EvaluationQuestion) => {
-                return (
-                    <div
-                        key={question.id}
-                        className="border rounded-lg p-5 space-y-4"
-                    >
-                        <p className="font-semibold text-lg">
-                            {question.id}: {question.query}
-                        </p>
+                {evaluationQuestions.map((question:EvaluationQuestion) => {
+                    return (
+                        <div
+                            key={question.id}
+                            className="border rounded-lg p-5 space-y-4"
+                        >
+                            <p className="font-semibold text-lg">
+                                {question.id}: {question.query}
+                            </p>
 
-                        <h4 className="font-bold">
-                            expected_behavior:
-                        </h4>
-                        <p>{question.expected_behavior}</p>
+                            <h4 className="font-bold">
+                                expected_behavior:
+                            </h4>
+                            <p>{question.expected_behavior}</p>
+                            
+                            {/* answer part */}
+                            {/* {generation_eva_dict[question.id] && (
+                                <div className="border-t pt-4 space-y-4">
+                                    <div className="border rounded p-4 space-y-3">
+                                        <h4 className="font-bold">
+                                            The generated answer:
+                                        </h4>
+                                        <p>{generation_eva_dict[question.id].generated_answer}</p> 
+                                        
+                                        <div className="border-l-4 pl-4 space-y-2">
+                                            {generation_eva_dict[question.id].judgements.map(
+                                                (judgement, index:number) => {
+                                                    const nugget = judgement.judgement_type === "refusal"? null : judgement.nugget;
+
+                                                    return (
+                                                        <div key={index}>
+                                                            {nugget && (<h5>Nugget: {nugget}</h5>)}
+                                                            <h5>label: {judgement.label}</h5>
+                                                            <h5>reason: {judgement.reason}</h5>                                         
+                                                        </div>
+                                                    )
+                                                }
+                                            )}
+                                        </div>
+                                        </div> 
+                                    </div>                                                       
+                            )} */}
                         
-                        {/* answer part */}
-                        {/* {generation_eva_dict[question.id] && (
-                            <div className="border-t pt-4 space-y-4">
-                                <div className="border rounded p-4 space-y-3">
-                                    <h4 className="font-bold">
-                                        The generated answer:
-                                    </h4>
-                                    <p>{generation_eva_dict[question.id].generated_answer}</p> 
-                                    
-                                    <div className="border-l-4 pl-4 space-y-2">
-                                        {generation_eva_dict[question.id].judgements.map(
-                                            (judgement, index:number) => {
-                                                const nugget = judgement.judgement_type === "refusal"? null : judgement.nugget;
-
-                                                return (
-                                                    <div key={index}>
-                                                        {nugget && (<h5>Nugget: {nugget}</h5>)}
-                                                        <h5>label: {judgement.label}</h5>
-                                                        <h5>reason: {judgement.reason}</h5>                                         
-                                                    </div>
-                                                )
-                                            }
-                                        )}
-                                    </div>
-                                    </div> 
-                                </div>                                                       
-                        )} */}
-                      
-                    </div>
-                )
-            })}
-        </main>        
+                        </div>
+                    )
+                })}
+            </main>   
+        </RequireAdmin>     
     )
 }
