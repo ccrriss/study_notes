@@ -1,20 +1,23 @@
 # Study Notes
 
-A full-stack technical notes platform with an evaluation-driven Retrieval-Augmented Generation (RAG) system.
+A production-deployed full-stack technical notes platform with an evaluation-driven Retrieval-Augmented Generation (RAG) system.
 
-The project combines a Next.js frontend, FastAPI backend, PostgreSQL/pgvector storage, hybrid retrieval, CrossEncoder reranking, LLM-based evaluation, production cloud inference, and basic RAG safety regression testing.
+The project combines a Next.js frontend, FastAPI backend, PostgreSQL/pgvector storage, hybrid retrieval, CrossEncoder reranking, JWT authentication with role-based access control, evaluation workflows, cloud inference, and RAG safety regression testing.
 
-It started as a personal technical notes application and evolved into a practical RAG engineering project focused on retrieval quality, evaluation, reliability, safety, and production deployment.
+It started as a personal technical notes application and evolved into a practical RAG engineering project focused on retrieval quality, evaluation, reliability, access control, lifecycle consistency, and production deployment.
 
 ---
 
 ## Highlights
 
-- Full-stack technical blog with Markdown posts, search, tags, pagination, authentication, and protected admin actions
+- Full-stack technical blog with Markdown posts, search, tags, pagination, JWT authentication, and admin-protected CRUD actions
+- Authenticated RAG demo for normal users, with evaluation tooling restricted to administrators
+- Backend-enforced role-based access control: frontend role state controls UX, while FastAPI validates the authenticated database user before protected operations
 - Dense semantic retrieval with `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`
 - BM25 lexical retrieval for mixed Chinese, English, and technical content
 - Hybrid retrieval using Reciprocal Rank Fusion (RRF)
 - `BAAI/bge-reranker-v2-m3` CrossEncoder reranking for final context selection
+- Automatic RAG index lifecycle: post create/update/delete keeps PostChunk data and the BM25 index synchronized
 - Retrieval evaluation with Recall@K and MRR@K on a manually annotated benchmark
 - Generation evaluation using an LLM-as-a-judge workflow
 - Runtime metadata tracking for traceable experiments
@@ -25,13 +28,37 @@ It started as a personal technical notes application and evolved into a practica
 - Async Modal inference integration for non-blocking remote embedding and reranking calls
 - Dockerized backend and GitHub Actions CI
 - Production deployment with Vercel, Render, Supabase, Modal, and Alibaba Cloud Qwen
-- Pytest coverage for lexical retrieval, RRF fusion, and RAG pipeline orchestration
+- Pytest coverage for retrieval components, RRF fusion, Post/PostChunk lifecycle behavior, and RAG pipeline orchestration
+
+---
+
+## Demo and Access Control
+
+The deployed application separates public content browsing, authenticated RAG usage, and administrator-only management/evaluation features.
+
+```text
+Anonymous user
+    └── Browse published notes
+
+Authenticated user
+    ├── Browse notes
+    └── Use the RAG demo
+
+Administrator
+    ├── All authenticated-user features
+    ├── Create / update / delete posts
+    └── Access retrieval, generation, and safety evaluation tools
+```
+
+The frontend uses authentication context and route guards to provide the correct UI and navigation flow. Security-sensitive authorization is enforced independently by the FastAPI backend using the JWT identity and the user's database-backed `is_admin` role.
+
+This means modifying client-side role state can change what is displayed in the browser, but cannot grant administrator API permissions.
 
 ---
 
 ## Production Architecture
 
-The deployed system separates the web application, database, retrieval models, and generation model so that the project can run without hosting large ML models directly on the FastAPI server.
+The deployed system separates the web application, database, retrieval models, and generation model so that the FastAPI service does not need to host the larger ML models directly.
 
 ```mermaid
 flowchart LR
@@ -68,23 +95,22 @@ The current system uses a two-stage retrieval pipeline:
 
 ```mermaid
 flowchart LR
-    Query[User Query] --> DenseRetrieval[Dense<br/>Top10]
-    Query --> BM25Retrieval[Lexical-BM25 Retrieval<br/>Top10]
+    Query[User Query] --> DenseRetrieval[Dense<br/>Top 10]
+    Query --> BM25Retrieval[BM25<br/>Top 10]
 
     DenseRetrieval --> RRF[Reciprocal Rank Fusion]
     BM25Retrieval --> RRF
 
-    RRF --> Hybrid[Hybrid Candidates<br/>Top10]
+    RRF --> Hybrid[Hybrid Candidates<br/>Top 10]
     Hybrid --> Reranking[CrossEncoder Reranking]
-    Reranking --> Top3[Final Context Top 3]
+    Reranking --> Top3[Final Context<br/>Top 3]
 
-    Top3 --> Prompt[Prompt Construction]
+    Top3 --> Prompt[Grounded Prompt]
     Prompt --> LLM[LLM Generation]
-    LLM --> Results[Return Answer and Sources]
+    LLM --> Results[Answer + Sources]
 ```
 
-Dense and lexical retrieval are used to build a high-recall candidate pool.  
-A CrossEncoder then reranks those candidates before the final context is passed to the generation model.
+Dense and lexical retrieval build a high-recall candidate pool. A CrossEncoder reranks those candidates before the final context is sent to the generation model.
 
 Current configuration:
 
@@ -94,11 +120,33 @@ Current configuration:
 - Candidate depth: 10
 - Final context depth: 3
 
+### Content and Index Lifecycle
+
+RAG data is kept synchronized with blog content rather than relying on a separate manual ingestion step for normal CRUD operations.
+
+```text
+Create / update post
+        ↓
+Generate or refresh PostChunk records + embeddings
+        ↓
+Commit database changes
+        ↓
+Rebuild in-memory BM25 index
+
+Delete post
+        ↓
+Remove associated persisted data
+        ↓
+Rebuild BM25 index
+```
+
+This keeps dense/vector retrieval and lexical retrieval aligned with the current post content.
+
 ---
 
 ## Retrieval Evaluation
 
-The retrieval pipeline is evaluated on a manually annotated 10-question retrieval benchmark using gold sections as the relevance target.
+The retrieval pipeline is evaluated on a manually annotated 10-question benchmark using gold sections as the relevance target.
 
 Current Stage 2 results:
 
@@ -109,7 +157,7 @@ Current Stage 2 results:
 | RRF Hybrid Retrieval | Recall@10 = 1.00 | 0.833 |
 | CrossEncoder Reranking | Recall@3 = 1.00 | 0.933 |
 
-The two stages serve different purposes:
+The stages serve different purposes:
 
 ```text
 Hybrid Recall@10 = 1.00
@@ -122,15 +170,13 @@ Recall@3 = 1.00
 MRR@3   = 0.933
 ```
 
-The hybrid stage focuses on candidate coverage, while the reranker improves the ordering of the final context.
-
 ### Experiment Summary
 
 The initial dense-retrieval baseline achieved an MRR@3 of `0.733`.
 
 BM25 was introduced to improve exact-term and technical-token retrieval. It performed strongly on the benchmark, but lexical retrieval alone still missed some semantically relevant candidates.
 
-The next iteration combined dense and lexical retrieval with Reciprocal Rank Fusion (RRF). Rather than optimizing only for the top few results, the candidate pool was expanded to top 10 so that relevant chunks would have a better chance of reaching the reranking stage.
+The next iteration combined dense and lexical retrieval with Reciprocal Rank Fusion (RRF). The candidate pool was expanded to top 10 so that relevant chunks would have a better chance of reaching the reranking stage.
 
 A representative failure case was the `CORSMiddleware` query:
 
@@ -145,7 +191,7 @@ The final two-stage pipeline achieved:
 - CrossEncoder Recall@3: `1.00`
 - CrossEncoder MRR@3: `0.933`
 
-This led to the current design: the retrieval stage focuses on candidate coverage, while the CrossEncoder focuses on final ranking quality.
+The resulting design intentionally separates candidate coverage from final ranking quality.
 
 ---
 
@@ -173,11 +219,13 @@ Each evaluation run records runtime metadata including:
 
 This makes evaluation results traceable to the configuration that produced them.
 
+Evaluation endpoints and UI are restricted to administrators, while normal authenticated users can use the RAG demo without access to internal evaluation tooling.
+
 ---
 
 ## RAG Safety
 
-A basic safety regression suite is used to test how the generation layer behaves under adversarial, unsupported, or malformed inputs.
+A basic safety regression suite tests how the generation layer behaves under adversarial, unsupported, or malformed inputs.
 
 Current test categories include:
 
@@ -197,17 +245,21 @@ Indirect-injection testing also exposed a practical trade-off: stronger prompt d
 
 ## Reliability and Engineering
 
-The backend includes production-oriented engineering work beyond the core RAG pipeline:
+The project includes production-oriented engineering work beyond the core RAG pipeline:
 
 - structured request and stage logging
 - per-stage and total latency measurement
 - graceful error handling
+- JWT authentication and backend-enforced admin authorization
+- route guards for authenticated and administrator-only frontend views
+- automatic Post/PostChunk/BM25 lifecycle synchronization
 - Dockerized backend
-- GitHub Actions CI
+- GitHub Actions CI with PostgreSQL/pgvector-backed tests
 - local/cloud provider abstraction using Python `Protocol`
 - async Modal RPC calls for production embedding and reranking
 - environment-based inference-mode selection
 - production dependency slimming with optional local-inference dependencies
+- retrieval regression and integration tests
 
 Local inference remains available for development, while production uses hosted model services to keep the Render backend lightweight.
 
@@ -231,7 +283,7 @@ Local inference remains available for development, while production uses hosted 
 - Pydantic
 - Alembic
 - PostgreSQL / pgvector
-- JWT authentication
+- JWT authentication / role-based authorization
 - Pytest
 
 ### RAG / ML
@@ -287,6 +339,8 @@ study_notes/
 └── frontend/
     └── src/
         ├── app/
+        ├── component/
+        ├── context/
         └── evaluation/
 ```
 
@@ -294,12 +348,15 @@ study_notes/
 
 ## Current Status
 
-Completed:
+### Completed
 
 - [x] Full-stack technical notes application
+- [x] JWT authentication and role-based admin authorization
+- [x] Authenticated RAG demo and admin-only evaluation views
 - [x] Dense + BM25 retrieval
 - [x] Hybrid retrieval with RRF
 - [x] CrossEncoder reranking
+- [x] Automatic PostChunk refresh and BM25 rebuild on post lifecycle changes
 - [x] Retrieval evaluation
 - [x] LLM generation
 - [x] LLM-as-a-judge evaluation
@@ -315,15 +372,14 @@ Completed:
 - [x] Production deployment with Vercel + Render + Supabase + Modal
 - [x] Async remote inference integration
 - [x] Basic RAG safety regression testing
-- [x] Single-post RAG re-ingestion / index refresh workflow
-- [x] Pytest tests for retrieval components and pipeline orchestration
+- [x] Retrieval regression and integration test coverage
 
-Future improvements:
+### Potential Next Improvements
 
-- [ ] Automated post-update re-indexing
-- [ ] Expanded safety and regression datasets
-- [ ] Production evaluation / judge integration
-- [ ] Additional monitoring and deployment hardening
+- [ ] CI application-startup smoke test in addition to the existing test suite
+- [ ] Expanded retrieval, generation, and safety regression datasets
+- [ ] Rate limiting / usage controls for public demo traffic if needed
+- [ ] Additional production monitoring and deployment hardening
 
 ---
 
