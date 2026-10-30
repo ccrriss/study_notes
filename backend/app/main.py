@@ -17,6 +17,9 @@ from fastapi import status, HTTPException
 from app.rag.reranking_provider import LocalRerankingProvider, ModalRerankingProvider
 from app.rag.generation_provider import OllamaGenerationProvider, QwenGenerationProvider
 
+# for github actions CI test
+from app.rag.test_providers import TestEmbeddingProvider, TestGenerationProvider, TestRerankingProvider
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("START lifespan")
@@ -44,6 +47,10 @@ async def lifespan(app: FastAPI):
         embedding_model = ModalEmbeddingProvider()
         reranking_model = ModalRerankingProvider()
         generation_model = QwenGenerationProvider()
+    elif settings.INFERENCE_MODE == "test":
+        embedding_model = TestEmbeddingProvider()
+        reranking_model = TestRerankingProvider()
+        generation_model = TestGenerationProvider()
     else:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="constructing model internal error")
     print("EMBEDDING provider done")
@@ -61,6 +68,10 @@ async def lifespan(app: FastAPI):
     print("database engine disposed")
 
 app = FastAPI(title= settings.APP_NAME, lifespan=lifespan)
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 app.add_middleware(
     CORSMiddleware,

@@ -25,9 +25,9 @@ class Settings(BaseSettings):
     RAG_DATABASE_URL : str = "postgresql+asyncpg://postgres:password@localhost:5432/rag_test"
 
     # Inference_mode that decide embedding, reranking and generation model are online or local
-    INFERENCE_MODE: Literal["local", "modal"] = "local"
+    INFERENCE_MODE: Literal["local", "modal", "test"] = "local"
 
-    # For docker database connection
+    # for supabase connection, for docker database it will be set to false in compose.yaml
     DATABASE_SSL: bool = True
 
     # Qwen model
