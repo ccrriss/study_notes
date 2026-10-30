@@ -65,7 +65,7 @@ jobs:
       - name: Run startup smoke test
         run: |
           uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 & 
-          SERVER_PID = $!
+          SERVER_PID=$!
 
           for i in {1..10}; do
             if curl --fail http://localhost:8000/health; then
