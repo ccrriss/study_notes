@@ -1,10 +1,9 @@
 import jieba
 import re
 from rank_bm25 import BM25Okapi
-from app.db.models import PostChunk
+from app.db.models import PostChunk, Post
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.rag.config import RETRIEVAL_CONFIG
 
 basic_segment = r'[a-zA-Z][0-9a-zA-Z]*'
 underscore_pattern = rf'{basic_segment}(?:_{basic_segment})+'
@@ -40,7 +39,7 @@ def tokenize_for_lexical_search(text: str) -> list[str]:
 
 # to be used in main.py
 async def build_lexical_search_corpus(db: AsyncSession) -> tuple[list[int], list[list[str]]]:
-    post_chunks = await db.scalars(select(PostChunk))
+    post_chunks = await db.scalars(select(PostChunk).join(Post, Post.id == PostChunk.post_id).where(Post.is_published.is_(True)))
     post_chunks = post_chunks.all()
     tokenized_corpus = []
     post_chunk_ids = []

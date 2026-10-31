@@ -26,6 +26,9 @@ class Post(Base):
     tags: Mapped[list["Tag"]] = relationship(secondary=post_tag, back_populates="posts")
 
     post_chunks: Mapped[list["PostChunk"]] = relationship(back_populates="post", cascade="all, delete-orphan", passive_deletes=True)
+    # for draft related authentication
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    user: Mapped["User"] = relationship(back_populates="posts")
 
 class Tag(Base):
     __tablename__ = "tags"
@@ -41,6 +44,8 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(128))
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    # for draft related authentication
+    posts: Mapped[list[Post]] = relationship(back_populates="user")
 
 class PostChunk(Base):
     __tablename__ = "post_chunks"

@@ -12,6 +12,7 @@ jobs:
       QWEN_MODEL_NAME: test
       INFERENCE_MODE: test
       DATABASE_SSL: false
+      JWT_SECRET_KEY: test-ci-jwt-secret
     
     services:
       postgres:

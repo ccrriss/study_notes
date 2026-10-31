@@ -15,7 +15,7 @@ interface Post {
     slug: string;
     title: string;
     content_md: string;
-    excerpt?: string | null;
+    excerpt: string | null;
     is_published: boolean;
     tags: string[];
 }
@@ -31,6 +31,7 @@ export default function EditPostPage({params}: {params: Promise<{slug: string}>}
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [tags, setTags] = useState<string[]>([]);
+    const [excerpt, setExcerpt] = useState<string | null>(null);
 
     // context hook
     const api = useApiFetch();
@@ -49,6 +50,7 @@ export default function EditPostPage({params}: {params: Promise<{slug: string}>}
                 setTitle(data.title);
                 setContent(data.content_md);
                 setTags(data.tags);
+                setExcerpt(data.excerpt);
             } catch(err: any) {
                 setError(err.message ?? "Unknown error");
             } finally {
@@ -74,7 +76,7 @@ export default function EditPostPage({params}: {params: Promise<{slug: string}>}
                     title, 
                     slug, // not updated yet
                     content_md: content,
-                    excerpt: null,
+                    excerpt: excerpt,
                     is_published: true,
                     tags
                     }),

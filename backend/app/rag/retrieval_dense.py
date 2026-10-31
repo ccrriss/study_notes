@@ -1,4 +1,4 @@
-from app.db.models import PostChunk
+from app.db.models import PostChunk, Post
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -12,7 +12,8 @@ async def retrieve_dense_chunks(query, embedding_model: EmbeddingProvider, db:As
 
     # only save the similarity>0 results, and similarity = 1-distance, so distance<1 is the condition
     combined_stmt = select(PostChunk, (1-combined_cosine_distance).label("combined_cos_similarity")
-                           ).order_by(combined_cosine_distance).limit(top_k).options(selectinload(PostChunk.post)).where(combined_cosine_distance < 1)
+                           ).join(Post, Post.id == PostChunk.post_id).where(combined_cosine_distance < 1, Post.is_published.is_(True)
+                            ).order_by(combined_cosine_distance).limit(top_k).options(selectinload(PostChunk.post))
 
     combined_result = await db.execute(combined_stmt)
 

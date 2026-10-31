@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     AUTO_CREATE_TABLES: bool = False # only local dev
 
     #JWT
-    JWT_SECRET_KEY: str = "CHANGE_ME_TO_A_RANDOM_SECRET" # change to environment variable
+    JWT_SECRET_KEY: str 
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60*24 # 1 day
 

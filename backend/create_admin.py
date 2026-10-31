@@ -6,8 +6,11 @@ from app.db.models import User
 from app.core.security import hash_password
 
 async def main():
-    username = os.getenv("ADMIN_USERNAME", "admin")
-    password = os.getenv("ADMIN_PASSWORD", "admin")
+    username = os.getenv("ADMIN_USERNAME")
+    password = os.getenv("ADMIN_PASSWORD")
+
+    if not username or not username.strip() or not password or not password.strip():
+        raise RuntimeError( "ADMIN_USERNAME and ADMIN_PASSWORD must be set")
 
     async with AsyncSessionLocal() as db:
         user = User(
