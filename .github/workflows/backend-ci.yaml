@@ -55,8 +55,6 @@ jobs:
             -c "CREATE EXTENSION IF NOT EXISTS vector;"
 
       - name: Run database migrations
-        env: 
-          DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5433/study_notes_test
         run: uv run alembic upgrade head
 
       - name: Run pytest

@@ -9,7 +9,6 @@ from app.api import posts, auth, tags, rag
 # lexical search
 from app.db.session import AsyncSessionLocal
 from app.rag.retrieval_lexical import build_bm25_index
-from rank_bm25 import BM25Okapi
 
 # for deployment
 from app.rag.embedding_provider import LocalEmbeddingProvider, ModalEmbeddingProvider
