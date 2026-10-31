@@ -16,6 +16,9 @@ services:
     env_file:
       - .env
       - .env.docker
+    volumes:
+      - ./app:/app/app
+    command: uv run --no-sync uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     environment:
       OLLAMA_HOST: http://host.docker.internal:11434
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@test-db:5432/study_notes_test
