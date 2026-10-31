@@ -26,7 +26,7 @@ It started as a personal technical notes application and evolved into a practica
 - Structured logging, latency measurement, and graceful failure handling
 - Provider abstraction for local and cloud inference
 - Async Modal inference integration for non-blocking remote embedding and reranking calls
-- Dockerized backend and GitHub Actions CI
+- Dockerized backend with bind-mounted source reload for local development and GitHub Actions CI with application-startup smoke testing
 - Production deployment with Vercel, Render, Supabase, Modal, and Alibaba Cloud Qwen
 - Pytest coverage for retrieval components, RRF fusion, Post/PostChunk lifecycle behavior, and RAG pipeline orchestration
 
@@ -253,8 +253,9 @@ The project includes production-oriented engineering work beyond the core RAG pi
 - JWT authentication and backend-enforced admin authorization
 - route guards for authenticated and administrator-only frontend views
 - automatic Post/PostChunk/BM25 lifecycle synchronization
-- Dockerized backend
-- GitHub Actions CI with PostgreSQL/pgvector-backed tests
+- Dockerized backend with bind-mounted source code and Uvicorn auto-reload for local development
+- GitHub Actions CI with PostgreSQL/pgvector-backed tests, Alembic migrations, and FastAPI application-startup smoke testing
+- lightweight test inference providers for CI startup validation without external model-service dependencies
 - local/cloud provider abstraction using Python `Protocol`
 - async Modal RPC calls for production embedding and reranking
 - environment-based inference-mode selection
@@ -328,6 +329,7 @@ study_notes/
 │   │   │   ├── embedding_provider.py
 │   │   │   ├── reranking_provider.py
 │   │   │   ├── generation_provider.py
+│   │   │   ├── test_providers.py
 │   │   │   ├── retrieval_dense.py
 │   │   │   ├── retrieval_lexical.py
 │   │   │   ├── retrieval_hybrid.py
@@ -364,8 +366,10 @@ study_notes/
 - [x] Structured logging and latency measurement
 - [x] Graceful failure / error handling
 - [x] Dockerized backend
+- [x] Docker development bind mount and Uvicorn auto-reload
 - [x] GitHub Actions CI
-- [x] Local / cloud inference-provider abstraction
+- [x] CI application-startup smoke test
+- [x] Local / cloud / test inference-provider abstraction
 - [x] Modal embedding deployment
 - [x] Modal reranker deployment
 - [x] Alibaba Cloud Qwen production generation
@@ -376,7 +380,6 @@ study_notes/
 
 ### Potential Next Improvements
 
-- [ ] CI application-startup smoke test in addition to the existing test suite
 - [ ] Expanded retrieval, generation, and safety regression datasets
 - [ ] Rate limiting / usage controls for public demo traffic if needed
 - [ ] Additional production monitoring and deployment hardening
@@ -392,5 +395,7 @@ uv sync --extra local-inference
 ```
 
 Local RAG generation and evaluation use Ollama with the Qwen models listed above.
+
+For Docker-based backend development, the Compose configuration bind-mounts the backend application source into the container and runs Uvicorn with --reload. Python source changes are therefore reflected in the running container without rebuilding the image.
 
 Production uses Modal for embedding and reranking and Alibaba Cloud Model Studio for generation, so the Render backend does not need to host the large ML inference dependencies directly.
