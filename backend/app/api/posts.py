@@ -6,7 +6,7 @@ from app.db.session import get_db
 from app.db.models import Post,Tag
 from app.schemas.post import PostIn, PostOut
 from slugify import slugify
-from app.api.auth import require_admin_user, get_current_user
+from app.api.auth import get_current_user
 from app.db.models import User
 
 # PostChunk related

@@ -1,6 +1,6 @@
 import pytest
 from app.rag.retrieval_lexical import build_bm25_index
-from app.db.models import PostChunk, Post
+from app.db.models import PostChunk, Post, User
 import os
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
@@ -19,10 +19,6 @@ test_db_engine = create_async_engine(
 TestSessionLocal = async_sessionmaker(
     test_db_engine, expire_on_commit=False
 )
-
-test_post = Post(title="test title", slug="test slug", content_md="test content", excerpt="test_excerpt")
-
-
 
 def create_post_chunks(post: Post):
     postchunk_a = PostChunk(
@@ -54,7 +50,18 @@ query = "NEXT_PUBLIC"
 
 @pytest.mark.anyio
 async def test_lexical_integration():
+    test_user = User(
+        username="lexical_test_user",
+        password_hash="test_hash",
+        is_admin=False,
+    )
+
     async with TestSessionLocal() as db:
+        db.add(test_user)
+        await db.flush()
+
+        test_post = Post(title="test title", slug="test slug", content_md="test content", excerpt="test_excerpt", user_id=test_user.id)
+
         db.add(test_post)
         await db.flush()
 

@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import text, select, delete
 from sqlalchemy.pool import NullPool
-from app.db.models import Post, PostChunk
+from app.db.models import Post, PostChunk, User
 from app.rag.retrieval_dense import retrieve_dense_chunks
 import os
 
@@ -39,7 +39,13 @@ assert: check ranking and cos_similarity
 """
 @pytest.mark.anyio
 async def test_integration_dense_retrieval():
-    test_post = Post(title="test title", slug="test slug", content_md="test content", excerpt="test excerpt")
+    test_user = User(
+        username="dense_test_user",
+        password_hash="test_hash",
+        is_admin=False,
+    )
+
+    
     test_post_chunks = [
         PostChunk(post_id=1, chunk_idx=0, content_chunk="test post chunk 1", combined_embedding=([0]*384), heading_path=["test heading 1"]),
         PostChunk(post_id=1, chunk_idx=1, content_chunk="test post chunk 2", combined_embedding=([0]*384), heading_path=["test heading 2"]),
@@ -52,11 +58,17 @@ async def test_integration_dense_retrieval():
     test_post_chunks[3].combined_embedding[1] = 1.0
 
     async with TestSessionLocal() as db:
+        db.add(test_user)
+        await db.flush()
+
+        test_post = Post(title="test title", slug="test slug", content_md="test content", excerpt="test excerpt", user_id=test_user.id)
+
         await db.execute(delete(PostChunk))
         await db.flush()
 
         db.add(test_post)
         await db.flush()
+
         for post_chunk in test_post_chunks:
             post_chunk.post_id = test_post.id
             db.add(post_chunk)

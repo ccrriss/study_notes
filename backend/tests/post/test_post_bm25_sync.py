@@ -2,7 +2,7 @@ import pytest
 import os
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.pool import NullPool
-from app.db.models import Post, PostChunk
+from app.db.models import Post, PostChunk, User
 from app.rag.retrieval_lexical import build_bm25_index, calculate_all_bm25_scores
 from sqlalchemy import select
 from app.rag.ingestion.post_chunks import add_post_chunks, refresh_post_chunks
@@ -64,35 +64,48 @@ TestSessionLocal = async_sessionmaker(
 query_old = "bm25_refresh_probe_old"
 query_new = "bm25_refresh_probe_new"
 
-def create_posts() -> tuple[Post, Post, Post]:
+def create_posts(user_id: int) -> tuple[Post, Post, Post]:
     target_post = Post(
     title="target",
     slug="target-test",
     content_md=query_old,
-    excerpt="target"
-)
+    excerpt="target",
+    user_id=user_id
+    )
     control_post_1 = Post(
     title="control 1",
     slug="control-test-1",
     content_md="unrelated_alpha_content",
-    excerpt="control"
+    excerpt="control",
+    user_id=user_id
     )
     control_post_2 = Post(
         title="control 2",
         slug="control-test-2",
         content_md="unrelated_beta_content",
-        excerpt="control"
+        excerpt="control",
+        user_id=user_id
     )
 
     return target_post, control_post_1, control_post_2
 
 @pytest.mark.anyio
 async def test_bm25_sync_after_create():
-    target_post, control_post_1, control_post_2 = create_posts()
-    posts = [target_post, control_post_1, control_post_2]
+    test_user = User(
+        username="bm25_create_user",
+        password_hash="test_hash",
+        is_admin=False,
+    )
     async with TestSessionLocal() as db:
+        db.add(test_user)
+        await db.flush()
+
+        target_post, control_post_1, control_post_2 = create_posts(user_id=test_user.id)
+        posts = [target_post, control_post_1, control_post_2]
+
         db.add_all(posts)
         await db.flush()
+
         for post in posts:
             await add_post_chunks(post=post, db=db, model=FakeEmbeddingProvider())
         await db.flush()
@@ -116,9 +129,19 @@ async def test_bm25_sync_after_create():
 
 @pytest.mark.anyio
 async def test_bm25_sync_after_update():
-    target_post, control_post_1, control_post_2 = create_posts()
-    posts = [target_post, control_post_1, control_post_2]
+    test_user = User(
+        username="bm25_update_user",
+        password_hash="test_hash",
+        is_admin=False,
+    )
+    
     async with TestSessionLocal() as db:
+        db.add(test_user)
+        await db.flush()
+
+        target_post, control_post_1, control_post_2 = create_posts(user_id=test_user.id)
+        posts = [target_post, control_post_1, control_post_2]
+
         db.add_all(posts)
         await db.flush()
 
@@ -172,9 +195,19 @@ async def test_bm25_sync_after_update():
 
 @pytest.mark.anyio
 async def test_bm25_sync_after_delete():
-    target_post, control_post_1, control_post_2 = create_posts()
-    posts = [target_post, control_post_1, control_post_2]
+    test_user = User(
+        username="bm25_delete_user",
+        password_hash="test_hash",
+        is_admin=False,
+    )
+
     async with TestSessionLocal() as db:
+        db.add(test_user)
+        await db.flush()
+
+        target_post, control_post_1, control_post_2 = create_posts(user_id=test_user.id)
+        posts = [target_post, control_post_1, control_post_2]
+
         db.add_all(posts)
         await db.flush()
 
