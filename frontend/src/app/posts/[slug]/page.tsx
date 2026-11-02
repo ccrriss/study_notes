@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Markdown from "@/component/Markdown";
-import DeletePostButton from "@/component/DeletePostButton";
 
 import { apiFetch } from "@/lib/api";
 

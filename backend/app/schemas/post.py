@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
 
 class PostIn(BaseModel):
     title: str = Field(max_length=200)
@@ -18,3 +19,9 @@ class PostOut(PostIn):
     tags: list[str]
     
     model_config = ConfigDict(from_attributes=True)
+
+class ManagedPostOut(PostOut):
+    user_id: int
+    username: str
+    created_at: datetime
+    updated_at: datetime

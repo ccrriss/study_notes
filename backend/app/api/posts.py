@@ -4,7 +4,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from app.db.session import get_db
 from app.db.models import Post,Tag
-from app.schemas.post import PostIn, PostOut
+from app.schemas.post import PostIn, PostOut, ManagedPostOut
 from slugify import slugify
 from app.api.auth import get_current_user
 from app.db.models import User
@@ -125,7 +125,7 @@ async def update_post(
     ])
 
 @router.delete("/{post_id}", status_code=204)
-async def delete_note(
+async def delete_post(
     post_id: int, 
     request: Request, 
     db: AsyncSession = Depends(get_db),
@@ -153,7 +153,7 @@ async def delete_note(
     return Response(status_code=204)
 
 @router.get("", response_model=dict)
-async def list_notes(
+async def list_posts(
     db: AsyncSession = Depends(get_db), 
     q: str | None = None, 
     offset: int = 0, 
@@ -204,14 +204,68 @@ async def list_notes(
         "items": items
     }
 
+@router.get("/manage", response_model=list[ManagedPostOut])
+async def list_managed_posts(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+) -> list[ManagedPostOut]: 
+    if current_user.is_admin:
+        stmt = select(Post)
+    else:
+        stmt = select(Post).where(Post.user_id == current_user.id)
+
+    stmt = stmt.options(
+        selectinload(Post.tags),
+        selectinload(Post.user)
+    ).order_by(Post.updated_at.desc())
+    
+    results = await db.scalars(stmt)
+    posts = results.all()
+
+    managed_posts: list[ManagedPostOut] = [
+        ManagedPostOut(title=post.title, slug=post.slug, content_md=post.content_md, excerpt=post.excerpt,
+                       is_published=post.is_published, tags=[tag.name for tag in post.tags], id=post.id,
+                       user_id=post.user_id, username=post.user.username, created_at=post.created_at, updated_at=post.updated_at)
+        for post in posts                                   
+    ]
+
+    return managed_posts
+
+@router.get("/manage/{post_id}", response_model=ManagedPostOut)
+async def get_managed_post_by_post_id(
+    post_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+) -> ManagedPostOut:
+    stmt = select(Post).where(Post.id == post_id).options(
+        selectinload(Post.tags),
+        selectinload(Post.user)
+    )
+
+    post = await db.scalar(stmt)
+
+    if not post: 
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "post not found")
+
+    if post.user_id != current_user.id:
+        if not current_user.is_admin:
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "You do not have permission to check this post")
+
+    managed_post_out = ManagedPostOut(title=post.title, slug=post.slug, content_md=post.content_md, excerpt=post.excerpt,
+                                      is_published=post.is_published, tags=[tag.name for tag in post.tags], id=post.id,
+                                      user_id=post.user_id, username=post.user.username, created_at=post.created_at,
+                                      updated_at=post.updated_at)
+    
+    return managed_post_out
+
+
 @router.get("/{slug}", response_model=PostOut)
 async def get_by_slug(slug: str, db: AsyncSession = Depends(get_db)):
     stmt = select(Post).where(Post.slug == slug, Post.is_published.is_(True)).options(selectinload(Post.tags))
     post = await db.scalar(stmt)
     if not post:
-        raise HTTPException(404, "post not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "post not found")
     return PostOut(
         id = post.id, title = post.title, slug=post.slug, content_md=post.content_md, excerpt=post.excerpt, 
         is_published=post.is_published, tags= [tag.name for tag in post.tags]
     )
-

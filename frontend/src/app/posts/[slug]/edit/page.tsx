@@ -10,15 +10,7 @@ import TagInput from "@/component/TagInput";
 import MarkdownEditor from "@/component/MarkdownEditor";
 import { useApiFetch } from "@/hooks/useApiFetch";
 
-interface Post {
-    id: number;
-    slug: string;
-    title: string;
-    content_md: string;
-    excerpt: string | null;
-    is_published: boolean;
-    tags: string[];
-}
+import { PostOut } from "@/posts/schemas/post";
 
 export default function EditPostPage({params}: {params: Promise<{slug: string}>}){
     const router = useRouter();
@@ -45,7 +37,7 @@ export default function EditPostPage({params}: {params: Promise<{slug: string}>}
                         cache: "no-store"
                     }
                 );
-                const data: Post = res;
+                const data: PostOut = res;
                 setPostId(data.id);
                 setTitle(data.title);
                 setContent(data.content_md);
