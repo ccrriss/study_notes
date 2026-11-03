@@ -89,58 +89,114 @@ function EditMyPost(props: {postId: string}){
 
     if (loading) {
         return (
-            <main className="p-8 max-w-lg">
-                <p>Loading...</p>
+            <main className="mx-auto max-w-5xl px-6 py-10">
+                <p className="text-sm text-slate-500">Loading post...</p>
             </main>
         );
     }
 
     if (error && !post){
         return (
-            <main className="p-8 max-w-lg">
-                <p className="text-red-500 text-sm">Failed to load post: {error}</p>
+            <main className="mx-auto max-w-5xl px-6 py-10">
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+                    <p className="text-sm text-red-600">
+                        Failed to load post: {error}
+                    </p>
+                </div>
             </main>
         );
     }
 
     if (!post) {
-        return (
-            <main className="p-8 max-w-lg">
-                <p className="text-red-500 text-sm">Page not found.</p>
-            </main>
+        return (            
+            <main className="mx-auto max-w-5xl px-6 py-10">
+                <p className="text-sm text-slate-500">Page not found.</p>
+            </main>      
         );
     }
 
     return (
-        <main className="p-8 max-w-6xl mx-auto space-y-4">
-            <h1 className="text-2xl font-bold mb-4">Edit Post</h1>
-            <form onSubmit={submit} className="space-y-3">
+        <main className="mx-auto max-w-4xl px-6 py-10">
+            <header className="mb-8">
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+                    Edit Post
+                </h1> 
+
+                <p className="mt-2 text-sm text-slate-500">
+                    Update the content, tags, and publication status of this post.
+                </p>
+            </header>
+            <form onSubmit={submit} className="space-y-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 {error && (
-                    <p className="text-sm text-red-500 border border-red-200 p-2 rounded">
-                        {error}
-                    </p>
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                        <p className="text-sm text-red-600">
+                            {error}
+                        </p>
+                    </div>
                 )}
                 
-                <input className="border w-full p-2 rounded" placeholder="Title" value={post.title} 
-                    onChange={e=>setPost({...post, title: e.target.value})}></input>
-                
-                <label>
-                    <input type="checkbox" checked={post.is_published} onChange={e => {
-                        setPost({...post, is_published: e.target.checked})
-                    }}/>
-                    Published
-                </label>
+                <div className="space-y-2">
+                    <label htmlFor="title"
+                        className="block text-sm font-medium text-slate-700"
+                    >
+                        Title
+                    </label>
 
-                <MarkdownEditor value={post.content_md} onChange={(content:string) => {
+                    <input id="title" 
+                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2
+                                   text-slate-900 outline-none transition
+                                   placeholder:text-slate-400
+                                   focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+                        placeholder="Enter post title" value={post.title} 
+                        onChange={e=>setPost({...post, title: e.target.value})} required
+                    />
+                </div>
+
+                <div className="space-y-2">
+                    <span className="block text-sm font-medium text-slate-700">
+                        Status
+                    </span>
+
+                    <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-slate-600">
+                        <input type="checkbox" checked={post.is_published} onChange={e => {
+                            setPost({...post, is_published: e.target.checked})}}
+                        className="h-4 w-4"/>
+
+                        Published
+                    </label>
+
+                    <p className="text-xs text-slate-400">
+                        Uncheck this to keep the post as a draft.
+                    </p>
+                </div>
+                
+                <div className="space-y-2">
+                    <label className="block text-sm font-medium text-slate-700">
+                        Content
+                    </label>
+                    
+                    <MarkdownEditor value={post.content_md} onChange={(content:string) => {
                         setPost({...post, content_md: content});
-                }} />
-                <TagInput value={post.tags} onChange={(tags: string[]) => {
-                        setPost({...post, tags: tags})
-                }}></TagInput>
-                <CancelButton saving={saving} destination={`/posts/my-posts/${postId}`}></CancelButton>
-                <button className="px-4 py-2 rounded bg-black text-white disabled:opacity-60" disabled={saving}>
-                    {saving? "Saving..." : "Save"}
-                </button>
+                    }} />
+                </div>
+                
+                <div className="space-y-2">
+                    <TagInput value={post.tags} onChange={(tags: string[]) => {
+                            setPost({...post, tags: tags})
+                    }}></TagInput>
+                </div>
+
+                <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
+                    <CancelButton saving={saving} destination={`/posts/my-posts/${postId}`}></CancelButton>
+                    
+                    <button type="submit"  
+                        className="cursor-pointer rounded-lg bg-slate-900 px-4 py-2
+                                   text-sm font-medium text-white transition hover:bg-slate-700
+                                   disabled:cursor-not-allowed disabled:opacity-60" disabled={saving}
+                    >
+                        {saving? "Saving..." : "Save"}
+                    </button>
+                </div>
             </form>
         </main>
     )

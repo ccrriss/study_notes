@@ -58,79 +58,108 @@ function MyPostContent(props: {postId:string}){
 
     if (loading) {
         return (
-            <main className="p-8 max-w-lg">
-                <p>Loading...</p>
+            <main className="mx-auto max-w-5xl px-6 py-10">
+                <p className="text-sm text-slate-500">Loading posts...</p>
             </main>
         );
     }
 
     if (error){
         return (
-            <main className="p-8 max-w-lg">
-                <p className="text-red-500 text-sm">Failed to load post: {error}</p>
+            <main className="mx-auto max-w-5xl px-6 py-10">
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+                    <p className="text-sm text-red-600">
+                        Failed to load posts: {error}
+                    </p>
+                </div>
             </main>
         );
     }
 
     if (!post) {
-        return (
-            <main className="p-8 max-w-lg">
-                <p className="text-red-500 text-sm">Page not found.</p>
-            </main>
+        return (            
+            <main className="mx-auto max-w-5xl px-6 py-10">
+                <p className="text-sm text-slate-500">Page not found.</p>
+            </main>      
         );
     }
 
     return (
-        <main className="prose p-8">
-            <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                     <h1>{post.title}</h1>
+        <main className="mx-auto max-w-5xl px-6 py-10">
+            <div className="mb-6">
+                <Link
+                    href="/posts/my-posts"
+                    className="text-sm text-slate-500 transition hover:text-slate-900"
+                >
+                    ← Back to My Posts
+                </Link>
+            </div>
 
-                    <span className="text-xs border rounded px-2 py-1">
+            <header className="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="flex items-start justify-between gap-4">
+                    <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+                        {post.title}
+                    </h1>
+
+                    <span
+                        className={
+                            post.is_published
+                                ? "shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
+                                : "shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"
+                        }
+                    >
                         {post.is_published ? "Published" : "Draft"}
                     </span>
                 </div>
-                <div className="text-sm text-gray-500 space-y-1">
-                    <p>Owner: {post.username}</p>
-                    <p>
+
+                <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
+                    <span>Owner: {post.username}</span>
+
+                    <span aria-hidden="true">·</span>
+
+                    <span>
                         Created: {new Date(post.created_at).toLocaleString()}
-                    </p>
-                    <p>
+                    </span>
+
+                    <span aria-hidden="true">·</span>
+
+                    <span>
                         Updated: {new Date(post.updated_at).toLocaleString()}
-                    </p>
+                    </span>
                 </div>
-                {post.is_published && (
-                    <Link
-                        href={`/posts/${post.slug}`}
-                        className="px-3 py-1 rounded border text-sm"
-                    >
-                        View Public Post
-                    </Link>
-                )}
 
                 {post.tags.length > 0 && (
-                    <div className="flex gap-2 mb-4">
-                        {post.tags.map((t:string) => (
-                            <p key={t} 
-                                className="px-2 py-1 text-sm bg-gray-200 rounded"
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        {post.tags.map((tag:string) => (
+                            <span key={tag} 
+                                className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600"
                             >
-                                {t}
-                            </p>
+                                {tag}
+                            </span>
                         ))}
                     </div>
                 )}
-                <div className="flex gap-2">
-                    <Link href={`/posts/my-posts`} className="px-3 py-1 rounded border text-sm">
-                        Back
-                    </Link>
-                    
+
+                <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5">
+                    {post.is_published && (
+                        <Link
+                            href={`/posts/${post.slug}`}
+                             className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium 
+                             text-slate-700 transition hover:bg-slate-50"
+                        >
+                            View Public Post
+                        </Link>
+                    )}
+
                     <PostActions id={post.id}></PostActions>
-                    
                 </div>
-            </div>
-            <Markdown md={post.content_md}></Markdown>
+            </header>
+
+            <article className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+                <Markdown md={post.content_md}></Markdown>
+            </article>  
         </main>
-    )
+    );
 }
 
 export default function Page({params}: {params: Promise<{postId: string}>}) {

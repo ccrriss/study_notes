@@ -1,95 +1,100 @@
 import Link from "next/link";
 
-import { apiFetch } from "@/lib/api";
-import SearchBar from "@/component/SearchBar";
-import Pagination from "@/component/Pagination";
-import SortDropdown from "@/component/SortDropdown";
-import PaginationPro from "@/component/PaginationPro";
-
-async function getNotes(page: number, q: string | null, tag: string | null, sort: string | null) {
-    const limit = 10;
-    const offset = (page - 1) * limit;
-
-    const params = new URLSearchParams();
-    params.set("offset", offset.toString());
-    params.set("limit", limit.toString());
-    if(q) {
-        params.set("q", q);
-    }
-    if(tag) {
-        params.set("tag", tag);
-    }
-    if(sort) {
-        params.set("sort", sort);
-    }
-    
-    const res = await apiFetch("/api/v1/posts?" + params.toString(), {cache: "no-store"});
-    return res;
-}
-
-export default async function Page(props: {
-  searchParams: Promise<{page?: string, q?: string, tag?: string, sort?: string}>
-}) {
-    const searchParams = await props.searchParams;
-    const page = Number(searchParams.page || "1");
-    const q = searchParams.q || null;
-    const tag = searchParams.tag || null;
-    const sort = searchParams.sort || "newest";
-
-    const data = await getNotes(page, q, tag, sort);
-    const {total, items} = data;
-
-    const limit = 10;
-    const totalPages = Math.ceil(total / limit);
+export default function Page() {
     return (
-        <main className="max-w-3xl mx-auto p-8 space-y-4">
-            <SearchBar q={q} tag={tag}></SearchBar>
-            <header className="flex items-center justify-between">
-                <h1 className="text-2xl font-bold mb-4">Notes</h1>
-                <SortDropdown sort={sort}></SortDropdown>
+        <main className="mx-auto max-w-6xl px-6 py-14 sm:py-20">
+            <section className="max-w-3xl">
+                <p className="mb-4 text-sm font-semibold text-slate-500">
+                    AI Notes · Full-Stack AI Project
+                </p>
 
-                {tag && (
-                    <div className="mb-4 flex items-center gap-4">
-                        <span className="px-2 py-1 bg-gray-100 rounded">
-                            Filtering by tag: <b>{tag}</b>
-                        </span>
+                <h1 className="text-4xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-5xl">
+                    Technical notes powered by
+                    a retrieval-augmented AI system.
+                </h1>
 
-                        <Link href={"/posts"} className="underline text-sm">
-                            Clear Filters
-                        </Link>
-                    </div>
-                    )
+                <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600">
+                    A full-stack application combining a searchable
+                    knowledge base with Retrieval-Augmented Generation (RAG).
+                    Explore published notes or ask questions grounded
+                    in their content.
+                </p>
 
-                }
-            </header>
-
-            <ul className="space-y-3">
-                {items.map((n:any) => { 
-                    return (
-                    <li key={n.id} 
-                        className="border p-3 rounded hover:bg-gray-50 transition"
+                <div className="mt-8 flex flex-wrap gap-3">
+                    <Link
+                        href="/posts"
+                        className="rounded-lg bg-slate-900 px-5 py-3
+                                   text-sm font-medium text-white transition
+                                   hover:bg-slate-700"
                     >
-                        <Link href={`/posts/${n.slug}`} className="font-medium underline">
-                            {n.title}
-                        </Link>
+                        Browse Notes
+                    </Link>
 
-                        {n.tags.length > 0 && (
-                            <div className="flex gap-2 mt-2">
-                                {n.tags.map( (t:string) => (
-                                    <Link key = {t} 
-                                        href = {`/posts?tag=${encodeURIComponent(t)}`}
-                                        className="px-2 py-1 bg-gray-100 text-sm rounded hover:bg-gray-200"
-                                    >
-                                        {t}
-                                    </Link>
-                                ))}
-                            </div>
-                        )}
-                    </li>
-                )})}
-            </ul>
+                    <Link
+                        href="/rag"
+                        className="rounded-lg border border-slate-300
+                                   bg-white px-5 py-3 text-sm font-medium
+                                   text-slate-700 transition hover:bg-slate-50"
+                    >
+                        Explore RAG Demo
+                    </Link>
+                </div>
 
-            <PaginationPro current={page} totalPages={totalPages} q={q} tag={tag} sort={sort}></PaginationPro>
+                <p className="mt-3 text-xs text-slate-400">
+                    Sign-in is currently required for live RAG queries.
+                </p>
+            </section>
+
+            <section className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-2">
+                <article className="rounded-xl border border-slate-200 bg-white p-7 shadow-sm">
+                    <h2 className="text-xl font-semibold text-slate-900">
+                        Knowledge Base
+                    </h2>
+
+                    <p className="mt-3 text-sm leading-7 text-slate-600">
+                        Browse technical articles with keyword search,
+                        tag filtering, and organized Markdown content.
+                    </p>
+
+                    <Link
+                        href="/posts"
+                        className="mt-6 inline-block text-sm font-medium text-slate-900 hover:text-slate-600"
+                    >
+                        Explore notes →
+                    </Link>
+                </article>
+
+                <article className="rounded-xl border border-slate-200 bg-white p-7 shadow-sm">
+                    <h2 className="text-xl font-semibold text-slate-900">
+                        RAG Question Answering
+                    </h2>
+
+                    <p className="mt-3 text-sm leading-7 text-slate-600">
+                        Ask questions about published articles.
+                        The system retrieves relevant content,
+                        generates answers, and displays their sources.
+                    </p>
+
+                    <Link
+                        href="/rag"
+                        className="mt-6 inline-block text-sm font-medium text-slate-900 hover:text-slate-600"
+                    >
+                        Explore RAG →
+                    </Link>
+                </article>
+            </section>
+
+            <section className="mt-16 border-t border-slate-200 pt-10">
+                <h2 className="text-xl font-semibold text-slate-900">
+                    Built with
+                </h2>
+
+                <p className="mt-3 text-sm leading-7 text-slate-600">
+                    Next.js · React · TypeScript · FastAPI ·
+                    PostgreSQL · pgvector · Hybrid Search ·
+                    Cross-Encoder Reranking
+                </p>
+            </section>
         </main>
     );
 } 

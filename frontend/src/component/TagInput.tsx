@@ -31,31 +31,41 @@ export default function TagInput({
     }
 
     return (
-        <div>
-            <label className="block text-sm mb-1 font-medium">Tags</label>
+        <div className="space-y-2">
+            <label className="block text-sm font-medium text-slate-700">
+                Tags
+            </label>
             
-            <div className="flex flex-wrap gap-2 mb-2">
-                {value.map((tag) => (
-                    <span 
-                        key={tag} 
-                        className="px-2 py-1 bg-gray-200 text-gray-700 rounded flex items-center text-sm"
-                    >
-                        {tag}
-                        <button
-                            type="button"
-                            className="ml-2 text-red-500 text-4xl"
-                            onClick={() => removeTag(tag)}
+            {value.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                    {value.map((tag) => (
+                        <span 
+                            key={tag} 
+                            className="inline-flex items-center gap-1.5 rounded-md bg-slate-100
+                                       px-2.5 py-1 text-xs font-medium text-slate-600"
                         >
-                            &times;
-                        </button>
-                    </span>
-                  ) 
-                )}
-            </div>
+                            {tag}
+                            <button
+                                type="button"
+                                className="cursor-pointer text-slate-400 transition hover:text-red-500"
+                                onClick={() => removeTag(tag)}
+                                aria-label={`Remove ${tag}`}
+                            >
+                                &times;
+                            </button>
+                        </span>
+                    ) 
+                    )}
+                </div>
+            )}
+            
 
             <div className="flex gap-2">
                 <input 
-                    className="border p-2 flex-1 rounded"
+                     className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white
+                               px-3 py-2 text-sm text-slate-900 outline-none transition
+                               placeholder:text-slate-400
+                               focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
                     placeholder="Add tag..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -63,12 +73,14 @@ export default function TagInput({
                 />
                 <button 
                     type="button"
-                    className="px-3 py-1 bg-black text-white rounded"
+                    className="cursor-pointer rounded-lg border border-slate-300 bg-white
+                               px-4 py-2 text-sm font-medium text-slate-700 transition
+                               hover:bg-slate-50"
                     onClick={addTag}
                 >
                     Add
                 </button>
             </div>
         </div>
-    )
+    );
 }

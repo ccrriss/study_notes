@@ -11,31 +11,43 @@ async function getPost(slug: string){
 
 export default async function Page({params}:{params: Promise<{slug: string}>}) {
     const {slug} = await params;
-    const p = await getPost(slug);
+    const post = await getPost(slug);
 
     return (
-        <main className="prose p-8">
-            <div className="flex items-center justify-between mb-4">
-                <h1>{p.title}</h1>
-                {p.tags.length > 0 && (
-                    <div className="flex gap-2 mb-4">
-                        {p.tags.map((t:any) => (
-                            <Link key={t} 
-                                className="px-2 py-1 text-sm bg-gray-200 rounded"
-                                href={`/posts?tag=${encodeURIComponent(t)}`}
+        <main className="mx-auto max-w-4xl px-6 py-10">
+            <div className="mb-6">
+                <Link
+                    href="/posts"
+                    className="text-sm text-slate-500 transition hover:text-slate-900"
+                >
+                    ← Back to Notes
+                </Link>
+            </div>
+
+            <header className="mb-8">
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+                    {post.title}
+                </h1>
+
+                {post.tags.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        {post.tags.map((tag:string) => (
+                            <Link key={tag} 
+                                href={`/posts?tag=${encodeURIComponent(tag)}`}
+                                className="rounded-md bg-slate-100 px-2.5 py-1 text-xs
+                                       font-medium text-slate-600 transition
+                                       hover:bg-slate-200 hover:text-slate-900"
                             >
-                                {t}
+                                {tag}
                             </Link>
                         ))}
                     </div>
                 )}
-                <div className="flex gap-2">
-                    <Link href={`/posts`} className="px-3 py-1 rounded border text-sm">
-                        Back
-                    </Link>
-                </div>
-            </div>
-            <Markdown md={p.content_md}></Markdown>
+            </header>
+            
+            <article className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+                <Markdown md={post.content_md}></Markdown>          
+            </article>
         </main>
-    )
+    );
 }

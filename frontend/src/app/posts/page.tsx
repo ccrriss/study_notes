@@ -2,7 +2,6 @@ import Link from "next/link";
 
 import { apiFetch } from "@/lib/api";
 import SearchBar from "@/component/SearchBar";
-import Pagination from "@/component/Pagination";
 import SortDropdown from "@/component/SortDropdown";
 import PaginationPro from "@/component/PaginationPro";
 import TagCloud from "@/component/TagCloud";
@@ -43,62 +42,93 @@ export default async function Page(props: {
     const limit = 10;
     const totalPages = Math.ceil(total / limit);
     return (
-        <main className="max-w-5xl mx-auto p-8 space-y-4">
+        <main className="mx-auto max-w-6xl px-6 py-10">
+            <header className="mb-8">
+                <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
+                    Notes
+                </h1>
+
+                <p className="mt-2 text-sm text-slate-500">
+                    Browse published notes, search by title, or filter by topic.
+                </p>
+            </header>
+
             <SearchBar q={q} tag={tag}></SearchBar>
             
-            {/*两栏布局*/}
-            <div className="grid grid-cols-[200px_1fr] gap-8">
+            <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[220px_1fr]">
                 {/*TagCloud*/}
                 <TagCloud active={tag}></TagCloud>  
 
                 {/*右侧内容*/}
-                <div>
-                    <header className="flex items-center justify-between mb-4">
-                        <h1 className="text-2xl font-bold mb-4">Notes</h1>
-                        <SortDropdown sort={sort}></SortDropdown>
-                    </header>
 
-                    {tag && (
-                        <div className="mb-4 flex items-center gap-4">
-                            <span className="px-2 py-1 bg-gray-100 rounded">
-                                Filtering by tag: <b>{tag}</b>
-                            </span>
+                <section className="min-w-0">
+                    <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            {tag && (
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <span className="rounded-md bg-slate-100 px-3 py-1.5 text-sm text-slate-600">
+                                        Filtering by tag: {" "} 
+                                        <span className="font-medium text-slate-900">
+                                            {tag}
+                                        </span>
+                                    </span>
 
-                            <Link href={"/posts"} className="underline text-sm">
-                                Clear Filters
-                            </Link>
+                                    <Link href={"/posts"}
+                                        className="text-sm font-medium text-slate-500 transition hover:text-slate-900"
+                                    >
+                                        Clear Filters
+                                    </Link>
+                                </div>
+                            )}
                         </div>
-                    )}
-                
-                    {/*文章列表*/}
-                    <ul className="space-y-3">
-                        {items.map((n:any) => { 
-                            return (
-                                <li key={n.id} 
-                                className="border p-3 rounded hover:bg-gray-50 transition"
-                                >
-                                <Link href={`/posts/${n.slug}`} className="font-medium underline">
-                                    {n.title}
-                                </Link>
+                        
+                        <SortDropdown sort={sort}></SortDropdown>
+                    </div>
 
-                                {n.tags.length > 0 && (
-                                    <div className="flex gap-2 mt-2">
-                                        {n.tags.map( (t:string) => (
-                                            <Link key = {t} 
-                                            href = {`/posts?tag=${encodeURIComponent(t)}`}
-                                            className="px-2 py-1 bg-gray-100 text-sm rounded hover:bg-gray-200"
-                                            >
-                                                {t}
-                                            </Link>
-                                        ))}
-                                    </div>
-                                )}
-                            </li>
-                        )})}
-                    </ul>
+                    {items.length === 0 ? (
+                        <div className="rounded-xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+                            <h2 className="text-base font-medium text-slate-900">
+                                No notes found
+                            </h2>
+
+                            <p className="mt-2 text-sm text-slate-500">
+                                Try changing your search or selected tag.
+                            </p>
+                        </div>
+                    ) : (
+                        <ul className="space-y-4">
+                            {items.map((post:any) => { 
+                                return (
+                                    <li key={post.id} 
+                                        className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm
+                                           transition hover:border-slate-300 hover:shadow"
+                                    >
+                                    <Link href={`/posts/${post.slug}`} 
+                                        className="text-lg font-semibold text-slate-900 transition hover:text-slate-600">
+                                        {post.title}
+                                    </Link>
+
+                                    {post.tags.length > 0 && (
+                                        <div className="mt-4 flex flex-wrap gap-2">
+                                            {post.tags.map((tag:string) => (
+                                                <Link key = {tag} 
+                                                    href = {`/posts?tag=${encodeURIComponent(tag)}`}
+                                                    className="rounded-md bg-slate-100 px-2.5 py-1 text-xs
+                                                        font-medium text-slate-600 transition
+                                                        hover:bg-slate-200 hover:text-slate-900"
+                                                >
+                                                    {tag}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    )}
+                                </li>
+                            )})}
+                        </ul>
+                    )}
 
                     <PaginationPro current={page} totalPages={totalPages} q={q} tag={tag} sort={sort}></PaginationPro>
-                </div>
+                </section>
             </div>
         </main>
     );

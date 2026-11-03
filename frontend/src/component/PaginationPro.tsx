@@ -2,6 +2,11 @@
 
 import { useRouter } from "next/navigation";
 
+const buttonClass =
+    "cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-1.5 " +
+    "text-sm text-slate-600 transition hover:bg-slate-50 " +
+    "disabled:cursor-not-allowed disabled:opacity-30";
+
 export default function PaginationPro({
     current,
     totalPages,
@@ -39,7 +44,6 @@ export default function PaginationPro({
 
     //生成页码范围
     const pages: number[] = [];
-    const maxDisplay = 5; //当前页附近显示5个
 
     const start = Math.max(1, current - 2);
     const end = Math.min(totalPages, current + 2);
@@ -52,11 +56,11 @@ export default function PaginationPro({
     const showRightEllipsis = end < totalPages;
 
     return (
-        <div className="flex items-center gap-2 mt-6 text-sm">
+        <nav className="mt-8 flex flex-wrap items-center gap-2">
             {/*去首页*/}
             <button onClick={() => go(1)}
                 disabled={current === 1}
-                className="px-2 py-1 border rounded disabled:opacity-30"
+                className={buttonClass}
             >
                 {"<<"}
             </button>
@@ -64,7 +68,7 @@ export default function PaginationPro({
             {/*上一页*/}
             <button onClick={() => go(current - 1)}
                 disabled={current === 1}
-                className="px-2 py-1 border rounded disabled:opacity-30"
+                className={buttonClass}
             >
                 {"<"}
             </button>
@@ -73,32 +77,34 @@ export default function PaginationPro({
             {showLeftEllipsis && (
                 <>
                     <button
-                        className="px-2 py-1 border rounded"
+                        className={buttonClass}
                         onClick={() => go(1)}
                     >
                         1
                     </button>
-                    <span className="px-1">...</span>
+                    <span className="px-1 text-slate-400">...</span>
                 </>
             )}
 
             {/*中间数字按钮*/}
-            {pages.map(p => (
+            {pages.map((page) => (
                 <button
-                    key={p}
-                    className={`px-2 py-1 border rounded ${p === current? "bg-black text-white": ""}`}
-                    onClick={() => go(p)}
+                    key={page}
+                    className={page === current
+                        ? "cursor-pointer rounded-lg border border-slate-900 bg-slate-900 px-3 py-1.5 text-sm font-medium text-white"
+                        : buttonClass}
+                    onClick={() => go(page)}
                 >
-                    {p}
+                    {page}
                 </button>
             ))}
 
             {/*右省略号*/}
             {showRightEllipsis && (
                 <>
-                    <span className="px-1">...</span>
+                    <span className="px-1 text-slate-400">...</span>
                     <button
-                        className="px-2 py-1 border rounded"
+                        className={buttonClass}
                         onClick={() => go(totalPages)}
                     >
                         {totalPages}
@@ -110,7 +116,7 @@ export default function PaginationPro({
             <button
                 onClick={() => go(current + 1)}
                 disabled={current === totalPages}
-                className="px-2 py-1 border rounded disabled:opacity-30"
+                className={buttonClass}
             >
                 {">"}
             </button>
@@ -119,10 +125,10 @@ export default function PaginationPro({
             <button
                 onClick={() =>go(totalPages)}
                 disabled={current === totalPages}
-                className="px-2 py-1 border rounded disabled:opacity-30"
+                className={buttonClass}
             >
                 {">>"}
             </button>
-        </div>
+        </nav>
     );
 }

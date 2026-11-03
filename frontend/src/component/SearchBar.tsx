@@ -25,14 +25,21 @@ export default function SearchBar({q, tag} : {q: string | null, tag: string | nu
     }
 
     return (
-        <form onSubmit={submit} className="mb-4 flex gap-2">
+        <form onSubmit={submit} className="flex gap-3">
             <input 
-                className="border p-2 flex-1 rounded"
-                placeholder="Search title..."
+                className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5
+                       text-sm text-slate-900 outline-none transition
+                       placeholder:text-slate-400
+                       focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+                placeholder="Search notes by title..."
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
             />
-            <button className="px-4 py-2 bg-black text-white rounded">Search</button>
+            <button type="submit"
+                className="cursor-pointer rounded-lg bg-slate-900 px-5 py-2.5
+                       text-sm font-medium text-white transition hover:bg-slate-700">
+                Search
+            </button>
         </form>
     )
 }

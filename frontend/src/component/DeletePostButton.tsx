@@ -33,16 +33,17 @@ export default function DeletePostButton({id}: {id:number}){
     }
 
     return (
-        <>  
-            {error && (
-                <p>Error is: {error}</p>
-            )}
-            <button onClick={handleDelete} disabled={loading} className="px-3 py-1 rounded border border-red-500 text-red-600 text-sm
-                disabled:opacity-60">
+        <div className="flex flex-col items-start gap-2">       
+            <button onClick={handleDelete} disabled={loading} type="button"
+                className="cursor-pointer rounded-lg border border-red-200 bg-red-50 px-4 py-2
+                           text-sm font-medium text-red-600 transition hover:bg-red-100
+                           disabled:cursor-not-allowed disabled:opacity-60">
                 {loading? "Deleting..." : "Delete"}
             </button>
-        </>
 
-        
+            {error && (
+                <p className="text-sm text-red-600"> Failed to delete post: {error}</p>
+            )}
+        </div>
     )
 }

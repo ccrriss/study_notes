@@ -17,5 +17,6 @@ export default function Markdown({md}: {md: string}){
         convert();
     }, [md]);
 
-    return <div dangerouslySetInnerHTML={{__html: htmlContent}}/>;
+    return <div className="prose prose-slate max-w-none"
+        dangerouslySetInnerHTML={{__html: htmlContent}}/>;
 }

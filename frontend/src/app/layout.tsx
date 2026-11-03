@@ -16,8 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Blog",
-  description: "My Blog System",
+  title: "AI Notes | Full-Stack RAG Application",
+  description:
+  "A full-stack knowledge base with retrieval-augmented AI question answering.",
 };
 
 

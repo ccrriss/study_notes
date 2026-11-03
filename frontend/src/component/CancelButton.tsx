@@ -6,9 +6,12 @@ export default function CancelButton({saving=false, destination}:{saving ?: bool
     const router = useRouter();
     return (
         <button disabled={saving}
-                className="px-4 py-2 rounded border" 
                 onClick={() => router.replace(destination)}
                 type="button"
+                className="cursor-pointer rounded-lg border border-slate-300 bg-white
+                    px-4 py-2 text-sm font-medium text-slate-700 transition
+                    hover:bg-slate-50
+                    disabled:cursor-not-allowed disabled:opacity-60"
         >   
             Cancel
         </button>

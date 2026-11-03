@@ -17,13 +17,14 @@ export default function SortDropdown({sort} : {sort: string}) {
 
     return (
         <select
-            className="border rounded px-2 py-1 text-sm"
+            className="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2
+               text-sm text-slate-700 outline-none transition
+               focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
             value={sort}
             onChange={(e) => updateSort(e.target.value)}
         >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
-
         </select>
     );
 }
