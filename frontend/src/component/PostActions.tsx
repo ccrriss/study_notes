@@ -1,13 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "@/hooks/useAuth";
 import DeletePostButton from "@/component/DeletePostButton";
 
-export default function PostActions({slug, id}: {slug: string, id: number}){
-    const {isLoggedIn} = useAuth();
-
-    if(!isLoggedIn) return null;
+export default function PostActions({id}: { id: number}){
 
     return (
         <div className="flex space-x-4 mb-4">

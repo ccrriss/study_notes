@@ -8,6 +8,7 @@ import TagInput from "@/component/TagInput";
 import MarkdownEditor from "@/component/MarkdownEditor";
 import { useApiFetch } from "@/hooks/useApiFetch";
 
+
 export default function NewPost(){
     const router = useRouter();
     const [title, setTitle] = useState("");
@@ -15,6 +16,7 @@ export default function NewPost(){
     const [saving, setSaving] = useState(false)
     const [error, setError] = useState<string | null>(null);
     const [tags, setTags] = useState<string[]>([]);
+    const [is_published, setIs_published] = useState<boolean>(true); 
 
     // context hook
     const api = useApiFetch();
@@ -24,6 +26,7 @@ export default function NewPost(){
 
         setSaving(true);
         setError(null);
+
         try {
             
             await api("/api/v1/posts", 
@@ -34,16 +37,16 @@ export default function NewPost(){
                         title, 
                         content_md: content,
                         tags,
+                        is_published,
                     }),
                 }
             );
 
-            router.push("/posts");
+            router.replace("/posts/my-posts");
         } catch(err: any){
             setError(err.message ?? "Unknown Error");
-        } finally{
             setSaving(false);
-        }
+        } 
     }
 
     return (
@@ -52,6 +55,13 @@ export default function NewPost(){
                 <h1 className="text-2xl font-bold mb-4">Add Note</h1>
 
                 <form onSubmit={submit} className="space-y-3">
+                    <label>
+                        <input type="checkbox" checked={is_published} onChange={e => {
+                            setIs_published(e.target.checked)
+                        }}/>
+                        Published
+                    </label>
+
                     {error && (
                         <p className="text-sm text-red-500 border-red-200 border p-2 rounded">
                             {error}
@@ -68,7 +78,7 @@ export default function NewPost(){
                     <TagInput value={tags} onChange={setTags}></TagInput>
                     <button type="button" 
                             className="px-4 py-2 rounded border" 
-                            onClick={() => router.push("/posts")}
+                            onClick={() => router.push("/posts/my-posts")}
                             disabled={saving}>
                         Cancel
                     </button>

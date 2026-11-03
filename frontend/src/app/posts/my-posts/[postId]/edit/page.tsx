@@ -29,6 +29,7 @@ function EditMyPost(props: {postId: string}){
         }
 
         setSaving(true);
+        setError(null);
 
         try {
             await api(`/api/v1/posts/${postId}`, {
@@ -44,10 +45,9 @@ function EditMyPost(props: {postId: string}){
                 }),
             });
 
-            router.push(`/posts/my-posts/${postId}`)
+            router.replace(`/posts/my-posts/${postId}`)
         } catch(err: any){
             setError(err.message ?? "Unknown Error");
-        } finally {
             setSaving(false);
         }
     }
@@ -137,7 +137,7 @@ function EditMyPost(props: {postId: string}){
                 <TagInput value={post.tags} onChange={(tags: string[]) => {
                         setPost({...post, tags: tags})
                 }}></TagInput>
-                <CancelButton saving={saving}></CancelButton>
+                <CancelButton saving={saving} destination={`/posts/my-posts/${postId}`}></CancelButton>
                 <button className="px-4 py-2 rounded bg-black text-white disabled:opacity-60" disabled={saving}>
                     {saving? "Saving..." : "Save"}
                 </button>

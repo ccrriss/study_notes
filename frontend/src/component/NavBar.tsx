@@ -22,9 +22,8 @@ export default function NavBar(){
             {username && (
               <span>Hello, {username}</span>
             )}
-            {isAdmin && (
-              <Link href={"/new"} className="underline">New Post</Link>
-            )}
+            <Link href={"/posts/my-posts"} className="underline">My-posts</Link>
+            <Link href={"/new"} className="underline">New Post</Link>
             <button onClick={logout} className="underline">
               Logout
             </button>

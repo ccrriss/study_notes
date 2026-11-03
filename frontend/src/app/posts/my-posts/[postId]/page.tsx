@@ -83,7 +83,31 @@ function MyPostContent(props: {postId:string}){
     return (
         <main className="prose p-8">
             <div className="flex items-center justify-between mb-4">
-                <h1>{post.title} <span>{post.is_published ? "Published" : "Draft"}</span></h1>
+                <div className="flex items-center gap-3">
+                     <h1>{post.title}</h1>
+
+                    <span className="text-xs border rounded px-2 py-1">
+                        {post.is_published ? "Published" : "Draft"}
+                    </span>
+                </div>
+                <div className="text-sm text-gray-500 space-y-1">
+                    <p>Owner: {post.username}</p>
+                    <p>
+                        Created: {new Date(post.created_at).toLocaleString()}
+                    </p>
+                    <p>
+                        Updated: {new Date(post.updated_at).toLocaleString()}
+                    </p>
+                </div>
+                {post.is_published && (
+                    <Link
+                        href={`/posts/${post.slug}`}
+                        className="px-3 py-1 rounded border text-sm"
+                    >
+                        View Public Post
+                    </Link>
+                )}
+
                 {post.tags.length > 0 && (
                     <div className="flex gap-2 mb-4">
                         {post.tags.map((t:string) => (
@@ -100,7 +124,7 @@ function MyPostContent(props: {postId:string}){
                         Back
                     </Link>
                     
-                    <PostActions slug={post.slug} id={post.id}></PostActions>
+                    <PostActions id={post.id}></PostActions>
                     
                 </div>
             </div>
