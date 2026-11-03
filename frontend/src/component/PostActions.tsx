@@ -11,7 +11,7 @@ export default function PostActions({slug, id}: {slug: string, id: number}){
 
     return (
         <div className="flex space-x-4 mb-4">
-            <Link href={`/posts/${slug}/edit`} className="px-3 py-1 rounded border text-sm">
+            <Link href={`/posts/my-posts/${id}/edit`} className="px-3 py-1 rounded border text-sm">
                 Edit
             </Link>
             <DeletePostButton id={id}></DeletePostButton>

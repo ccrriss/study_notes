@@ -22,8 +22,8 @@ export default function DeletePostButton({id}: {id:number}){
             });
 
             // delete success and back to list page
-            router.push("/posts");
-        } finally {
+            router.replace("/posts/my-posts");
+        } catch(err: any) {
             setLoading(false);
         }
     }

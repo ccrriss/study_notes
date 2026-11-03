@@ -4,7 +4,7 @@ import RequireAuth from "@/component/RequireAuth";
 import { useApiFetch } from "@/hooks/useApiFetch";
 import PostActions from "@/component/PostActions";
 import Link from "next/link";
-import Markdown from "@/component/Markdown";
+import Markdown from "@/component/MarkdownClient";
 import { use, useEffect, useState } from "react";
 
 import type { ManagedPostOut } from "@/posts/schemas/post";
@@ -19,11 +19,18 @@ function MyPostContent(props: {postId:string}){
     const [post, setPost] = useState<ManagedPostOut | null>(null);
 
     useEffect(() => {
+        // added clean up to avoid setup useEffect twice
+        let ignore = false;
+
         async function getManagedPostOut(postId: string) {
             try {
                 // in theory, only delete res will return null from api()
                 const managedPostOut: ManagedPostOut | null = await api<ManagedPostOut>(`/api/v1/posts/manage/${postId}`, {cache:"no-store"});
                 
+                if (ignore) {
+                    return;
+                }
+
                 if (managedPostOut === null) {
                     throw new Error("Managed post response is empty");
                 }
@@ -32,13 +39,21 @@ function MyPostContent(props: {postId:string}){
 
             } catch(err: any) {
                 // get the error msg from backend
-                setError(err.message ?? "Unknown error");
+                if(!ignore) {
+                    setError(err.message ?? "Unknown error");
+                }
             } finally {
-                setLoading(false);
+                if(!ignore) {
+                    setLoading(false);
+                }
             }
         }
 
         getManagedPostOut(postId);
+
+        return () => {
+            ignore = true;
+        }
     }, [postId])
 
     if (loading) {

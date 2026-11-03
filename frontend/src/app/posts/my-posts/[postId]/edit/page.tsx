@@ -53,9 +53,15 @@ function EditMyPost(props: {postId: string}){
     }
 
     useEffect(() => {
+        let ignore = false;
+
         async function getManagedPostOut(postId: string) {
             try {
                 const managedPost = await api<ManagedPostOut|null>(`/api/v1/posts/manage/${postId}`, {cache:"no-store"});
+                
+                if(ignore) {
+                    return;
+                }
 
                 if (managedPost === null) {
                     throw new Error("Managed post response is empty");
@@ -63,13 +69,21 @@ function EditMyPost(props: {postId: string}){
 
                 setPost(managedPost);
             } catch(err: any) {
-                setError(err.message ?? "Unknown error");
+                if(!ignore) {
+                    setError(err.message ?? "Unknown error");
+                }
             } finally {
-                setLoading(false);
+                if(!ignore) {
+                    setLoading(false);
+                }
             }
         }
         
         getManagedPostOut(postId);
+
+        return () => {
+            ignore = true;
+        }
 
     }, [postId])
 
