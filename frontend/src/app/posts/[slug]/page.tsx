@@ -3,8 +3,6 @@ import Markdown from "@/component/Markdown";
 
 import { apiFetch } from "@/lib/api";
 
-import PostActions from "@/component/PostActions";
-
 async function getPost(slug: string){
     const res = await apiFetch(`/api/v1/posts/${slug}`, { cache : "no-store"});
 
@@ -35,7 +33,6 @@ export default async function Page({params}:{params: Promise<{slug: string}>}) {
                     <Link href={`/posts`} className="px-3 py-1 rounded border text-sm">
                         Back
                     </Link>
-                    <PostActions slug={slug} id={p.id}></PostActions>
                 </div>
             </div>
             <Markdown md={p.content_md}></Markdown>

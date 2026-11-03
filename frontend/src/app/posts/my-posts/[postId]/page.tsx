@@ -19,7 +19,7 @@ function MyPostContent(props: {postId:string}){
     const [post, setPost] = useState<ManagedPostOut | null>(null);
 
     useEffect(() => {
-        // added clean up to avoid setup useEffect twice
+        // Ignore stale async results after effect cleanup
         let ignore = false;
 
         async function getManagedPostOut(postId: string) {

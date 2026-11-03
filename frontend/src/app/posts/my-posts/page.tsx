@@ -16,9 +16,15 @@ function MyPostsContent(){
     const [posts, setPosts] = useState<ManagedPostOut[] | null>(null);
 
     useEffect(() => {
+        let ignore = false;
+
         async function getManagedPostOuts() {
             try {
                 const managedPosts = await api<ManagedPostOut[]>("/api/v1/posts/manage", {cache:"no-store"});
+
+                if (ignore) {
+                    return;
+                }
                 
                 if (managedPosts === null) {
                      throw new Error("Managedposts response is empty");
@@ -27,13 +33,21 @@ function MyPostsContent(){
                 setPosts(managedPosts);
             } catch(err: any) {
                 // get the error msg from backend
-                setError(err.message ?? "Unknown error");
+                if (!ignore) {
+                    setError(err.message ?? "Unknown error");
+                }
             } finally {
-                setLoading(false);
+                if(!ignore) {
+                    setLoading(false);
+                }
             }
         }
 
         getManagedPostOuts();
+
+        return () => {
+            ignore = true;
+        }
     }, [])
 
     if (loading) {
