@@ -20,6 +20,10 @@ services:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@test-db:5432/study_notes_test
       DATABASE_SSL: "false"
       INFERENCE_MODE: "modal"
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
   test-db:
     image: pgvector/pgvector:pg17
     environment:
@@ -28,7 +32,16 @@ services:
       - POSTGRES_DB=study_notes_test
     ports:
       - 5433:5432
-
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
 # start the database before your application. The `db-data` volume persists the

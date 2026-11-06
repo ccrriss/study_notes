@@ -28,6 +28,9 @@ import uuid
 from app.api.auth import require_admin_user, get_current_user
 from app.db.models import User
 
+# for rate limitation without login
+from app.services.rag_rate_limiter import rag_rate_limiter
+
 async def generate_request_id(request: Request):
     request.state.request_id = uuid.uuid4().hex[:8]
 
@@ -38,8 +41,17 @@ async def generate_rag_response(
     payload: Annotated[RagRequest, Body()],
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
 ) -> RagResponse:
+    # for ip test
+    if request.client is None:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, 
+                            detail="Client address unavailable")
+    
+    client_ip = request.client.host 
+    redis_client = request.app.state.redis_client
+
+    await rag_rate_limiter(redis_client=redis_client, client_ip=client_ip)
+    
     query = payload.query
 
     bm25: BM25Okapi = request.app.state.bm25

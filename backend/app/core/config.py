@@ -34,4 +34,11 @@ class Settings(BaseSettings):
     QWEN_API_KEY: str
     QWEN_MODEL_NAME: str
 
+    # Redis
+    REDIS_URL: str = "redis://localhost:6379/0"
+
+    # Rag rate limits
+    RAG_IP_HOURLY_LIMIT: int = 5
+    RAG_GLOBAL_DAILY_LIMIT: int = 100
+
 settings = Settings()

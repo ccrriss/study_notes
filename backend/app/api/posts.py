@@ -206,9 +206,15 @@ async def list_posts(
 
 @router.get("/manage", response_model=list[ManagedPostOut])
 async def list_managed_posts(
+    # for ip test
+    request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
 ) -> list[ManagedPostOut]: 
+    # for ip test
+    print("client.host", request.client.host if request.client else None)
+    print("X-Forwarded-For:", request.headers.get("x-forwarded-for"))
+    
     if current_user.is_admin:
         stmt = select(Post)
     else:

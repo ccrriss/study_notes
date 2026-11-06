@@ -38,3 +38,6 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+# ---------- conventions ----------
+project_context_export/

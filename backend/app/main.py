@@ -19,6 +19,9 @@ from app.rag.generation_provider import OllamaGenerationProvider, QwenGeneration
 # for github actions CI test
 from app.rag.test_providers import TestEmbeddingProvider, TestGenerationProvider, TestRerankingProvider
 
+# Redis
+from app.core.redis_client import redis_client
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("START lifespan")
@@ -54,14 +57,21 @@ async def lifespan(app: FastAPI):
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="constructing model internal error")
     print("EMBEDDING provider done")
 
+    await redis_client.ping()
+    print("Redis connected successfully")
+
     app.state.bm25 = bm25
     app.state.inverted_idx_dict = inverted_idx_dict
     app.state.post_chunk_ids = post_chunk_ids
     app.state.embedding_model = embedding_model
     app.state.reranking_model = reranking_model
     app.state.generation_model = generation_model
+    app.state.redis_client = redis_client
 
     yield
+
+    await redis_client.aclose()
+    print("Redis connection closed")
 
     await engine.dispose()
     print("database engine disposed")
