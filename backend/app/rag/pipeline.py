@@ -111,13 +111,16 @@ async def run_lexical_search_pipeline(query: str, bm25: BM25Okapi | None, invert
     lexical_search_top_k_results = find_top_k_lexical_search_results(scores=bm_25_scores, candidate_idx_set=candidate_indices,
                                                                       top_k=RETRIEVAL_CONFIG.top_k)
 
-    for i, lexical_search_result in enumerate(lexical_search_top_k_results):
+    for lexical_search_result in lexical_search_top_k_results:
         idx_of_post_chunk_id = lexical_search_result[0]
         lexical_search_score = lexical_search_result[1]
         post_chunk_id = post_chunk_ids[idx_of_post_chunk_id]
         post_chunk = await db.get(PostChunk, post_chunk_id, options=[selectinload(PostChunk.post)])
+        # to avoid the condition that just delete/update the post while lexical searching
+        if post_chunk is None or not post_chunk.post.is_published:
+            continue
         lexical_results.append(
-            RetrievedResult(rank=i+1, score=lexical_search_score, post_id=post_chunk.post_id, chunk_idx=post_chunk.chunk_idx,
+            RetrievedResult(rank=len(lexical_results)+1, score=lexical_search_score, post_id=post_chunk.post_id, chunk_idx=post_chunk.chunk_idx,
                             title=post_chunk.post.title, slug=post_chunk.post.slug, heading_path=post_chunk.heading_path,
                             content=post_chunk.content_chunk)
         )

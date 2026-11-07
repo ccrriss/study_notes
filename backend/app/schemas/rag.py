@@ -22,7 +22,7 @@ class RagResponse(BaseModel):
 class ModelOptions(BaseModel):
     temperature: float = Field()
     seed: int = Field()
-    num_ctx: int = Field()
+    num_ctx: int | None = Field(default=None)
 
     model_config = ConfigDict(from_attributes=True)
 

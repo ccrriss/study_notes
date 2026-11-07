@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
@@ -8,6 +8,7 @@ from app.schemas.post import PostIn, PostOut, ManagedPostOut
 from slugify import slugify
 from app.api.auth import get_current_user
 from app.db.models import User
+from typing import Annotated
 
 # PostChunk related
 from app.rag.provider_protocols import EmbeddingProvider
@@ -155,11 +156,11 @@ async def delete_post(
 @router.get("", response_model=dict)
 async def list_posts(
     db: AsyncSession = Depends(get_db), 
-    q: str | None = None, 
-    offset: int = 0, 
-    limit: int = 10,
-    tag: str | None = None,
-    sort: str | None = None,
+    q: Annotated[str | None, Query()] = None,
+    offset: Annotated[int, Query(ge=0)] = 0, 
+    limit: Annotated[int, Query(ge=1, le=100)] = 10,
+    tag: Annotated[str | None, Query()] = None,
+    sort: Annotated[str | None, Query()] = None,
     ) -> dict: 
 
     # 计算总数
@@ -206,15 +207,9 @@ async def list_posts(
 
 @router.get("/manage", response_model=list[ManagedPostOut])
 async def list_managed_posts(
-    # for ip test
-    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> list[ManagedPostOut]: 
-    # for ip test
-    print("client.host", request.client.host if request.client else None)
-    print("X-Forwarded-For:", request.headers.get("x-forwarded-for"))
-    
     if current_user.is_admin:
         stmt = select(Post)
     else:

@@ -11,7 +11,7 @@ from app.core.version import get_git_version
 from app.rag.evaluation.judge import JUDGE_MODEL_NAME, JUDGE_OPTIONS
 from app.rag.generation import GENERATION_MODEL_NAME, GENERATION_OPTIONS
 from app.rag.evaluation.prompts import generation_v2 as judge_prompt
-from app.rag.prompts import answer_v1 as answer_prompt
+from app.rag.prompts import answer_v5 as answer_prompt
 from app.rag.config import CHUNKING_CONFIG, EMBEDDING_CONFIG, RETRIEVAL_CONFIG, RERANKING_CONFIG
 
 # for type checking
@@ -30,6 +30,9 @@ from app.db.models import User
 
 # for rate limitation without login
 from app.services.rag_rate_limiter import rag_rate_limiter
+
+# for metadata
+from app.core.config import settings
 
 async def generate_request_id(request: Request):
     request.state.request_id = uuid.uuid4().hex[:8]
@@ -137,8 +140,20 @@ async def generate_generation_evaluation_response(
 @router.get("/runtime_metadata", response_model=RuntimeMetadata)
 def get_runtime_metadata(current_user: User = Depends(require_admin_user)):
     code_version = get_git_version()
-    generation_metadata = ModelRuntimeData(model=GENERATION_MODEL_NAME, prompt_version=answer_prompt.PROMPT_VERSION,
-                                           options=ModelOptions.model_validate(GENERATION_OPTIONS))
+
+    # generation model metadata
+    if settings.INFERENCE_MODE == "local":
+        model_name = GENERATION_MODEL_NAME
+        model_options = ModelOptions.model_validate(GENERATION_OPTIONS)
+    else:
+        model_name = settings.QWEN_MODEL_NAME
+        model_options = {
+            "temperature": GENERATION_OPTIONS["temperature"],
+            "seed": GENERATION_OPTIONS["seed"]
+        }
+    
+    generation_metadata = ModelRuntimeData(model=model_name, prompt_version=answer_prompt.PROMPT_VERSION,
+                                           options=model_options)
     judge_metadata = ModelRuntimeData(model=JUDGE_MODEL_NAME, prompt_version=judge_prompt.PROMPT_VERSION,
                                            options=ModelOptions.model_validate(JUDGE_OPTIONS))
     return RuntimeMetadata(code_version=code_version,

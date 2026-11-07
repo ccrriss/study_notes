@@ -1,5 +1,9 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, StringConstraints, field_validator
 from datetime import datetime
+from typing import Annotated
+
+TagName = Annotated[str,
+                    StringConstraints(strip_whitespace=True, min_length=1, max_length=50)]
 
 class PostIn(BaseModel):
     title: str = Field(max_length=200)
@@ -7,7 +11,12 @@ class PostIn(BaseModel):
     content_md: str
     excerpt: str | None = Field(default=None, max_length=300)
     is_published: bool = True
-    tags: list[str] = []
+    tags: list[TagName] = Field(default_factory=list)
+
+    @field_validator("tags")
+    @classmethod
+    def duplicate_tags(cls, tags: list[str]) -> list[str]:
+        return list(dict.fromkeys(tags))
 
 class PostOut(PostIn):
     id: int

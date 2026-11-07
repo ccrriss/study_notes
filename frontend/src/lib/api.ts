@@ -31,6 +31,7 @@ export async function apiFetch<T = any>(
 
     const res = await fetch(`${API_BASE}${path}`, {
         ...cleanOptions,
+        ...(cache? {cache} : {}),
         headers
     });
 

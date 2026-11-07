@@ -69,6 +69,8 @@ export default function TagInput({
                     placeholder="Add tag..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
+                    maxLength={50}
+                    minLength={1}
                     onKeyDown={handleKeyDown}
                 />
                 <button 

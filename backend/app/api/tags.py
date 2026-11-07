@@ -14,6 +14,8 @@ async def list_tags(db: AsyncSession = Depends(get_db)):
             Tag.name,
             func.count(post_tag.c.post_id).label("count")
         ).join(post_tag, Tag.id == post_tag.c.tag_id)
+        .join(Post, Post.id == post_tag.c.post_id)
+        .where(Post.is_published.is_(True))
         .group_by(Tag.name)
     )
 
